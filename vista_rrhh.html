@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - Panel de Control RRHH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABLES DE COLOR (MISMA PALETA BLACK AND GOLD ELEGANCE) --- */
+        :root {
+            --fondo-principal: #E5E5E5; 
+            --blanco: #FFFFFF;
+            --cabeceras: #14213D;       
+            --acento: #FCA311;          
+            --texto-negro: #000000;     
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            color: var(--texto-negro);
+            padding-bottom: 60px;
+        }
+
+        /* --- 1. BARRA SUPERIOR (NAVBAR) --- */
+        .navbar {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .navbar .logo span {
+            color: var(--acento);
+        }
+
+        .navbar .admin-badge {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .navbar .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- 2. PANEL PRINCIPAL (HERO CONFIGURABLE) --- */
+        .hero {
+            background: linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            color: var(--blanco);
+            padding: 40px 30px;
+        }
+
+        .hero h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--acento);
+        }
+
+        .hero-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        /* --- ESTILOS DE FORMULARIO COMUNES --- */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .form-control:focus {
+            border-color: var(--acento);
+        }
+
+        .btn-action {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 13px;
+        }
+
+        .btn-action:hover {
+            background-color: #243556;
+        }
+
+        .btn-gold {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+        }
+
+        .btn-gold:hover {
+            background-color: #e08f0e;
+        }
+
+        /* --- CONTAINER PRINCIPAL (MISMA ESTRUCTURA DE TRES COLUMNAS) --- */
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--blanco);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            text-transform: uppercase;
+            border-left: 4px solid var(--acento);
+            padding-left: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- LISTAS DE ARCHIVOS / RECURSOS CARGADOS --- */
+        .uploaded-list {
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .uploaded-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            border-left: 3px solid var(--cabeceras);
+        }
+
+        .uploaded-item i.delete-btn {
+            color: #dc3545;
+            cursor: pointer;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+            .hero-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. BARRA SUPERIOR -->
+    <nav class="navbar">
+        <div class="logo">
+            THE <span>HUB</span> <span class="admin-badge">Módulo R.R.H.H.</span>
+        </div>
+        <div class="user-menu">
+            <i class="fa-solid fa-bell"></i>
+            <i class="fa-solid fa-user-gear"></i> Panel Administrador
+        </div>
+    </nav>
+
+    <!-- 2. GESTIÓN DEL ANUNCIO PRINCIPAL (HERO) -->
+    <header class="hero">
+        <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
+        <form class="hero-form" onsubmit="event.preventDefault(); alert('Noticia principal actualizada.');">
+            <div class="form-group" style="margin:0;">
+                <label style="color:#fff;">Texto del Título Destacado</label>
+                <input type="text" class="form-control" value="Sabina, ¡revisa las últimas noticias!">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label style="color:#fff;">Imagen de Fondo (URL o Archivo)</label>
+                <input type="file" class="form-control" accept="image/*" style="background:#fff;">
+            </div>
+            <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
+        </form>
+    </header>
+
+    <!-- CONTAINER PRINCIPAL EN 3 COLUMNAS -->
+    <main class="main-container">
+        
+        <!-- COLUMNA 1: GESTIÓN DE RECURSOS Y ARCHIVOS -->
+        <section>
+            <div class="card">
+                <div class="section-title">
+                    <span>📤 Cargar Recursos y PDF</span>
+                </div>
+                <form onsubmit="event.preventDefault(); alert('Documento publicado.');">
+                    <div class="form-group">
+                        <label>Nombre del Recurso / Plantilla</label>
+                        <input type="text" class="form-control" placeholder="Ej. Solicitud de Vacaciones">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select class="form-control">
+                            <option>Solicitudes</option>
+                            <option>Aplicaciones</option>
+                            <option>Plantillas</option>
+                            <option>Manual Empleado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Archivo PDF / Documento</label>
+                        <input type="file" class="form-control" accept=".pdf,.docx">
+                    </div>
+                    <button type="submit" class="btn-action w-100" style="width:100%;">Subir Recurso</button>
+                </form>
+
+                <div class="uploaded-list">
+                    <label class="form-label" style="font-weight:bold; margin-bottom:5px; display:block;">Recursos Visibles Actuales:</label>
+                    <div class="uploaded-item">
+                        <span>📄 Manual_Empleado_2026.pdf</span>
+                        <i class="fa-solid fa-trash delete-btn" title="Eliminar"></i>
+                    </div>
+                    <div class="uploaded-item">
+                        <span>📄 Planilla_Vacaciones.pdf</span>
+                        <i class="fa-solid fa-trash delete-btn" title="Eliminar"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMNA 2: REGISTRO DE TRABAJADORES Y MÉTRICAS -->
+        <section>
+            <!-- Cargar Empleado al Carousel -->
+            <div class="card">
+                <div class="section-title">
+                    <span>👤 Añadir Empleado al Directorio</span>
+                </div>
+                <form onsubmit="event.preventDefault(); alert('Empleado añadido al carrusel.');">
+                    <div class="form-group">
+                        <label>Nombre y Apellido</label>
+                        <input type="text" class="form-control" placeholder="Ej. Carlos Mendoza">
+                    </div>
+                    <div class="form-group">
+                        <label>Foto de Perfil (JPG/PNG)</label>
+                        <input type="file" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en Equipo</button>
+                </form>
+            </div>
+
+            <!-- Actualizar Métricas KPI -->
+            <div class="card">
+                <div class="section-title">
+                    <span>📊 Actualizar Métricas Trimestrales</span>
+                </div>
+                <form onsubmit="event.preventDefault(); alert('Métricas actualizadas.');">
+                    <div class="form-group">
+                        <label>Métrica 1 (Clientes Activos)</label>
+                        <input type="text" class="form-control" value="23% ↑">
+                    </div>
+                    <div class="form-group">
+                        <label>Métrica 2 (Powerlink Go)</label>
+                        <input type="text" class="form-control" value="5.2% ↑">
+                    </div>
+                    <div class="form-group">
+                        <label>Métrica 3 (Zonas Habilitadas)</label>
+                        <input type="text" class="form-control" value="27.6K ↓">
+                    </div>
+                    <button type="submit" class="btn-action" style="width:100%;">Guardar Métricas</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- COLUMNA 3: CUMPLEAÑOS Y EVENTOS EN CALENDARIO -->
+        <section>
+            <!-- Cargar Próximo Cumpleaños -->
+            <div class="card">
+                <div class="section-title">
+                    <span>🎉 Configurar Próximo Cumpleaños</span>
+                </div>
+                <form onsubmit="event.preventDefault(); alert('Cumpleañero guardado.');">
+                    <div class="form-group">
+                        <label>Nombre del Agasajado</label>
+                        <input type="text" class="form-control" placeholder="Ej. Carlos Mendoza">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Cumpleaños</label>
+                        <input type="text" class="form-control" placeholder="Ej. 18 de Julio">
+                    </div>
+                    <div class="form-group">
+                        <label>Foto del Empleado</label>
+                        <input type="file" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleaños</button>
+                </form>
+            </div>
+
+            <!-- Programar Evento en Calendario -->
+            <div class="card">
+                <div class="section-title">
+                    <span>📅 Marcar Evento en Calendario</span>
+                </div>
+                <form onsubmit="event.preventDefault(); alert('Evento destacado en el calendario.');">
+                    <div class="form-group">
+                        <label>Día del Mes (Número)</label>
+                        <input type="number" class="form-control" min="1" max="31" placeholder="Ej. 15">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción del Evento</label>
+                        <input type="text" class="form-control" placeholder="Ej. Reunión General de Personal">
+                    </div>
+                    <button type="submit" class="btn-action" style="width:100%;">Marcar Día en Calendario</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

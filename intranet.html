@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - The Hub (Fase 1 Mejorada)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABLES DE COLOR (PALETA BLACK AND GOLD ELEGANCE) --- */
+        :root {
+            --fondo-principal: #E5E5E5; /* Gris claro */
+            --blanco: #FFFFFF;
+            --cabeceras: #14213D;       /* Azul oscuro / Casi negro */
+            --acento: #FCA311;          /* Dorado / Naranja */
+            --texto-negro: #000000;     /* Negro */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            color: var(--texto-negro);
+            padding-bottom: 60px;
+        }
+
+        /* --- 1. BARRA SUPERIOR (NAVBAR) --- */
+        .navbar {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .navbar .logo span {
+            color: var(--acento);
+        }
+
+        .navbar .search-bar {
+            width: 40%;
+        }
+
+        .navbar .search-bar input {
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            outline: none;
+        }
+
+        .navbar .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .navbar .user-menu i {
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* --- 2. PANEL PRINCIPAL (HÉROE) --- */
+        .hero {
+            background: linear-gradient(rgba(20, 33, 61, 0.8), rgba(20, 33, 61, 0.9)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            color: var(--blanco);
+            padding: 60px 30px;
+            text-align: left;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .hero button {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+            border: none;
+            padding: 10px 25px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .hero button:hover {
+            background-color: #e08f0e;
+        }
+
+        /* --- 3. FILA DE ACCESOS RÁPIDOS --- */
+        .fast-links {
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 15px;
+        }
+
+        .fast-links a {
+            color: var(--blanco);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fast-links a:hover {
+            color: var(--acento);
+        }
+
+        /* --- CONTAINER PRINCIPAL (ESTRUCTURA DE TRES COLUMNAS) --- */
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--blanco);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            border-left: 4px solid var(--acento);
+            padding-left: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        /* --- COLUMNA 1: RECURSOS --- */
+        .search-templates {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-resource {
+            padding: 15px 10px;
+            text-align: center;
+            border-radius: 4px;
+            color: var(--blanco);
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .btn-navy { background-color: var(--cabeceras); }
+        .btn-gray { background-color: #5c677d; }
+
+        /* --- COLUMNA 2: NUEVO CARRUSEL DE EMPLEADOS --- */
+        .employee-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scrollbar-width: thin;
+        }
+
+        .employee-carousel::-webkit-scrollbar {
+            height: 6px;
+        }
+        .employee-carousel::-webkit-scrollbar-thumb {
+            background-color: var(--acento);
+            border-radius: 10px;
+        }
+
+        .employee-card {
+            flex: 0 0 90px;
+            text-align: center;
+        }
+
+        .employee-card img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--acento);
+            margin-bottom: 8px;
+        }
+
+        .employee-card span {
+            font-size: 12px;
+            display: block;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* --- COLUMNA 2: MÉTRICAS CRECIMIENTO POWER --- */
+        .kpi-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .kpi-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            padding: 18px 20px;
+            border-radius: 6px;
+        }
+
+        .kpi-card.alt { background-color: #243556; }
+
+        .kpi-card .kpi-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #E5E5E5;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--acento);
+        }
+
+        /* --- COLUMNA 3: CALENDARIO COMPLETO MENSUAL --- */
+        .calendar-wrapper {
+            width: 100%;
+        }
+
+        .calendar-header-month {
+            text-align: center;
+            font-weight: bold;
+            color: var(--cabeceras);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .calendar-day-name {
+            font-weight: bold;
+            color: #666;
+            padding-bottom: 5px;
+        }
+
+        .calendar-day {
+            padding: 6px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            color: #333;
+        }
+
+        .calendar-day.active {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+            font-weight: bold;
+        }
+
+        /* --- COLUMNA 3: SECCIÓN PRÓXIMO CUMPLEAÑOS --- */
+        .birthday-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #ffffff, #fffdf6);
+            border: 1px dashed var(--acento);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .birthday-card img {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--acento);
+        }
+
+        .birthday-info h4 {
+            font-size: 14px;
+            color: var(--cabeceras);
+        }
+
+        .birthday-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .feedback-form textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+        }
+
+        .feedback-form button {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* --- 💬 WIDGET DE CHAT FLOTANTE --- */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-button {
+            background-color: var(--acento);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--texto-negro);
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        .chat-button:hover { transform: scale(1.05); }
+
+        .chat-window {
+            display: none;
+            width: 320px;
+            height: 400px;
+            background-color: var(--blanco);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            flex-direction: column;
+            overflow: hidden;
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            border: 1px solid #ccc;
+        }
+
+        .chat-header {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-tabs {
+            display: flex;
+            background-color: #f1f1f1;
+            font-size: 13px;
+        }
+
+        .chat-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .chat-tab.active {
+            border-bottom: 2px solid var(--acento);
+            font-weight: bold;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 14px;
+            background-color: #fafafa;
+        }
+
+        .chat-footer {
+            padding: 10px;
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .navbar .search-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">THE <span>HUB</span></div>
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar documentos, personas, recursos...">
+        </div>
+        <div class="user-menu">
+            <i class="fa-solid fa-comment-dots" onclick="toggleChat()" title="Abrir Chat"></i>
+            <i class="fa-solid fa-bell"></i>
+            <i class="fa-solid fa-user-circle"></i> Sabina
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Sabina, ¡revisa las últimas noticias!</h1>
+        <button>Leer más →</button>
+    </header>
+
+    <div class="fast-links">
+        <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+        <a href="#"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="#"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        <a href="#"><i class="fa-solid fa-users"></i> RRHH</a>
+    </div>
+
+    <main class="main-container">
+        
+        <section>
+            <div class="card">
+                <div class="section-title">Top Recursos</div>
+                <input type="text" class="search-templates" placeholder="Buscar Formularios y Plantillas">
+                <div class="resource-grid">
+                    <a href="#" class="btn-resource btn-navy">Solicitudes</a>
+                    <a href="#" class="btn-resource btn-gray">Aplicaciones</a>
+                    <a href="#" class="btn-resource btn-gray">Plantillas</a>
+                    <a href="#" class="btn-resource btn-navy">Manual Empleado</a>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="section-title">Nuestro Equipo</div>
+                <div class="employee-carousel">
+                    <div class="employee-card">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="Empleado 1">
+                        <span>Sabina S.</span>
+                    </div>
+                    <div class="employee-card">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" alt="Empleado 2">
+                        <span>Yaroslav P.</span>
+                    </div>
+                    <div class="employee-card">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100" alt="Empleado 3">
+                        <span>Jane Smith</span>
+                    </div>
+                    <div class="employee-card">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100" alt="Empleado 4">
+                        <span>Rosa Bell</span>
+                    </div>
+                    <div class="employee-card">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100" alt="Empleado 5">
+                        <span>Carlos M.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">Métricas del Trimestre: Crecimiento Power</div>
+                <div class="kpi-container">
+                    <div class="kpi-card">
+                        <span class="kpi-title">Clientes activos</span>
+                        <span class="kpi-value">23% ↑</span>
+                    </div>
+                    <div class="kpi-card alt">
+                        <span class="kpi-title">Clientes powerlin Go</span>
+                        <span class="kpi-value">5.2% ↑</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Zonas habilitadas</span>
+                        <span class="kpi-value">27.6K ↓</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="section-title">Calendario Institucional</div>
+                <div class="calendar-wrapper">
+                    <div class="calendar-header-month">Julio 2026</div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day-name">L</div>
+                        <div class="calendar-day-name">M</div>
+                        <div class="calendar-day-name">X</div>
+                        <div class="calendar-day-name">J</div>
+                        <div class="calendar-day-name">V</div>
+                        <div class="calendar-day-name">S</div>
+                        <div class="calendar-day-name">D</div>
+                        <div class="calendar-day"></div><div class="calendar-day"></div><div class="calendar-day">1</div><div class="calendar-day">2</div><div class="calendar-day">3</div><div class="calendar-day">4</div><div class="calendar-day">5</div>
+                        <div class="calendar-day">6</div><div class="calendar-day">7</div><div class="calendar-day">8</div><div class="calendar-day">9</div><div class="calendar-day">10</div><div class="calendar-day">11</div><div class="calendar-day">12</div>
+                        <div class="calendar-day">13</div><div class="calendar-day">14</div><div class="calendar-day active" title="Hoy">15</div><div class="calendar-day">16</div><div class="calendar-day">17</div><div class="calendar-day">18</div><div class="calendar-day">19</div>
+                        <div class="calendar-day">20</div><div class="calendar-day">21</div><div class="calendar-day">22</div><div class="calendar-day">23</div><div class="calendar-day">24</div><div class="calendar-day">25</div><div class="calendar-day">26</div>
+                        <div class="calendar-day">27</div><div class="calendar-day">28</div><div class="calendar-day">29</div><div class="calendar-day">30</div><div class="calendar-day">31</div>
+                    </div>
+                </div>
+
+                <div class="birthday-card">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100" alt="Cumpleañero">
+                    <div class="birthday-info">
+                        <h4>🎉 Próximo Cumpleaños</h4>
+                        <p><strong>Carlos Mendoza</strong></p>
+                        <p><small>18 de Julio</small></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">Feedback</div>
+                <form class="feedback-form" onsubmit="event.preventDefault(); alert('¡Gracias por tu feedback!');">
+                    <textarea placeholder="¿Falta algo en esta intranet? ¡Cuéntanos!"></textarea>
+                    <button type="submit">Enviar Comentarios</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <span><i class="fa-solid fa-comments"></i> Chat Interno</span>
+                <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleChat()"></i>
+            </div>
+            <div class="chat-tabs">
+                <div class="chat-tab active">Canales</div>
+                <div class="chat-tab">Directos</div>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <p style="color: #888; font-size: 12px; text-align: center; margin-bottom: 10px;">Has entrado al canal #General</p>
+                <p><strong>Soporte:</strong> ¡Bienvenidos a la nueva intranet!</p>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeypress="checkSend(event)">
+            </div>
+        </div>
+
+        <div class="chat-button" onclick="toggleChat()" title="Chat de la Empresa">
+            <i class="fa-solid fa-comment-dots"></i>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                chatWindow.style.display = 'flex';
+            } else {
+                chatWindow.style.display = 'none';
+            }
+        }
+
+        function checkSend(e) {
+            if (e.key === 'Enter') {
+                const input = document.getElementById('chatInput');
+                const chatBody = document.getElementById('chatBody');
+                if (input.value.trim() !== "") {
+                    chatBody.innerHTML += `<p style="margin-top:5px;"><strong>Tú:</strong> ${input.value}</p>`;
+                    input.value = "";
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

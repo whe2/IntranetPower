@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - Inicio de Sesión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABLES DE COLOR --- */
+        :root {
+            --fondo-principal: #E5E5E5; /* Gris claro */
+            --blanco: #FFFFFF;
+            --cabeceras: #14213D;       /* Azul oscuro / Casi negro */
+            --acento: #FCA311;          /* Dorado / Naranja */
+            --texto-negro: #000000;     /* Negro */
+            --texto-gris: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            overflow-x: hidden;
+        }
+
+        /* --- SELECTOR DE DISEÑOS (SOLO PARA DEMOSTRACIÓN) --- */
+        .demo-switcher {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(20, 33, 61, 0.95);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .demo-btn {
+            background-color: transparent;
+            color: var(--blanco);
+            border: 1px solid var(--acento);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .demo-btn.active, .demo-btn:hover {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+        }
+
+        /* --- CONTENEDOR DE DISEÑOS --- */
+        .login-screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-screen.active {
+            display: flex;
+        }
+
+        /* --- ESTILOS COMUNES DE FORMULARIO --- */
+        .logo-area {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--cabeceras);
+            margin-bottom: 25px;
+        }
+
+        .logo-area span {
+            color: var(--acento);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--cabeceras);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--texto-gris);
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 12px 12px 38px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background-color: #fafafa;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--cabeceras);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .form-options a {
+            color: var(--cabeceras);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-options a:hover {
+            color: var(--acento);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d2f54;
+            color: var(--acento);
+        }
+
+
+        /* ========================================================
+           DISEÑO 1: TARJETA CLÁSICA CENTRADA (SOBRIO Y TRADICIONAL)
+           ======================================================== */
+        #design-1 {
+            background-color: var(--fondo-principal);
+        }
+
+        .card-login {
+            background-color: var(--blanco);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--acento);
+        }
+
+
+        /* ========================================================
+           DISEÑO 2: PANTALLA DIVIDIDA (SPLIT SCREEN - MODERNO)
+           ======================================================== */
+        #design-2 {
+            background-color: var(--blanco);
+        }
+
+        .split-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .split-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .split-right {
+            flex: 1.2;
+            background: linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--blanco);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .split-right h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .split-right h2 span {
+            color: var(--acento);
+        }
+
+        .split-right p {
+            color: #cccccc;
+            max-width: 400px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .split-right { display: none; }
+        }
+
+
+        /* ========================================================
+           DISEÑO 3: MINIMALISTA OSCURO (MÁXIMA SOBRIEDAD)
+           ======================================================== */
+        #design-3 {
+            background-color: var(--cabeceras);
+        }
+
+        .minimal-login {
+            width: 100%;
+            max-width: 380px;
+            padding: 30px;
+        }
+
+        #design-3 .logo-area {
+            color: var(--blanco);
+        }
+
+        #design-3 .form-group label {
+            color: #cccccc;
+        }
+
+        #design-3 .form-options {
+            color: #cccccc;
+        }
+
+        #design-3 .form-options a {
+            color: var(--blanco);
+        }
+
+        #design-3 .form-options a:hover {
+            color: var(--acento);
+        }
+
+        #design-3 .btn-submit {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+        }
+
+        #design-3 .btn-submit:hover {
+            background-color: #e08f0e;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="demo-switcher">
+        <button class="demo-btn active" onclick="switchDesign(1)">Diseño 1: Clásico</button>
+        <button class="demo-btn" onclick="switchDesign(2)">Diseño 2: Dividido</button>
+        <button class="demo-btn" onclick="switchDesign(3)">Diseño 3: Minimal Oscuro</button>
+    </div>
+
+    <div id="design-1" class="login-screen active">
+        <div class="card-login">
+            <div class="logo-area">THE <span>HUB</span></div>
+            
+            <form onsubmit="event.preventDefault(); alert('Iniciando sesión...');">
+                <div class="form-group">
+                    <label for="user1">Correo Electrónico</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="user1" placeholder="nombre@empresa.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pass1">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="pass1" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label><input type="checkbox"> Recordarme</label>
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn-submit">Ingresar a la Intranet</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="design-2" class="login-screen">
+        <div class="split-container">
+            <div class="split-left">
+                <div style="width: 100%; max-width: 360px;">
+                    <div class="logo-area" style="text-align: left;">THE <span>HUB</span></div>
+                    <p style="color: var(--texto-gris); font-size: 14px; margin-bottom: 30px;">Ingresa tus credenciales corporativas para acceder.</p>
+                    
+                    <form onsubmit="event.preventDefault(); alert('Iniciando sesión...');">
+                        <div class="form-group">
+                            <label for="user2">Usuario o Correo</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="user2" placeholder="usuario@empresa.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pass2">Contraseña</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="pass2" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label><input type="checkbox"> Recordarme</label>
+                            <a href="#">¿Ayuda con el acceso?</a>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Iniciar Sesión</button>
+                    </form>
+                </div>
+            </div>
+            <div class="split-right">
+                <h2>Plataforma <span>Power</span></h2>
+                <p>Conectando al equipo, impulsando el crecimiento y compartiendo metas en un solo lugar.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="design-3" class="login-screen">
+        <div class="minimal-login">
+            <div class="logo-area">THE <span>HUB</span></div>
+            
+            <form onsubmit="event.preventDefault(); alert('Iniciando sesión...');">
+                <div class="form-group">
+                    <label for="user3">Correo Corporativo</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="user3" placeholder="ejemplo@empresa.com" style="background-color: #1d2f54; color: white; border: 1px solid #354b75;" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pass3">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="pass3" placeholder="••••••••" style="background-color: #1d2f54; color: white; border: 1px solid #354b75;" required>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label><input type="checkbox"> Mantener sesión activa</label>
+                    <a href="#">Recuperar clave</a>
+                </div>
+
+                <button type="submit" class="btn-submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchDesign(designId) {
+            // Desactivar todas las pantallas
+            document.querySelectorAll('.login-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // Desactivar todos los botones
+            document.querySelectorAll('.demo-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Activar la seleccionada
+            document.getElementById('design-' + designId).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
