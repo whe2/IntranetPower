@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - Panel de Gestión RRHH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fondo-principal: #f1f5f9;
+            --blanco: #ffffff;
+            --cabeceras: #0f172a;
+            --acento: #f59e0b;
+            --acento-hover: #d97706;
+            --texto-negro: #0f172a;
+            --texto-gris: #64748b;
+            --exito: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            color: var(--texto-negro);
+            padding-bottom: 60px;
+        }
+
+        .navbar {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .navbar .logo {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar .logo span { color: var(--acento); }
+
+        .navbar .admin-badge {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .navbar .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-view-site {
+            background: #334155;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-view-site:hover { background: #475569; }
+
+        .btn-logout {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* HERO CONFIG */
+        .hero {
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            color: var(--blanco);
+            padding: 35px 30px;
+        }
+
+        .hero h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--acento);
+            font-weight: 700;
+        }
+
+        .hero-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        /* FORMS */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .form-control:focus {
+            border-color: var(--acento);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-action {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            border: none;
+            padding: 10px 16px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            font-size: 13px;
+        }
+
+        .btn-action:hover {
+            background-color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .btn-gold {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+        }
+
+        .btn-gold:hover {
+            background-color: var(--acento-hover);
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--blanco);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 15px;
+            text-transform: uppercase;
+            border-left: 4px solid var(--acento);
+            padding-left: 10px;
+            margin-bottom: 16px;
+            font-weight: 700;
+            color: var(--cabeceras);
+        }
+
+        /* UPLOADED ITEMS */
+        .uploaded-list {
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .uploaded-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 12px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--cabeceras);
+        }
+
+        .uploaded-item i.delete-btn {
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        .uploaded-item i.delete-btn:hover { transform: scale(1.2); }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .toast.success { background-color: var(--exito); display: block; }
+        .toast.error { background-color: var(--error); display: block; }
+
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+            .hero-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">
+            THE <span>HUB</span> <span class="admin-badge">Panel Gestor R.R.H.H.</span>
+        </div>
+        <div class="user-menu">
+            <a href="/" class="btn-view-site"><i class="fa-solid fa-globe"></i> Ver Intranet</a>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <!-- BANNER HERO CONFIG -->
+    <header class="hero">
+        <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
+        <form class="hero-form" onsubmit="updateHero(event)">
+            <div class="form-group" style="margin:0;">
+                <label style="color:#e2e8f0;">Texto del Título Destacado</label>
+                <input type="text" id="heroTitleInput" class="form-control" placeholder="Ej. ¡Revisa las últimas noticias corporativas!">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label style="color:#e2e8f0;">Imagen de Fondo (Archivo JPG/PNG)</label>
+                <input type="file" id="heroImageInput" class="form-control" accept="image/*" style="background:#fff;">
+            </div>
+            <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
+        </form>
+    </header>
+
+    <main class="main-container">
+        
+        <!-- COLUMNA 1: GESTIÓN DE RECURSOS -->
+        <section>
+            <div class="card">
+                <div class="section-title">📤 Cargar Recursos y Documentos PDF</div>
+                <form onsubmit="uploadResource(event)">
+                    <div class="form-group">
+                        <label>Nombre del Recurso / Plantilla</label>
+                        <input type="text" id="resTitle" class="form-control" placeholder="Ej. Solicitud de Permiso Laboral" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="resCategory" class="form-control">
+                            <option value="Solicitudes">Solicitudes</option>
+                            <option value="Aplicaciones">Aplicaciones</option>
+                            <option value="Plantillas">Plantillas</option>
+                            <option value="Manual Empleado">Manual Empleado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Archivo (PDF / DOCX / ZIP)</label>
+                        <input type="file" id="resFile" class="form-control" accept=".pdf,.docx,.zip,.xlsx" required>
+                    </div>
+                    <button type="submit" class="btn-action" style="width:100%;">Subir y Publicar Documento</button>
+                </form>
+
+                <div class="uploaded-list">
+                    <label style="font-weight:700; margin-bottom:8px; display:block; color:#334155;">Documentos Publicados Activos:</label>
+                    <div id="resourcesList">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMNA 2: EMPLEADOS Y MÉTRICAS -->
+        <section>
+            <!-- AÑADIR EMPLEADO -->
+            <div class="card">
+                <div class="section-title">👤 Añadir Empleado al Directorio</div>
+                <form onsubmit="addEmployee(event)">
+                    <div class="form-group">
+                        <label>Nombre y Apellido</label>
+                        <input type="text" id="empName" class="form-control" placeholder="Ej. Carlos Mendoza" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cargo / Puesto</label>
+                        <input type="text" id="empPosition" class="form-control" placeholder="Ej. Coordinador de TI" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Foto de Perfil (JPG/PNG)</label>
+                        <input type="file" id="empPhoto" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en Directorio</button>
+                </form>
+            </div>
+
+            <!-- ACTUALIZAR MÉTRICAS KPI -->
+            <div class="card">
+                <div class="section-title">📊 Actualizar Métricas Trimestrales (KPIs)</div>
+                <form onsubmit="updateKPIs(event)">
+                    <div class="form-group">
+                        <label>Métrica 1: Clientes Activos</label>
+                        <input type="text" id="kpi1" class="form-control" value="23% ↑">
+                    </div>
+                    <div class="form-group">
+                        <label>Métrica 2: Clientes Powerlink Go</label>
+                        <input type="text" id="kpi2" class="form-control" value="5.2% ↑">
+                    </div>
+                    <div class="form-group">
+                        <label>Métrica 3: Zonas Habilitadas</label>
+                        <input type="text" id="kpi3" class="form-control" value="27.6K ↓">
+                    </div>
+                    <button type="submit" class="btn-action" style="width:100%;">Guardar Métricas</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- COLUMNA 3: CUMPLEAÑOS Y CALENDARIO -->
+        <section>
+            <!-- CUMPLEAÑOS -->
+            <div class="card">
+                <div class="section-title">🎉 Configurar Próximo Cumpleaños</div>
+                <form onsubmit="updateBirthday(event)">
+                    <div class="form-group">
+                        <label>Nombre del Agasajado</label>
+                        <input type="text" id="bdayName" class="form-control" placeholder="Ej. Carlos Mendoza" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Cumpleaños</label>
+                        <input type="text" id="bdayDate" class="form-control" placeholder="Ej. 18 de Julio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Foto del Empleado</label>
+                        <input type="file" id="bdayPhoto" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleañero Destacado</button>
+                </form>
+            </div>
+
+            <!-- CALENDARIO -->
+            <div class="card">
+                <div class="section-title">📅 Marcar Evento en Calendario</div>
+                <form onsubmit="addCalendarEvent(event)">
+                    <div class="form-group">
+                        <label>Día del Mes (Número)</label>
+                        <input type="number" id="calDay" class="form-control" min="1" max="31" value="15" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Título del Evento</label>
+                        <input type="text" id="calTitle" class="form-control" placeholder="Ej. Reunión General de Personal" required>
+                    </div>
+                    <button type="submit" class="btn-action" style="width:100%;">Destacar Día en Calendario</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `toast ${type}`;
+            setTimeout(() => { t.className = 'toast'; }, 3500);
+        }
+
+        async function loadAdminData() {
+            try {
+                const res = await fetch('/api/rrhh/resources');
+                if (res.status === 403 || res.status === 401) {
+                    alert('Acceso restringido a Gestores de RRHH y Administradores.');
+                    window.location.href = '/';
+                    return;
+                }
+                const data = await res.json();
+                renderResourcesList(data);
+            } catch (e) {}
+        }
+
+        function renderResourcesList(list) {
+            const container = document.getElementById('resourcesList');
+            container.innerHTML = '';
+            list.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'uploaded-item';
+                div.innerHTML = `
+                    <span>📄 ${r.title} (${r.category})</span>
+                    <i class="fa-solid fa-trash delete-btn" title="Eliminar" onclick="deleteResource(${r.id})"></i>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function updateHero(e) {
+            e.preventDefault();
+            const title = document.getElementById('heroTitleInput').value.trim();
+            const file = document.getElementById('heroImageInput').files[0];
+
+            const formData = new FormData();
+            if (title) formData.append('title', title);
+            if (file) formData.append('image_file', file);
+
+            try {
+                const res = await fetch('/api/rrhh/hero', { method: 'POST', body: formData });
+                if (res.ok) showToast('¡Anuncio Principal (Hero) actualizado con éxito!');
+                else showToast('Error al actualizar héroe', 'error');
+            } catch (err) { showToast('Error de servidor', 'error'); }
+        }
+
+        async function uploadResource(e) {
+            e.preventDefault();
+            const title = document.getElementById('resTitle').value.trim();
+            const category = document.getElementById('resCategory').value;
+            const file = document.getElementById('resFile').files[0];
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('category', category);
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/rrhh/resources', { method: 'POST', body: formData });
+                if (res.ok) {
+                    showToast('Documento subido y publicado.');
+                    document.getElementById('resTitle').value = '';
+                    document.getElementById('resFile').value = '';
+                    loadAdminData();
+                } else showToast('Error al subir recurso', 'error');
+            } catch (err) { showToast('Error de servidor', 'error'); }
+        }
+
+        async function deleteResource(id) {
+            if (!confirm('¿Seguro que deseas eliminar este documento?')) return;
+            try {
+                const res = await fetch(`/api/rrhh/resources/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Documento eliminado.');
+                    loadAdminData();
+                }
+            } catch (e) {}
+        }
+
+        async function addEmployee(e) {
+            e.preventDefault();
+            const name = document.getElementById('empName').value.trim();
+            const position = document.getElementById('empPosition').value.trim();
+            const file = document.getElementById('empPhoto').files[0];
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('position', position);
+            if (file) formData.append('photo', file);
+
+            try {
+                const res = await fetch('/api/rrhh/employees', { method: 'POST', body: formData });
+                if (res.ok) {
+                    showToast('Empleado agregado al directorio.');
+                    document.getElementById('empName').value = '';
+                    document.getElementById('empPosition').value = '';
+                    document.getElementById('empPhoto').value = '';
+                }
+            } catch (e) { showToast('Error al guardar empleado', 'error'); }
+        }
+
+        async function updateKPIs(e) {
+            e.preventDefault();
+            const kpi1 = document.getElementById('kpi1').value;
+            const kpi2 = document.getElementById('kpi2').value;
+            const kpi3 = document.getElementById('kpi3').value;
+
+            try {
+                const res = await fetch('/api/rrhh/kpis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        metrics: [
+                            { title: 'Clientes activos', value: kpi1, trend: 'up' },
+                            { title: 'Clientes powerlink Go', value: kpi2, trend: 'up' },
+                            { title: 'Zonas habilitadas', value: kpi3, trend: 'down' }
+                        ]
+                    })
+                });
+                if (res.ok) showToast('Métricas KPI actualizadas.');
+            } catch (e) { showToast('Error al actualizar métricas', 'error'); }
+        }
+
+        async function updateBirthday(e) {
+            e.preventDefault();
+            const name = document.getElementById('bdayName').value.trim();
+            const date = document.getElementById('bdayDate').value.trim();
+            const file = document.getElementById('bdayPhoto').files[0];
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('birthday_date', date);
+            if (file) formData.append('photo', file);
+
+            try {
+                const res = await fetch('/api/rrhh/birthday', { method: 'POST', body: formData });
+                if (res.ok) showToast('Cumpleañero destacado guardado.');
+            } catch (e) {}
+        }
+
+        async function addCalendarEvent(e) {
+            e.preventDefault();
+            const day = document.getElementById('calDay').value;
+            const title = document.getElementById('calTitle').value.trim();
+
+            try {
+                const res = await fetch('/api/rrhh/calendar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ day: parseInt(day), title: title })
+                });
+                if (res.ok) showToast('Evento registrado en calendario.');
+            } catch (e) {}
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAdminData);
+    </script>
+</body>
+</html>

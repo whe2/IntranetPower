@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - Inicio de Sesión Robusto</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fondo-principal: #0f172a;
+            --blanco: #ffffff;
+            --cabeceras: #1e293b;
+            --acento: #f59e0b;
+            --acento-hover: #d97706;
+            --texto-negro: #0f172a;
+            --texto-gris: #94a3b8;
+            --error: #ef4444;
+            --exito: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .demo-switcher {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .demo-btn {
+            background: transparent;
+            color: var(--blanco);
+            border: 1px solid transparent;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .demo-btn.active, .demo-btn:hover {
+            background: var(--acento);
+            color: var(--texto-negro);
+            font-weight: 700;
+        }
+
+        .login-screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-screen.active {
+            display: flex;
+        }
+
+        .alert-box {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-box.error {
+            display: flex;
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid var(--error);
+        }
+        .alert-box.success {
+            display: flex;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border: 1px solid var(--exito);
+        }
+
+        .logo-area {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--blanco);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .logo-area span {
+            color: var(--acento);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--texto-gris);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i.input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--texto-gris);
+            font-size: 15px;
+        }
+
+        .input-wrapper i.toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--texto-gris);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 40px 12px 42px;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background-color: #1e293b;
+            color: var(--blanco);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--acento);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 25px;
+            color: var(--texto-gris);
+        }
+
+        .form-options a {
+            color: var(--acento);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-options a:hover { text-decoration: underline; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--acento), var(--acento-hover));
+            color: var(--texto-negro);
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .demo-credentials {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #334155;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn-demo-quick {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-demo-quick:hover { background: #475569; }
+
+        /* DISEÑO 1 */
+        #design-1 {
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        .card-login {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 32px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* DISEÑO 2 */
+        #design-2 { background-color: #0f172a; }
+        .split-container { display: flex; width: 100%; height: 100%; }
+        .split-left { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; background: #0f172a; }
+        .split-right {
+            flex: 1.2;
+            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--blanco); padding: 40px; text-align: center;
+        }
+        .split-right h2 { font-size: 36px; margin-bottom: 15px; font-weight: 700; }
+        .split-right h2 span { color: var(--acento); }
+
+        /* DISEÑO 3 */
+        #design-3 { background-color: #090d16; }
+        .minimal-login { width: 100%; max-width: 400px; padding: 30px; }
+
+        @media (max-width: 768px) { .split-right { display: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="demo-switcher">
+        <button class="demo-btn active" onclick="switchDesign(1)">Diseño 1: Glassmorphism</button>
+        <button class="demo-btn" onclick="switchDesign(2)">Diseño 2: Dividido</button>
+        <button class="demo-btn" onclick="switchDesign(3)">Diseño 3: Minimal Dark</button>
+    </div>
+
+    <!-- DISEÑO 1: GLASSMORPHISM -->
+    <div id="design-1" class="login-screen active">
+        <div class="card-login">
+            <div class="logo-area">THE <span>HUB</span></div>
+            
+            <div id="alert1" class="alert-box">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="alertMsg1"></span>
+            </div>
+
+            <form onsubmit="handleLogin(event, 'user1', 'pass1', 'alert1', 'alertMsg1')">
+                <div class="form-group">
+                    <label for="user1">Correo Corporativo</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="user1" placeholder="nombre@empresa.com" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pass1">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="pass1" placeholder="••••••••" required autocomplete="current-password">
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('pass1', this)"></i>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label><input type="checkbox" id="remember1"> Recordarme</label>
+                    <a href="#" onclick="alert('Contacta al Administrador de TI para restablecer tu clave.'); return false;">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <span>Ingresar a la Intranet</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+
+                <div class="demo-credentials">
+                    <button type="button" class="btn-demo-quick" onclick="quickFill('sabina@empresa.com', 'User123!', 'user1', 'pass1')">👤 Usuario Demo</button>
+                    <button type="button" class="btn-demo-quick" onclick="quickFill('admin@empresa.com', 'Admin123!', 'user1', 'pass1')">⚙️ RRHH Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DISEÑO 2: SPLIT SCREEN -->
+    <div id="design-2" class="login-screen">
+        <div class="split-container">
+            <div class="split-left">
+                <div style="width: 100%; max-width: 380px;">
+                    <div class="logo-area" style="text-align: left;">THE <span>HUB</span></div>
+                    <p style="color: var(--texto-gris); font-size: 14px; margin-bottom: 25px;">Ingresa tus credenciales para acceder a la red privada.</p>
+                    
+                    <div id="alert2" class="alert-box">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="alertMsg2"></span>
+                    </div>
+
+                    <form onsubmit="handleLogin(event, 'user2', 'pass2', 'alert2', 'alertMsg2')">
+                        <div class="form-group">
+                            <label for="user2">Correo Corporativo</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="email" id="user2" placeholder="usuario@empresa.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pass2">Contraseña</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="pass2" placeholder="••••••••" required>
+                                <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('pass2', this)"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label><input type="checkbox"> Recordarme</label>
+                            <a href="#">¿Ayuda?</a>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Iniciar Sesión</button>
+                    </form>
+                </div>
+            </div>
+            <div class="split-right">
+                <h2>Plataforma <span>Power</span></h2>
+                <p>Conectando al equipo, impulsando el crecimiento y compartiendo metas en un solo lugar.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DISEÑO 3: MINIMAL DARK -->
+    <div id="design-3" class="login-screen">
+        <div class="minimal-login">
+            <div class="logo-area">THE <span>HUB</span></div>
+            
+            <div id="alert3" class="alert-box">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="alertMsg3"></span>
+            </div>
+
+            <form onsubmit="handleLogin(event, 'user3', 'pass3', 'alert3', 'alertMsg3')">
+                <div class="form-group">
+                    <label for="user3">Correo Corporativo</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="user3" placeholder="ejemplo@empresa.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pass3">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="pass3" placeholder="••••••••" required>
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('pass3', this)"></i>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label><input type="checkbox"> Mantener sesión activa</label>
+                    <a href="#">Recuperar clave</a>
+                </div>
+
+                <button type="submit" class="btn-submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchDesign(designId) {
+            document.querySelectorAll('.login-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('design-' + designId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function togglePasswordVisibility(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function quickFill(email, password, userElemId, passElemId) {
+            document.getElementById(userElemId).value = email;
+            document.getElementById(passElemId).value = password;
+        }
+
+        async function handleLogin(e, userElemId, passElemId, alertId, alertMsgId) {
+            e.preventDefault();
+            const email = document.getElementById(userElemId).value.trim();
+            const password = document.getElementById(passElemId).value;
+            const alertBox = document.getElementById(alertId);
+            const alertMsg = document.getElementById(alertMsgId);
+
+            alertBox.className = 'alert-box';
+            alertBox.style.display = 'none';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alertBox.className = 'alert-box error';
+                    alertMsg.textContent = data.detail || 'Error al iniciar sesión';
+                    alertBox.style.display = 'flex';
+                    return;
+                }
+
+                // Login Success
+                alertBox.className = 'alert-box success';
+                alertMsg.textContent = '¡Sesión iniciada con éxito! Redireccionando...';
+                alertBox.style.display = 'flex';
+
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_role', data.user.role);
+                localStorage.setItem('user_name', data.user.full_name);
+
+                setTimeout(() => {
+                    if (data.user.role === 'admin' || data.user.role === 'rrhh') {
+                        window.location.href = '/admin';
+                    } else {
+                        window.location.href = '/';
+                    }
+                }, 800);
+
+            } catch (err) {
+                alertBox.className = 'alert-box error';
+                alertMsg.textContent = 'Error de conexión con el servidor.';
+                alertBox.style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>
