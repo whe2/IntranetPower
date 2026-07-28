@@ -22,87 +22,110 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
-# Simple Rate Limiting for Login (Brute Force Protection)
-# Maps IP -> list of failed attempt timestamps
+# Rate Limiting anti fuerza bruta — IP -> lista de timestamps de intentos fallidos
 LOGIN_ATTEMPTS: Dict[str, list] = {}
 MAX_LOGIN_ATTEMPTS = 5
-LOCKOUT_TIME_SECONDS = 300 # 5 minutes lockout
+LOCKOUT_TIME_SECONDS = 300  # 5 minutos de bloqueo
+
 
 def is_rate_limited(ip_address: str) -> bool:
     now = time.time()
     attempts = LOGIN_ATTEMPTS.get(ip_address, [])
-    # Filter attempts within lockout window
-    recent_attempts = [t for t in attempts if now - t < LOCKOUT_TIME_SECONDS]
-    LOGIN_ATTEMPTS[ip_address] = recent_attempts
-    return len(recent_attempts) >= MAX_LOGIN_ATTEMPTS
+    recent = [t for t in attempts if now - t < LOCKOUT_TIME_SECONDS]
+    LOGIN_ATTEMPTS[ip_address] = recent
+    return len(recent) >= MAX_LOGIN_ATTEMPTS
+
 
 def record_failed_attempt(ip_address: str):
     now = time.time()
-    if ip_address not in LOGIN_ATTEMPTS:
-        LOGIN_ATTEMPTS[ip_address] = []
-    LOGIN_ATTEMPTS[ip_address].append(now)
+    LOGIN_ATTEMPTS.setdefault(ip_address, []).append(now)
+
 
 def clear_failed_attempts(ip_address: str):
-    if ip_address in LOGIN_ATTEMPTS:
-        del LOGIN_ATTEMPTS[ip_address]
+    LOGIN_ATTEMPTS.pop(ip_address, None)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_token_from_request(request: Request, bearer_token: Optional[str] = Depends(oauth2_scheme)) -> Optional[str]:
-    # 1. Try Cookie
-    token = request.cookies.get("access_token")
-    if token:
-        if token.startswith("Bearer "):
-            return token[7:]
-        return token
-    # 2. Try Authorization Header
-    if bearer_token:
-        return bearer_token
+
+def _extract_token_from_request(request: Request) -> Optional[str]:
+    """
+    Extrae el token JWT desde:
+    1. Cookie HTTP-Only 'access_token'
+    2. Header Authorization: Bearer <token>
+    Llamada como función pura (sin Depends).
+    """
+    # Prioridad 1: cookie
+    cookie_val = request.cookies.get("access_token")
+    if cookie_val:
+        return cookie_val[len("Bearer "):] if cookie_val.startswith("Bearer ") else cookie_val
+
+    # Prioridad 2: header Authorization
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header[len("Bearer "):]
+
     return None
 
-def get_current_user(request: Request, db: Session = Depends(get_db)) -> models.User:
-    token = get_token_from_request(request)
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No se encontró token de autenticación",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+
+def get_token_from_request(request: Request) -> Optional[str]:
+    """Alias público para uso directo (sin Depends)."""
+    return _extract_token_from_request(request)
+
+
+def _decode_token(token: str) -> str:
+    """Decodifica un JWT y retorna el email del sujeto. Lanza HTTPException si es inválido."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        email: Optional[str] = payload.get("sub")
+        if not email:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido (sin sujeto)",
+                detail="Token invalido: sin sujeto.",
             )
+        return email
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token de acceso inválido o expirado",
+            detail="Token de acceso invalido o expirado.",
         )
+
+
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> models.User:
+    """
+    Dependencia FastAPI para obtener el usuario autenticado.
+    Compatible con llamada directa (sin Depends) desde rutas HTML.
+    """
+    token = _extract_token_from_request(request)
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No se encontro token de autenticacion.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    email = _decode_token(token)
 
     user = db.query(models.User).filter(models.User.email == email).first()
     if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario inactivo o no encontrado",
+            detail="Usuario inactivo o no encontrado.",
         )
     return user
+
 
 def require_admin(current_user: models.User = Depends(get_current_user)) -> models.User:
     if current_user.role not in ["admin", "rrhh"]:
