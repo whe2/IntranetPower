@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,7 +43,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .navbar .logo {
@@ -53,7 +54,9 @@
             gap: 10px;
         }
 
-        .navbar .logo span { color: var(--acento); }
+        .navbar .logo span {
+            color: var(--acento);
+        }
 
         .navbar .admin-badge {
             background-color: var(--acento);
@@ -80,7 +83,10 @@
             font-weight: 600;
             transition: background 0.2s;
         }
-        .btn-view-site:hover { background: #475569; }
+
+        .btn-view-site:hover {
+            background: #475569;
+        }
 
         .btn-logout {
             background: transparent;
@@ -95,7 +101,7 @@
 
         /* HERO CONFIG */
         .hero {
-            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
             color: var(--blanco);
             padding: 35px 30px;
         }
@@ -112,6 +118,31 @@
             grid-template-columns: 2fr 1fr auto;
             gap: 15px;
             align-items: end;
+        }
+
+        /* FAST LINKS */
+        .fast-links {
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 16px;
+            border-bottom: 3px solid var(--acento);
+        }
+
+        .fast-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .fast-links a:hover {
+            color: var(--acento);
         }
 
         /* FORMS */
@@ -183,7 +214,7 @@
             background-color: var(--blanco);
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             margin-bottom: 25px;
             border: 1px solid #e2e8f0;
         }
@@ -221,7 +252,10 @@
             font-size: 14px;
             transition: transform 0.2s;
         }
-        .uploaded-item i.delete-btn:hover { transform: scale(1.2); }
+
+        .uploaded-item i.delete-btn:hover {
+            transform: scale(1.2);
+        }
 
         /* TOAST */
         .toast {
@@ -235,17 +269,31 @@
             font-weight: 600;
             z-index: 10000;
             display: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        .toast.success { background-color: var(--exito); display: block; }
-        .toast.error { background-color: var(--error); display: block; }
+
+        .toast.success {
+            background-color: var(--exito);
+            display: block;
+        }
+
+        .toast.error {
+            background-color: var(--error);
+            display: block;
+        }
 
         @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-            .hero-form { grid-template-columns: 1fr; }
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div id="toast" class="toast"></div>
@@ -267,7 +315,8 @@
         <form class="hero-form" onsubmit="updateHero(event)">
             <div class="form-group" style="margin:0;">
                 <label style="color:#e2e8f0;">Texto del Título Destacado</label>
-                <input type="text" id="heroTitleInput" class="form-control" placeholder="Ej. ¡Revisa las últimas noticias corporativas!">
+                <input type="text" id="heroTitleInput" class="form-control"
+                    placeholder="Ej. ¡Revisa las últimas noticias corporativas!">
             </div>
             <div class="form-group" style="margin:0;">
                 <label style="color:#e2e8f0;">Imagen de Fondo (Archivo JPG/PNG)</label>
@@ -277,8 +326,17 @@
         </form>
     </header>
 
+    <div class="fast-links">
+        <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+        <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
+        <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
+    </div>
+
     <main class="main-container">
-        
+
         <!-- COLUMNA 1: GESTIÓN DE RECURSOS -->
         <section>
             <div class="card">
@@ -286,7 +344,8 @@
                 <form onsubmit="uploadResource(event)">
                     <div class="form-group">
                         <label>Nombre del Recurso / Plantilla</label>
-                        <input type="text" id="resTitle" class="form-control" placeholder="Ej. Solicitud de Permiso Laboral" required>
+                        <input type="text" id="resTitle" class="form-control"
+                            placeholder="Ej. Solicitud de Permiso Laboral" required>
                     </div>
                     <div class="form-group">
                         <label>Categoría</label>
@@ -305,7 +364,8 @@
                 </form>
 
                 <div class="uploaded-list">
-                    <label style="font-weight:700; margin-bottom:8px; display:block; color:#334155;">Documentos Publicados Activos:</label>
+                    <label style="font-weight:700; margin-bottom:8px; display:block; color:#334155;">Documentos
+                        Publicados Activos:</label>
                     <div id="resourcesList">
                         <!-- Dinámico -->
                     </div>
@@ -325,13 +385,15 @@
                     </div>
                     <div class="form-group">
                         <label>Cargo / Puesto</label>
-                        <input type="text" id="empPosition" class="form-control" placeholder="Ej. Coordinador de TI" required>
+                        <input type="text" id="empPosition" class="form-control" placeholder="Ej. Coordinador de TI"
+                            required>
                     </div>
                     <div class="form-group">
                         <label>Foto de Perfil (JPG/PNG)</label>
                         <input type="file" id="empPhoto" class="form-control" accept="image/*">
                     </div>
-                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en Directorio</button>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en
+                        Directorio</button>
                 </form>
             </div>
 
@@ -374,7 +436,8 @@
                         <label>Foto del Empleado</label>
                         <input type="file" id="bdayPhoto" class="form-control" accept="image/*">
                     </div>
-                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleañero Destacado</button>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleañero
+                        Destacado</button>
                 </form>
             </div>
 
@@ -388,7 +451,8 @@
                     </div>
                     <div class="form-group">
                         <label>Título del Evento</label>
-                        <input type="text" id="calTitle" class="form-control" placeholder="Ej. Reunión General de Personal" required>
+                        <input type="text" id="calTitle" class="form-control"
+                            placeholder="Ej. Reunión General de Personal" required>
                     </div>
                     <button type="submit" class="btn-action" style="width:100%;">Destacar Día en Calendario</button>
                 </form>
@@ -415,7 +479,7 @@
                 }
                 const data = await res.json();
                 renderResourcesList(data);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function renderResourcesList(list) {
@@ -478,7 +542,7 @@
                     showToast('Documento eliminado.');
                     loadAdminData();
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         async function addEmployee(e) {
@@ -539,7 +603,7 @@
             try {
                 const res = await fetch('/api/rrhh/birthday', { method: 'POST', body: formData });
                 if (res.ok) showToast('Cumpleañero destacado guardado.');
-            } catch (e) {}
+            } catch (e) { }
         }
 
         async function addCalendarEvent(e) {
@@ -554,7 +618,7 @@
                     body: JSON.stringify({ day: parseInt(day), title: title })
                 });
                 if (res.ok) showToast('Evento registrado en calendario.');
-            } catch (e) {}
+            } catch (e) { }
         }
 
         async function logout() {
@@ -566,4 +630,5 @@
         window.addEventListener('DOMContentLoaded', loadAdminData);
     </script>
 </body>
+
 </html>

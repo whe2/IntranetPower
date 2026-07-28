@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +9,11 @@
     <style>
         /* --- VARIABLES DE COLOR (MISMA PALETA BLACK AND GOLD ELEGANCE) --- */
         :root {
-            --fondo-principal: #E5E5E5; 
+            --fondo-principal: #E5E5E5;
             --blanco: #FFFFFF;
-            --cabeceras: #14213D;       
-            --acento: #FCA311;          
-            --texto-negro: #000000;     
+            --cabeceras: #14213D;
+            --acento: #FCA311;
+            --texto-negro: #000000;
         }
 
         * {
@@ -68,7 +69,7 @@
 
         /* --- 2. PANEL PRINCIPAL (HERO CONFIGURABLE) --- */
         .hero {
-            background: linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            background: linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
             color: var(--blanco);
             padding: 40px 30px;
         }
@@ -152,7 +153,7 @@
             background-color: var(--blanco);
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
         }
 
@@ -192,11 +193,17 @@
 
         /* --- RESPONSIVE --- */
         @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-            .hero-form { grid-template-columns: 1fr; }
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- 1. BARRA SUPERIOR -->
@@ -228,7 +235,7 @@
 
     <!-- CONTAINER PRINCIPAL EN 3 COLUMNAS -->
     <main class="main-container">
-        
+
         <!-- COLUMNA 1: GESTIÓN DE RECURSOS Y ARCHIVOS -->
         <section>
             <div class="card">
@@ -257,7 +264,8 @@
                 </form>
 
                 <div class="uploaded-list">
-                    <label class="form-label" style="font-weight:bold; margin-bottom:5px; display:block;">Recursos Visibles Actuales:</label>
+                    <label class="form-label" style="font-weight:bold; margin-bottom:5px; display:block;">Recursos
+                        Visibles Actuales:</label>
                     <div class="uploaded-item">
                         <span>📄 Manual_Empleado_2026.pdf</span>
                         <i class="fa-solid fa-trash delete-btn" title="Eliminar"></i>
@@ -359,4 +367,5 @@
     </main>
 
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,7 +42,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .navbar .logo {
@@ -68,7 +69,10 @@
             outline: none;
             font-size: 13px;
         }
-        .navbar .search-bar input::placeholder { color: #94a3b8; }
+
+        .navbar .search-bar input::placeholder {
+            color: #94a3b8;
+        }
 
         .navbar .user-menu {
             display: flex;
@@ -83,16 +87,20 @@
             color: #cbd5e1;
             transition: color 0.2s;
         }
-        .navbar .user-menu i:hover { color: var(--acento); }
+
+        .navbar .user-menu i:hover {
+            color: var(--acento);
+        }
 
         .user-badge {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             padding: 5px 12px;
             border-radius: 20px;
         }
+
         .user-avatar {
             width: 32px;
             height: 32px;
@@ -111,7 +119,10 @@
             font-size: 12px;
             transition: background 0.2s;
         }
-        .btn-admin-nav:hover { background: var(--acento-hover); }
+
+        .btn-admin-nav:hover {
+            background: var(--acento-hover);
+        }
 
         .btn-logout {
             background: transparent;
@@ -124,11 +135,15 @@
             font-weight: 600;
             transition: all 0.2s;
         }
-        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        .btn-logout:hover {
+            background: #ef4444;
+            color: #fff;
+        }
 
         /* HERO BANNER */
         .hero {
-            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200') center/cover;
+            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
             color: var(--blanco);
             padding: 60px 40px;
             text-align: left;
@@ -196,7 +211,7 @@
             background-color: var(--blanco);
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             margin-bottom: 25px;
             border: 1px solid #e2e8f0;
         }
@@ -240,13 +255,19 @@
             display: block;
             transition: transform 0.2s, filter 0.2s;
         }
+
         .btn-resource:hover {
             transform: translateY(-2px);
             filter: brightness(1.1);
         }
 
-        .btn-navy { background-color: var(--cabeceras); }
-        .btn-gray { background-color: #475569; }
+        .btn-navy {
+            background-color: var(--cabeceras);
+        }
+
+        .btn-gray {
+            background-color: #475569;
+        }
 
         /* CARRUSEL DE EMPLEADOS */
         .employee-carousel {
@@ -269,7 +290,7 @@
             object-fit: cover;
             border: 3px solid var(--acento);
             margin-bottom: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .employee-card span {
@@ -297,7 +318,9 @@
             border-radius: 8px;
         }
 
-        .kpi-card.alt { background-color: #1e293b; }
+        .kpi-card.alt {
+            background-color: #1e293b;
+        }
 
         .kpi-card .kpi-title {
             font-size: 14px;
@@ -312,7 +335,10 @@
         }
 
         /* CALENDARIO */
-        .calendar-wrapper { width: 100%; }
+        .calendar-wrapper {
+            width: 100%;
+        }
+
         .calendar-header-month {
             text-align: center;
             font-weight: 700;
@@ -329,7 +355,11 @@
             font-size: 12px;
         }
 
-        .calendar-day-name { font-weight: 700; color: #64748b; padding-bottom: 5px; }
+        .calendar-day-name {
+            font-weight: 700;
+            color: #64748b;
+            padding-bottom: 5px;
+        }
 
         .calendar-day {
             padding: 8px 0;
@@ -365,8 +395,16 @@
             border: 2px solid var(--acento);
         }
 
-        .birthday-info h4 { font-size: 14px; color: var(--cabeceras); font-weight: 700; }
-        .birthday-info p { font-size: 13px; color: #475569; }
+        .birthday-info h4 {
+            font-size: 14px;
+            color: var(--cabeceras);
+            font-weight: 700;
+        }
+
+        .birthday-info p {
+            font-size: 13px;
+            color: #475569;
+        }
 
         .feedback-form textarea {
             width: 100%;
@@ -390,7 +428,10 @@
             font-weight: 600;
             transition: background 0.2s;
         }
-        .feedback-form button:hover { background-color: #1e293b; }
+
+        .feedback-form button:hover {
+            background-color: #1e293b;
+        }
 
         /* CHAT WIDGET */
         .chat-widget {
@@ -411,11 +452,13 @@
             color: var(--texto-negro);
             font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
             transition: transform 0.2s;
         }
 
-        .chat-button:hover { transform: scale(1.08); }
+        .chat-button:hover {
+            transform: scale(1.08);
+        }
 
         .chat-window {
             display: none;
@@ -423,7 +466,7 @@
             height: 420px;
             background-color: var(--blanco);
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             flex-direction: column;
             overflow: hidden;
             position: absolute;
@@ -460,6 +503,7 @@
             border: 1px solid #e2e8f0;
             max-width: 90%;
         }
+
         .chat-msg.mine {
             align-self: flex-end;
             background: #fef3c7;
@@ -483,23 +527,31 @@
         }
 
         @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-            .navbar .search-bar { display: none; }
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar .search-bar {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <nav class="navbar">
         <div class="logo">THE <span>HUB</span></div>
         <div class="search-bar">
-            <input type="text" id="globalSearch" placeholder="Buscar documentos, personas, recursos..." oninput="filterResources()">
+            <input type="text" id="globalSearch" placeholder="Buscar documentos, personas, recursos..."
+                oninput="filterResources()">
         </div>
         <div class="user-menu">
             <i class="fa-solid fa-comment-dots" onclick="toggleChat()" title="Abrir Chat Interno"></i>
             <i class="fa-solid fa-bell" title="Notificaciones"></i>
             <div class="user-badge">
-                <img id="userNavAvatar" class="user-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="Usuario">
+                <img id="userNavAvatar" class="user-avatar"
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="Usuario">
                 <span id="userNavName">Cargando...</span>
             </div>
             <a id="adminNavBtn" href="/admin" class="btn-admin-nav" style="display:none;">⚙️ Panel RRHH</a>
@@ -514,19 +566,21 @@
 
     <div class="fast-links">
         <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
-        <a href="#equipoSec"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
         <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
-        <a href="#metricasSec"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
-        <a href="#recursosSec"><i class="fa-solid fa-users"></i> RRHH</a>
+        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
+        <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
     </div>
 
     <main class="main-container">
-        
+
         <!-- COLUMNA 1: RECURSOS -->
         <section id="recursosSec">
             <div class="card">
                 <div class="section-title">Top Recursos</div>
-                <input type="text" id="resourceFilter" class="search-templates" placeholder="Filtrar Formularios y Plantillas" oninput="renderFilteredResources()">
+                <input type="text" id="resourceFilter" class="search-templates"
+                    placeholder="Filtrar Formularios y Plantillas" oninput="renderFilteredResources()">
                 <div class="resource-grid" id="resourceContainer">
                     <!-- Dinámico -->
                 </div>
@@ -564,16 +618,45 @@
                         <div class="calendar-day-name">V</div>
                         <div class="calendar-day-name">S</div>
                         <div class="calendar-day-name">D</div>
-                        <div class="calendar-day"></div><div class="calendar-day"></div><div class="calendar-day">1</div><div class="calendar-day">2</div><div class="calendar-day">3</div><div class="calendar-day">4</div><div class="calendar-day">5</div>
-                        <div class="calendar-day">6</div><div class="calendar-day">7</div><div class="calendar-day">8</div><div class="calendar-day">9</div><div class="calendar-day">10</div><div class="calendar-day">11</div><div class="calendar-day">12</div>
-                        <div class="calendar-day">13</div><div class="calendar-day">14</div><div class="calendar-day active" id="activeDay">15</div><div class="calendar-day">16</div><div class="calendar-day">17</div><div class="calendar-day">18</div><div class="calendar-day">19</div>
-                        <div class="calendar-day">20</div><div class="calendar-day">21</div><div class="calendar-day">22</div><div class="calendar-day">23</div><div class="calendar-day">24</div><div class="calendar-day">25</div><div class="calendar-day">26</div>
-                        <div class="calendar-day">27</div><div class="calendar-day">28</div><div class="calendar-day">29</div><div class="calendar-day">30</div><div class="calendar-day">31</div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day">1</div>
+                        <div class="calendar-day">2</div>
+                        <div class="calendar-day">3</div>
+                        <div class="calendar-day">4</div>
+                        <div class="calendar-day">5</div>
+                        <div class="calendar-day">6</div>
+                        <div class="calendar-day">7</div>
+                        <div class="calendar-day">8</div>
+                        <div class="calendar-day">9</div>
+                        <div class="calendar-day">10</div>
+                        <div class="calendar-day">11</div>
+                        <div class="calendar-day">12</div>
+                        <div class="calendar-day">13</div>
+                        <div class="calendar-day">14</div>
+                        <div class="calendar-day active" id="activeDay">15</div>
+                        <div class="calendar-day">16</div>
+                        <div class="calendar-day">17</div>
+                        <div class="calendar-day">18</div>
+                        <div class="calendar-day">19</div>
+                        <div class="calendar-day">20</div>
+                        <div class="calendar-day">21</div>
+                        <div class="calendar-day">22</div>
+                        <div class="calendar-day">23</div>
+                        <div class="calendar-day">24</div>
+                        <div class="calendar-day">25</div>
+                        <div class="calendar-day">26</div>
+                        <div class="calendar-day">27</div>
+                        <div class="calendar-day">28</div>
+                        <div class="calendar-day">29</div>
+                        <div class="calendar-day">30</div>
+                        <div class="calendar-day">31</div>
                     </div>
                 </div>
 
                 <div class="birthday-card" id="birthdayCard">
-                    <img id="birthdayPhoto" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100" alt="Cumpleañero">
+                    <img id="birthdayPhoto" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100"
+                        alt="Cumpleañero">
                     <div class="birthday-info">
                         <h4>🎉 Próximo Cumpleaños</h4>
                         <p><strong id="birthdayName">Carlos Mendoza</strong></p>
@@ -585,7 +668,8 @@
             <div class="card">
                 <div class="section-title">Feedback</div>
                 <form class="feedback-form" onsubmit="submitFeedback(event)">
-                    <textarea id="feedbackText" placeholder="¿Falta algo en esta intranet? ¡Cuéntanos!" required></textarea>
+                    <textarea id="feedbackText" placeholder="¿Falta algo en esta intranet? ¡Cuéntanos!"
+                        required></textarea>
                     <button type="submit">Enviar Comentarios</button>
                 </form>
             </div>
@@ -747,7 +831,7 @@
                     });
                     chatBody.scrollTop = chatBody.scrollHeight;
                 }
-            } catch (err) {}
+            } catch (err) { }
         }
 
         async function checkSend(e) {
@@ -766,7 +850,7 @@
                         input.value = '';
                         loadChatMessages();
                     }
-                } catch (err) {}
+                } catch (err) { }
             }
         }
 
@@ -793,4 +877,5 @@
         window.addEventListener('DOMContentLoaded', loadDashboard);
     </script>
 </body>
+
 </html>

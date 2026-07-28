@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --fondo-principal: #0f172a;
+            --fondo-principal: #ffffff;
             --blanco: #ffffff;
-            --cabeceras: #1e293b;
+            --cabeceras: #f8fafc;
             --acento: #f59e0b;
             --acento-hover: #d97706;
             --texto-negro: #0f172a;
-            --texto-gris: #94a3b8;
+            --texto-gris: #64748b;
             --error: #ef4444;
             --exito: #10b981;
         }
@@ -46,7 +47,7 @@
             align-items: center;
             justify-content: center;
             padding: 50px 40px;
-            background: #0f172a;
+            background: var(--fondo-principal);
         }
 
         .form-wrapper {
@@ -58,7 +59,7 @@
         .logo-area {
             font-size: 34px;
             font-weight: 700;
-            color: var(--blanco);
+            color: var(--texto-negro);
             margin-bottom: 6px;
             letter-spacing: 1px;
         }
@@ -145,10 +146,10 @@
         .form-group input {
             width: 100%;
             padding: 12px 42px;
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: var(--cabeceras);
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
-            color: var(--blanco);
+            color: var(--texto-negro);
             font-size: 14px;
             outline: none;
             transition: border-color 0.25s, box-shadow 0.25s;
@@ -203,7 +204,7 @@
             width: 100%;
             padding: 13px;
             background: linear-gradient(135deg, var(--acento), var(--acento-hover));
-            color: var(--texto-negro);
+            color: #ffffff;
             border: none;
             border-radius: 8px;
             font-size: 15px;
@@ -230,14 +231,16 @@
             display: none;
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(0,0,0,0.3);
+            border: 2px solid rgba(0, 0, 0, 0.3);
             border-top-color: #000;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Credenciales de demo */
@@ -251,9 +254,9 @@
         }
 
         .btn-demo-quick {
-            background: #1e293b;
-            color: #94a3b8;
-            border: 1px solid #334155;
+            background: var(--cabeceras);
+            color: var(--texto-gris);
+            border: 1px solid #cbd5e1;
             padding: 7px 14px;
             border-radius: 6px;
             font-size: 12px;
@@ -262,17 +265,16 @@
         }
 
         .btn-demo-quick:hover {
-            background: #334155;
-            color: var(--blanco);
+            background: #e2e8f0;
+            color: var(--texto-negro);
         }
 
         /* Lado derecho: imagen de fondo con contenido */
         .split-right {
             flex: 1.3;
             background:
-                linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.85)),
-                url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1400')
-                center / cover no-repeat;
+                linear-gradient(rgba(15, 23, 42, 0.418), rgba(15, 23, 42, 0.85)),
+                url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center / cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -357,15 +359,18 @@
             .split-right {
                 display: none;
             }
+
             body {
                 overflow: auto;
             }
+
             .split-left {
                 padding: 30px 24px;
             }
         }
     </style>
 </head>
+
 <body>
 
     <div class="split-container">
@@ -374,7 +379,7 @@
         <div class="split-left">
             <div class="form-wrapper">
 
-                <div class="logo-area">THE <span>HUB</span></div>
+                <div class="logo-area">POWER LINK<span> CORP</span></div>
                 <p class="subtitle">Ingresa tus credenciales corporativas para acceder.</p>
 
                 <div id="alertBox" class="alert-box">
@@ -388,14 +393,8 @@
                         <label for="email">Correo Corporativo</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-envelope input-icon"></i>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                placeholder="nombre@empresa.com"
-                                required
-                                autocomplete="username"
-                            >
+                            <input type="email" id="email" name="email" placeholder="nombre@empresa.com" required
+                                autocomplete="username">
                         </div>
                     </div>
 
@@ -403,20 +402,10 @@
                         <label for="password">Contraseña</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock input-icon"></i>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="••••••••"
-                                required
-                                autocomplete="current-password"
-                            >
-                            <i
-                                class="fa-solid fa-eye toggle-password"
-                                id="toggleBtn"
-                                onclick="togglePassword()"
-                                title="Mostrar / ocultar contraseña"
-                            ></i>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required
+                                autocomplete="current-password">
+                            <i class="fa-solid fa-eye toggle-password" id="toggleBtn" onclick="togglePassword()"
+                                title="Mostrar / ocultar contraseña"></i>
                         </div>
                     </div>
 
@@ -424,7 +413,8 @@
                         <label>
                             <input type="checkbox" id="remember"> Recordarme
                         </label>
-                        <a href="#" onclick="alert('Contacta al Administrador de TI para restablecer tu clave.'); return false;">
+                        <a href="#"
+                            onclick="alert('Contacta al Administrador de TI para restablecer tu clave.'); return false;">
                             ¿Olvidaste tu contraseña?
                         </a>
                     </div>
@@ -454,7 +444,7 @@
             <div class="badge">Plataforma Corporativa</div>
             <h2>Conectados.<br>Organizados.<br><span>En un solo lugar.</span></h2>
             <p>
-                THE HUB centraliza todo lo que tu equipo necesita: recursos, noticias, directorios,
+                POWER LINK CORP. centraliza todo lo que tu equipo necesita: recursos, noticias, directorios,
                 métricas y comunicación interna, accesible desde cualquier dispositivo de la red.
             </p>
             <div class="stats-row">
@@ -478,7 +468,7 @@
     <script>
         function togglePassword() {
             const input = document.getElementById('password');
-            const icon  = document.getElementById('toggleBtn');
+            const icon = document.getElementById('toggleBtn');
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
@@ -489,21 +479,21 @@
         }
 
         function quickFill(email, password) {
-            document.getElementById('email').value    = email;
+            document.getElementById('email').value = email;
             document.getElementById('password').value = password;
             document.getElementById('email').focus();
         }
 
         function setLoading(loading) {
-            const btn     = document.getElementById('submitBtn');
-            const text    = document.getElementById('btnText');
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('btnText');
             const spinner = document.getElementById('spinner');
-            const icon    = document.getElementById('btnIcon');
+            const icon = document.getElementById('btnIcon');
 
-            btn.disabled         = loading;
+            btn.disabled = loading;
             spinner.style.display = loading ? 'block' : 'none';
-            icon.style.display    = loading ? 'none'  : 'inline';
-            text.textContent      = loading ? 'Verificando...' : 'Iniciar Sesión';
+            icon.style.display = loading ? 'none' : 'inline';
+            text.textContent = loading ? 'Verificando...' : 'Iniciar Sesión';
         }
 
         function showAlert(message, type) {
@@ -521,7 +511,7 @@
             e.preventDefault();
             hideAlert();
 
-            const email    = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             setLoading(true);
@@ -531,10 +521,10 @@
                 formData.append('username', email);
                 formData.append('password', password);
 
-                const res  = await fetch('/api/auth/login', {
-                    method:  'POST',
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body:    formData,
+                    body: formData,
                 });
 
                 const data = await res.json();
@@ -547,14 +537,14 @@
 
                 showAlert('Sesion iniciada correctamente. Redireccionando...', 'success');
                 localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('user_role',    data.user.role);
-                localStorage.setItem('user_name',    data.user.full_name);
+                localStorage.setItem('user_role', data.user.role);
+                localStorage.setItem('user_name', data.user.full_name);
 
                 setTimeout(() => {
                     window.location.href =
                         (data.user.role === 'admin' || data.user.role === 'rrhh')
-                        ? '/admin'
-                        : '/';
+                            ? '/admin'
+                            : '/';
                 }, 800);
 
             } catch (err) {
@@ -564,4 +554,5 @@
         }
     </script>
 </body>
+
 </html>

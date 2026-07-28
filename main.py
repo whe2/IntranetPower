@@ -1,5 +1,7 @@
 import os
 import shutil
+import io
+import pandas as pd
 from typing import List, Optional
 from datetime import datetime
 from dotenv import load_dotenv
@@ -401,6 +403,225 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse(request, "rrhh.html", {"user": user})
     except HTTPException:
         return RedirectResponse(url="/login")
+
+@app.get("/integracion", response_class=HTMLResponse)
+async def integracion_page(request: Request, db: Session = Depends(get_db)):
+    token = security.get_token_from_request(request)
+    if not token:
+        return RedirectResponse(url="/login")
+    try:
+        user = security.get_current_user(request, db)
+        if user.role not in ["admin", "integracion", "rrhh"]:
+            return RedirectResponse(url="/")
+        return templates.TemplateResponse(request, "integracion.html", {"user": user})
+    except HTTPException:
+        return RedirectResponse(url="/login")
+
+def safe_date_str(val):
+    if pd.isna(val) or val == "":
+        return ""
+    if isinstance(val, datetime):
+        return val.strftime("%d/%m/%Y")
+    return str(val).split(" ")[0]
+
+@app.post("/api/integracion/procesar")
+async def procesar_auditoria(
+    request: Request,
+    db: Session = Depends(get_db),
+    fileOld: UploadFile = File(...),
+    fileNew: UploadFile = File(...),
+    fechaCorte: str = Form(...),
+    fechaInstalaciones: str = Form(...)
+):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+    content_old = await fileOld.read()
+    content_new = await fileNew.read()
+    
+    df_old = pd.read_excel(io.BytesIO(content_old))
+    df_new = pd.read_excel(io.BytesIO(content_new))
+    
+    df_old = df_old.fillna("")
+    df_new = df_new.fillna("")
+    
+    try:
+        corte_dt = datetime.strptime(fechaCorte, "%Y-%m-%d")
+    except:
+        corte_dt = datetime.min
+        
+    try:
+        inst_dt = datetime.strptime(fechaInstalaciones, "%Y-%m-%d")
+        inst_str = inst_dt.strftime("%d/%m/%Y")
+    except:
+        inst_str = ""
+
+    old_dict = {}
+    for _, row in df_old.iterrows():
+        sid = str(row.get('ID Servicio', '')).strip()
+        if sid:
+            old_dict[sid] = row
+
+    totalActivos = 0
+    totalSuspendidosFecha = 0
+    totalExoneradosEmp = 0
+    totalExoneradosReg = 0
+    
+    datosInstalaciones = []
+    datosCambiosPlan = []
+    datosSeguimiento = []
+    datosEstatus = []
+    datosDeudores = []
+
+    for _, row in df_new.iterrows():
+        sid = str(row.get('ID Servicio', '')).strip()
+        if not sid:
+            continue
+            
+        planNew = str(row.get('Plan', '')).strip()
+        tipoServicioNew = str(row.get('Tipo de servicio', '')).strip().upper()
+        
+        try:
+            costoDelPlanNew = float(row.get('Costo del plan', 0))
+        except:
+            costoDelPlanNew = 0.0
+            
+        if planNew.upper() == 'TV' or planNew.upper() == 'IPTV' or tipoServicioNew == 'IPTV':
+            continue
+            
+        estadoServicioNew = str(row.get('Estado servicio', '')).strip().upper()
+        
+        try:
+            saldoActual = float(row.get('Saldo actual', 0))
+        except:
+            saldoActual = 0.0
+            
+        raw_estado = row.get('Fecha última cambio de estado', '')
+        raw_plan = row.get('Plan actual desde', '')
+        raw_inst = row.get('Fecha de instalación', '')
+        
+        fechaEstadoFormat = safe_date_str(raw_estado)
+        fechaPlanDesdeFormat = safe_date_str(raw_plan)
+        fechaInstalacionFormat = safe_date_str(raw_inst)
+        
+        estado_dt = datetime.min
+        if fechaEstadoFormat:
+            try:
+                estado_dt = datetime.strptime(fechaEstadoFormat, "%d/%m/%Y")
+            except:
+                pass
+                
+        if estadoServicioNew == 'ACTIVO':
+            totalActivos += 1
+        elif estadoServicioNew == 'SUSPENDIDO':
+            if estado_dt >= corte_dt:
+                totalSuspendidosFecha += 1
+        elif estadoServicioNew == 'EXONERADO':
+            if planNew.lower().startswith('(emp)') or planNew.lower().startswith('emp'):
+                totalExoneradosEmp += 1
+            else:
+                totalExoneradosReg += 1
+                
+        if estadoServicioNew == 'ACTIVO' and fechaInstalacionFormat == inst_str:
+            if planNew.upper().startswith("3 MESES BENEFICIO"):
+                datosInstalaciones.append({
+                    'ID Servicio': sid,
+                    'Cédula': row.get('Cédula', ''),
+                    'Nombres': row.get('Nombres', ''),
+                    'Estado servicio': row.get('Estado servicio', ''),
+                    'Plan Instalado': row.get('Plan', ''),
+                    'Costo del plan': row.get('Costo del plan', ''),
+                    'Fecha de Instalación': fechaInstalacionFormat,
+                    'Urbanismo': row.get('Urbanismo', '')
+                })
+                
+        if estadoServicioNew == 'ACTIVO' and saldoActual < 0:
+            datosDeudores.append({
+                'ID Servicio': sid,
+                'Cédula': row.get('Cédula', ''),
+                'Nombres': row.get('Nombres', ''),
+                'Estado servicio': row.get('Estado servicio', ''),
+                'Saldo Actual (Deuda)': saldoActual,
+                'Plan': row.get('Plan', ''),
+                'Costo del plan': row.get('Costo del plan', ''),
+                'Fecha Último Cambio Estado': fechaEstadoFormat,
+                'Teléfono 1': row.get('Teléfono 1', '')
+            })
+            
+        row_old = old_dict.get(sid)
+        if row_old is not None:
+            planOld = str(row_old.get('Plan', '')).strip()
+            estatusOld = str(row_old.get('Estado servicio', '')).strip()
+            estatusNew = str(row.get('Estado servicio', '')).strip()
+            try:
+                costoOld = float(row_old.get('Costo del plan', 0))
+            except:
+                costoOld = 0.0
+                
+            if planOld != planNew:
+                datosCambiosPlan.append({
+                    'ID Servicio': sid,
+                    'Cédula': row.get('Cédula', ''),
+                    'Nombres': row.get('Nombres', ''),
+                    'Plan Anterior': row_old.get('Plan', ''),
+                    'Plan Nuevo': row.get('Plan', ''),
+                    'Costo Anterior': costoOld,
+                    'Costo Nuevo': costoDelPlanNew,
+                    'Estado Actual': row.get('Estado servicio', ''),
+                    'Fecha Plan Actual Desde': fechaPlanDesdeFormat 
+                })
+                
+            if planOld != planNew or estatusOld != estatusNew:
+                datosSeguimiento.append({
+                    'ID Servicio': sid,
+                    'Cédula': row.get('Cédula', ''),
+                    'Nombres': row.get('Nombres', ''),
+                    'Plan Anterior': row_old.get('Plan', ''),
+                    'Plan Nuevo': row.get('Plan', ''),
+                    'Costo Anterior': costoOld,
+                    'Costo Nuevo': costoDelPlanNew,
+                    'Estado Anterior': row_old.get('Estado servicio', ''),
+                    'Estado Nuevo': row.get('Estado servicio', ''),
+                    'Fecha Último Cambio Estado': fechaEstadoFormat,
+                    'Fecha Plan Actual Desde': fechaPlanDesdeFormat
+                })
+                
+            if estatusOld != estatusNew:
+                datosEstatus.append({
+                    'ID Servicio': sid,
+                    'Cédula': row.get('Cédula', ''),
+                    'Nombres': row.get('Nombres', ''),
+                    'Plan Actual': row.get('Plan', ''),
+                    'Costo del Plan (Actual)': costoDelPlanNew,
+                    'Estado Anterior': row_old.get('Estado servicio', ''),
+                    'Estado Nuevo': row.get('Estado servicio', ''),
+                    'Fecha Último Cambio Estado': fechaEstadoFormat
+                })
+
+    corte_str = f"{corte_dt.day:02d}/{corte_dt.month:02d}/{corte_dt.year}" if corte_dt != datetime.min else ""
+    
+    cuadroResumenFinal = [
+        { "Métrica Operativa (Sin IPTV)": "Clientes Activos Totales", "Cantidad": totalActivos },
+        { "Métrica Operativa (Sin IPTV)": f"Clientes Suspendidos (A partir del {corte_str})", "Cantidad": totalSuspendidosFecha },
+        { "Métrica Operativa (Sin IPTV)": "Clientes Exonerados - Empleados [emp]", "Cantidad": totalExoneradosEmp },
+        { "Métrica Operativa (Sin IPTV)": "Clientes Exonerados - Regulares", "Cantidad": totalExoneradosReg }
+    ]
+
+    return JSONResponse(content={
+        "resumen": cuadroResumenFinal,
+        "instalaciones": datosInstalaciones,
+        "cambiosPlan": datosCambiosPlan,
+        "seguimiento": datosSeguimiento,
+        "estatus": datosEstatus,
+        "deudores": datosDeudores,
+        "totales": {
+            "activos": totalActivos,
+            "suspendidos": totalSuspendidosFecha,
+            "exonEmp": totalExoneradosEmp,
+            "exonReg": totalExoneradosReg
+        }
+    })
 
 if __name__ == "__main__":
     import uvicorn
