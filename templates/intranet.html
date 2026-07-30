@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intranet - The Hub Corporate</title>
+    <title>Intranet - POWER LINK CORP.</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -541,7 +541,7 @@
 <body>
 
     <nav class="navbar">
-        <div class="logo">THE <span>HUB</span></div>
+        <div class="logo">POWER LINK <span>CORP.</span></div>
         <div class="search-bar">
             <input type="text" id="globalSearch" placeholder="Buscar documentos, personas, recursos..."
                 oninput="filterResources()">
@@ -551,7 +551,8 @@
             <i class="fa-solid fa-bell" title="Notificaciones"></i>
             <div class="user-badge">
                 <img id="userNavAvatar" class="user-avatar"
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" alt="Usuario">
+                    src="{{ user.avatar_url or 'https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png' }}"
+                    alt="Usuario">
                 <span id="userNavName">Cargando...</span>
             </div>
             <a id="adminNavBtn" href="/admin" class="btn-admin-nav" style="display:none;">⚙️ Panel RRHH</a>
@@ -655,7 +656,8 @@
                 </div>
 
                 <div class="birthday-card" id="birthdayCard">
-                    <img id="birthdayPhoto" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100"
+                    <img id="birthdayPhoto"
+                        src="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png"
                         alt="Cumpleañero">
                     <div class="birthday-info">
                         <h4>🎉 Próximo Cumpleaños</h4>
@@ -735,7 +737,7 @@
                     const div = document.createElement('div');
                     div.className = 'employee-card';
                     div.innerHTML = `
-                        <img src="${emp.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}" alt="${emp.name}">
+                        <img src="${emp.photo_url || 'https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png'}" alt="${emp.name}">
                         <span>${emp.name}</span>
                     `;
                     empContainer.appendChild(div);

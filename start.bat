@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title THE HUB - Intranet Server
+title POWER LINK CORP. - Intranet Server
 echo.
 echo ============================================
-echo   THE HUB - Servidor de Intranet Corporativa
+echo   POWER LINK CORP. - Servidor de Intranet Corporativa
 echo ============================================
 echo.
 echo [*] Iniciando servidor FastAPI en http://127.0.0.1:8000

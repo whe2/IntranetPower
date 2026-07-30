@@ -58,9 +58,9 @@
             color: var(--acento);
         }
 
-        .navbar .admin-badge {
+        .navbar .logo span.admin-badge {
             background-color: var(--acento);
-            color: var(--texto-negro);
+            color: #000000;
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 12px;
@@ -282,6 +282,49 @@
             display: block;
         }
 
+        /* TABS INTEGRADOS EN NAVBAR */
+        .tabs-nav-integrated {
+            display: flex;
+            gap: 20px;
+        }
+
+        .tabs-nav-integrated .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 5px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .tabs-nav-integrated .tab-btn:hover {
+            color: var(--blanco);
+        }
+
+        .tabs-nav-integrated .tab-btn.active {
+            color: var(--acento);
+            border-bottom: 3px solid var(--acento);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .iframe-preview {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: none;
+            display: block;
+        }
+
         @media (max-width: 900px) {
             .main-container {
                 grid-template-columns: 1fr;
@@ -301,167 +344,213 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <div class="logo">
-            THE <span>HUB</span> <span class="admin-badge">Panel Gestor R.R.H.H.</span>
+            POWER LINK <span>CORP.</span> <span class="admin-badge">Panel Gestor R.R.H.H.</span>
         </div>
+
+        <div class="tabs-nav-integrated">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-gestion')"><i class="fa-solid fa-gear"></i>
+                Gestión de Contenidos</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-vista')"><i class="fa-solid fa-eye"></i> Vista
+                Empleado</button>
+        </div>
+
         <div class="user-menu">
-            <a href="/" class="btn-view-site"><i class="fa-solid fa-globe"></i> Ver Intranet</a>
             <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
         </div>
     </nav>
 
-    <!-- BANNER HERO CONFIG -->
-    <header class="hero">
-        <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
-        <form class="hero-form" onsubmit="updateHero(event)">
-            <div class="form-group" style="margin:0;">
-                <label style="color:#e2e8f0;">Texto del Título Destacado</label>
-                <input type="text" id="heroTitleInput" class="form-control"
-                    placeholder="Ej. ¡Revisa las últimas noticias corporativas!">
-            </div>
-            <div class="form-group" style="margin:0;">
-                <label style="color:#e2e8f0;">Imagen de Fondo (Archivo JPG/PNG)</label>
-                <input type="file" id="heroImageInput" class="form-control" accept="image/*" style="background:#fff;">
-            </div>
-            <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
-        </form>
-    </header>
+    <!-- TAB GESTION -->
+    <div id="tab-gestion" class="tab-content active">
 
-    <div class="fast-links">
-        <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
-        <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
-        <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
-        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
-        <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
-        <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
-    </div>
+        <!-- BANNER HERO CONFIG -->
+        <header class="hero">
+            <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
+            <form class="hero-form" onsubmit="updateHero(event)">
+                <div class="form-group" style="margin:0;">
+                    <label style="color:#e2e8f0;">Texto del Título Destacado</label>
+                    <input type="text" id="heroTitleInput" class="form-control"
+                        placeholder="Ej. ¡Revisa las últimas noticias corporativas!">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label style="color:#e2e8f0;">Imagen de Fondo (Archivo JPG/PNG)</label>
+                    <input type="file" id="heroImageInput" class="form-control" accept="image/*"
+                        style="background:#fff;">
+                </div>
+                <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
+            </form>
+        </header>
 
-    <main class="main-container">
+        <div class="fast-links">
+            <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+            <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
+            <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+            <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+            <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
+            <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
+        </div>
 
-        <!-- COLUMNA 1: GESTIÓN DE RECURSOS -->
-        <section>
-            <div class="card">
-                <div class="section-title">📤 Cargar Recursos y Documentos PDF</div>
-                <form onsubmit="uploadResource(event)">
-                    <div class="form-group">
-                        <label>Nombre del Recurso / Plantilla</label>
-                        <input type="text" id="resTitle" class="form-control"
-                            placeholder="Ej. Solicitud de Permiso Laboral" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <select id="resCategory" class="form-control">
-                            <option value="Solicitudes">Solicitudes</option>
-                            <option value="Aplicaciones">Aplicaciones</option>
-                            <option value="Plantillas">Plantillas</option>
-                            <option value="Manual Empleado">Manual Empleado</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Archivo (PDF / DOCX / ZIP)</label>
-                        <input type="file" id="resFile" class="form-control" accept=".pdf,.docx,.zip,.xlsx" required>
-                    </div>
-                    <button type="submit" class="btn-action" style="width:100%;">Subir y Publicar Documento</button>
-                </form>
+        <main class="main-container">
 
-                <div class="uploaded-list">
-                    <label style="font-weight:700; margin-bottom:8px; display:block; color:#334155;">Documentos
-                        Publicados Activos:</label>
-                    <div id="resourcesList">
-                        <!-- Dinámico -->
+            <!-- COLUMNA 1: GESTIÓN DE RECURSOS -->
+            <section>
+                <div class="card">
+                    <div class="section-title">📤 Cargar Recursos y Documentos PDF</div>
+                    <form onsubmit="uploadResource(event)">
+                        <div class="form-group">
+                            <label>Nombre del Recurso / Plantilla</label>
+                            <input type="text" id="resTitle" class="form-control"
+                                placeholder="Ej. Solicitud de Permiso Laboral" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <select id="resCategory" class="form-control">
+                                <option value="Solicitudes">Solicitudes</option>
+                                <option value="Aplicaciones">Aplicaciones</option>
+                                <option value="Plantillas">Plantillas</option>
+                                <option value="Manual Empleado">Manual Empleado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Archivo (PDF / DOCX / ZIP)</label>
+                            <input type="file" id="resFile" class="form-control" accept=".pdf,.docx,.zip,.xlsx"
+                                required>
+                        </div>
+                        <button type="submit" class="btn-action" style="width:100%;">Subir y Publicar Documento</button>
+                    </form>
+
+                    <div class="uploaded-list">
+                        <label style="font-weight:700; margin-bottom:8px; display:block; color:#334155;">Documentos
+                            Publicados Activos:</label>
+                        <div id="resourcesList">
+                            <!-- Dinámico -->
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- COLUMNA 2: EMPLEADOS Y MÉTRICAS -->
-        <section>
-            <!-- AÑADIR EMPLEADO -->
-            <div class="card">
-                <div class="section-title">👤 Añadir Empleado al Directorio</div>
-                <form onsubmit="addEmployee(event)">
-                    <div class="form-group">
-                        <label>Nombre y Apellido</label>
-                        <input type="text" id="empName" class="form-control" placeholder="Ej. Carlos Mendoza" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Cargo / Puesto</label>
-                        <input type="text" id="empPosition" class="form-control" placeholder="Ej. Coordinador de TI"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label>Foto de Perfil (JPG/PNG)</label>
-                        <input type="file" id="empPhoto" class="form-control" accept="image/*">
-                    </div>
-                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en
-                        Directorio</button>
-                </form>
-            </div>
+            <!-- COLUMNA 2: EMPLEADOS Y MÉTRICAS -->
+            <section>
+                <!-- AÑADIR EMPLEADO -->
+                <div class="card">
+                    <div class="section-title">👤 Añadir Empleado al Directorio</div>
+                    <form onsubmit="addEmployee(event)">
+                        <div class="form-group">
+                            <label>Nombre y Apellido</label>
+                            <input type="text" id="empName" class="form-control" placeholder="Ej. Carlos Mendoza"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Cargo / Puesto</label>
+                            <input type="text" id="empPosition" class="form-control" placeholder="Ej. Coordinador de TI"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Foto de Perfil (JPG/PNG)</label>
+                            <input type="file" id="empPhoto" class="form-control" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en
+                            Directorio</button>
+                    </form>
+                </div>
 
-            <!-- ACTUALIZAR MÉTRICAS KPI -->
-            <div class="card">
-                <div class="section-title">📊 Actualizar Métricas Trimestrales (KPIs)</div>
-                <form onsubmit="updateKPIs(event)">
-                    <div class="form-group">
-                        <label>Métrica 1: Clientes Activos</label>
-                        <input type="text" id="kpi1" class="form-control" value="23% ↑">
-                    </div>
-                    <div class="form-group">
-                        <label>Métrica 2: Clientes Powerlink Go</label>
-                        <input type="text" id="kpi2" class="form-control" value="5.2% ↑">
-                    </div>
-                    <div class="form-group">
-                        <label>Métrica 3: Zonas Habilitadas</label>
-                        <input type="text" id="kpi3" class="form-control" value="27.6K ↓">
-                    </div>
-                    <button type="submit" class="btn-action" style="width:100%;">Guardar Métricas</button>
-                </form>
-            </div>
-        </section>
+                <!-- ACTUALIZAR MÉTRICAS KPI -->
+                <div class="card">
+                    <div class="section-title">📊 Actualizar Métricas Trimestrales (KPIs)</div>
+                    <form onsubmit="updateKPIs(event)">
+                        <div class="form-group">
+                            <label>Métrica 1: Clientes Activos</label>
+                            <input type="text" id="kpi1" class="form-control" value="23% ↑">
+                        </div>
+                        <div class="form-group">
+                            <label>Métrica 2: Clientes Powerlink Go</label>
+                            <input type="text" id="kpi2" class="form-control" value="5.2% ↑">
+                        </div>
+                        <div class="form-group">
+                            <label>Métrica 3: Zonas Habilitadas</label>
+                            <input type="text" id="kpi3" class="form-control" value="27.6K ↓">
+                        </div>
+                        <button type="submit" class="btn-action" style="width:100%;">Guardar Métricas</button>
+                    </form>
+                </div>
+            </section>
 
-        <!-- COLUMNA 3: CUMPLEAÑOS Y CALENDARIO -->
-        <section>
-            <!-- CUMPLEAÑOS -->
-            <div class="card">
-                <div class="section-title">🎉 Configurar Próximo Cumpleaños</div>
-                <form onsubmit="updateBirthday(event)">
-                    <div class="form-group">
-                        <label>Nombre del Agasajado</label>
-                        <input type="text" id="bdayName" class="form-control" placeholder="Ej. Carlos Mendoza" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha de Cumpleaños</label>
-                        <input type="text" id="bdayDate" class="form-control" placeholder="Ej. 18 de Julio" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Foto del Empleado</label>
-                        <input type="file" id="bdayPhoto" class="form-control" accept="image/*">
-                    </div>
-                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleañero
-                        Destacado</button>
-                </form>
-            </div>
+            <!-- COLUMNA 3: CUMPLEAÑOS Y CALENDARIO -->
+            <section>
+                <!-- CUMPLEAÑOS -->
+                <div class="card">
+                    <div class="section-title">🎉 Configurar Próximo Cumpleaños</div>
+                    <form onsubmit="updateBirthday(event)">
+                        <div class="form-group">
+                            <label>Nombre del Agasajado</label>
+                            <input type="text" id="bdayName" class="form-control" placeholder="Ej. Carlos Mendoza"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Cumpleaños</label>
+                            <input type="text" id="bdayDate" class="form-control" placeholder="Ej. 18 de Julio"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Foto del Empleado</label>
+                            <input type="file" id="bdayPhoto" class="form-control" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleañero
+                            Destacado</button>
+                    </form>
+                </div>
 
-            <!-- CALENDARIO -->
-            <div class="card">
-                <div class="section-title">📅 Marcar Evento en Calendario</div>
-                <form onsubmit="addCalendarEvent(event)">
-                    <div class="form-group">
-                        <label>Día del Mes (Número)</label>
-                        <input type="number" id="calDay" class="form-control" min="1" max="31" value="15" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Título del Evento</label>
-                        <input type="text" id="calTitle" class="form-control"
-                            placeholder="Ej. Reunión General de Personal" required>
-                    </div>
-                    <button type="submit" class="btn-action" style="width:100%;">Destacar Día en Calendario</button>
-                </form>
-            </div>
-        </section>
+                <!-- CALENDARIO -->
+                <div class="card">
+                    <div class="section-title">📅 Marcar Evento en Calendario</div>
+                    <form onsubmit="addCalendarEvent(event)">
+                        <div class="form-group">
+                            <label>Día del Mes (Número)</label>
+                            <input type="number" id="calDay" class="form-control" min="1" max="31" value="15" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Título del Evento</label>
+                            <input type="text" id="calTitle" class="form-control"
+                                placeholder="Ej. Reunión General de Personal" required>
+                        </div>
+                        <button type="submit" class="btn-action" style="width:100%;">Destacar Día en Calendario</button>
+                    </form>
+                </div>
+            </section>
 
-    </main>
+        </main>
+    </div> <!-- END TAB GESTION -->
+
+    <!-- TAB VISTA EMPLEADO -->
+    <div id="tab-vista" class="tab-content">
+        <iframe src="/" class="iframe-preview" title="Vista Empleado"></iframe>
+    </div>
 
     <script>
+        function switchTab(evt, tabId) {
+            // Ocultar todos los contenidos de las pestañas
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Quitar la clase active de todos los botones
+            const buttons = document.querySelectorAll('.tabs-nav-integrated .tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Mostrar el contenido actual y agregar active al botón que se hizo clic
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+
+            // Si es la vista de empleado, recargar el iframe para que tenga los últimos datos
+            if (tabId === 'tab-vista') {
+                const iframe = document.querySelector('.iframe-preview');
+                // Esto fuerza a que el iframe se actualice con los últimos datos subidos
+                iframe.src = iframe.src;
+            }
+        }
+
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
             t.textContent = msg;

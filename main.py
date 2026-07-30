@@ -302,7 +302,7 @@ async def add_employee(
     db: Session = Depends(get_db),
     admin_user: models.User = Depends(security.require_admin)
 ):
-    photo_url = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150"
+    photo_url = "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png"
     if photo and photo.filename:
         filename = f"emp_{int(datetime.utcnow().timestamp())}_{photo.filename}"
         filepath = os.path.join(UPLOAD_DIR, filename)
@@ -351,7 +351,7 @@ async def update_birthday(
             name=name,
             position="Empleado",
             birthday_date=birthday_date,
-            photo_url=photo_url or "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150"
+            photo_url=photo_url or "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png"
         )
         db.add(emp)
     else:
