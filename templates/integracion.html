@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auditoría de Clientes - Integración</title>
+    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
     <!-- Tailwind CSS para diseño limpio -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -134,7 +135,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-
+    {% if not embed %}
     <!-- NAVBAR CORPORATIVO -->
     <nav class="navbar">
         <div class="logo">
@@ -155,6 +156,7 @@
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
         <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
     </div>
+    {% endif %}
 
     <!-- CONTENIDO ESPECÍFICO DE INTEGRACIÓN (USER HTML) -->
     <div class="max-w-6xl mx-auto p-6 mt-6">

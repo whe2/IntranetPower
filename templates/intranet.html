@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intranet - POWER LINK CORP.</title>
+    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -539,7 +540,7 @@
 </head>
 
 <body>
-
+    {% if not embed %}
     <nav class="navbar">
         <div class="logo">POWER LINK <span>CORP.</span></div>
         <div class="search-bar">
@@ -559,12 +560,14 @@
             <button class="btn-logout" onclick="logout()">Salir</button>
         </div>
     </nav>
+    {% endif %}
 
     <header class="hero" id="heroBanner">
         <h1 id="heroTitle">Bienvenido a la Intranet Corporativa</h1>
         <button id="heroBtn">Leer más →</button>
     </header>
 
+    {% if not embed %}
     <div class="fast-links">
         <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
         <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
@@ -573,6 +576,7 @@
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
         <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
     </div>
+    {% endif %}
 
     <main class="main-container">
 

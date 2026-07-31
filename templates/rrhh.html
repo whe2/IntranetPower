@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intranet - Panel de Gestión RRHH</title>
+    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -141,8 +142,16 @@
             transition: color 0.2s;
         }
 
-        .fast-links a:hover {
+        .fast-links a:hover, .fast-links a.active {
             color: var(--acento);
+        }
+
+        .subtab-content {
+            display: none;
+        }
+
+        .subtab-content.active {
+            display: block;
         }
 
         /* FORMS */
@@ -362,6 +371,17 @@
     <!-- TAB GESTION -->
     <div id="tab-gestion" class="tab-content active">
 
+        <div class="fast-links">
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-proyectos')" class="subtab-btn"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-directorio')" class="subtab-btn"><i class="fa-solid fa-address-book"></i> Directorio</a>
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-helpdesk')" class="subtab-btn"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-reportes')" class="subtab-btn"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-rrhh')" class="subtab-btn active"><i class="fa-solid fa-users"></i> RRHH</a>
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-integracion')" class="subtab-btn"><i class="fa-solid fa-network-wired"></i> Integración</a>
+        </div>
+
+        <div id="subtab-rrhh" class="subtab-content active">
+
         <!-- BANNER HERO CONFIG -->
         <header class="hero">
             <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
@@ -379,15 +399,6 @@
                 <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
             </form>
         </header>
-
-        <div class="fast-links">
-            <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
-            <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
-            <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
-            <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
-            <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
-            <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
-        </div>
 
         <main class="main-container">
 
@@ -518,14 +529,64 @@
             </section>
 
         </main>
+    </div> <!-- END subtab-rrhh -->
+
+    <div id="subtab-integracion" class="subtab-content">
+        <iframe src="/integracion?embed=1" class="iframe-preview" title="Integración"></iframe>
+    </div>
+
+    <!-- NUEVAS PESTAÑAS (PLACEHOLDERS) -->
+    <div id="subtab-proyectos" class="subtab-content">
+        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <i class="fa-solid fa-briefcase" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
+            <h2 style="color: var(--cabeceras); margin-bottom: 10px;">Módulo de Proyectos</h2>
+            <p>Esta sección se encuentra en desarrollo.</p>
+        </div>
+    </div>
+
+    <div id="subtab-directorio" class="subtab-content">
+        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <i class="fa-solid fa-address-book" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
+            <h2 style="color: var(--cabeceras); margin-bottom: 10px;">Gestión de Directorio</h2>
+            <p>Esta sección se encuentra en desarrollo.</p>
+        </div>
+    </div>
+
+    <div id="subtab-helpdesk" class="subtab-content">
+        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <i class="fa-solid fa-headset" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
+            <h2 style="color: var(--cabeceras); margin-bottom: 10px;">Sistema Helpdesk</h2>
+            <p>Esta sección se encuentra en desarrollo.</p>
+        </div>
+    </div>
+
+    <div id="subtab-reportes" class="subtab-content">
+        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <i class="fa-solid fa-chart-bar" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
+            <h2 style="color: var(--cabeceras); margin-bottom: 10px;">Reportes y Analítica</h2>
+            <p>Esta sección se encuentra en desarrollo.</p>
+        </div>
+    </div>
+
     </div> <!-- END TAB GESTION -->
 
     <!-- TAB VISTA EMPLEADO -->
     <div id="tab-vista" class="tab-content">
-        <iframe src="/" class="iframe-preview" title="Vista Empleado"></iframe>
+        <iframe src="/?embed=1" class="iframe-preview" title="Vista Empleado"></iframe>
     </div>
 
     <script>
+        function switchSubTab(evt, subtabId) {
+            const contents = document.querySelectorAll('.subtab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.subtab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(subtabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
         function switchTab(evt, tabId) {
             // Ocultar todos los contenidos de las pestañas
             const contents = document.querySelectorAll('.tab-content');

@@ -378,7 +378,8 @@ async def add_calendar_event(
 # ==========================================
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse(request, "login.html")
+    embed = request.query_params.get("embed") == "1"
+    return templates.TemplateResponse(request, "login.html", {"embed": embed})
 
 @app.get("/", response_class=HTMLResponse)
 async def home_page(request: Request, db: Session = Depends(get_db)):
@@ -387,7 +388,8 @@ async def home_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login")
     try:
         user = security.get_current_user(request, db)
-        return templates.TemplateResponse(request, "intranet.html", {"user": user})
+        embed = request.query_params.get("embed") == "1"
+        return templates.TemplateResponse(request, "intranet.html", {"user": user, "embed": embed})
     except HTTPException:
         return RedirectResponse(url="/login")
 
@@ -413,7 +415,8 @@ async def integracion_page(request: Request, db: Session = Depends(get_db)):
         user = security.get_current_user(request, db)
         if user.role not in ["admin", "integracion", "rrhh"]:
             return RedirectResponse(url="/")
-        return templates.TemplateResponse(request, "integracion.html", {"user": user})
+        embed = request.query_params.get("embed") == "1"
+        return templates.TemplateResponse(request, "integracion.html", {"user": user, "embed": embed})
     except HTTPException:
         return RedirectResponse(url="/login")
 
