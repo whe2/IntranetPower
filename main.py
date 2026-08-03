@@ -167,8 +167,35 @@ async def get_dashboard_data(
     kpis = db.query(models.KpiMetric).all()
     calendar_events = db.query(models.CalendarEvent).all()
 
-    # Find birthday employee (e.g. Carlos Mendoza or latest)
-    birthday_emp = db.query(models.Employee).filter(models.Employee.birthday_date != None).first()
+    # Encuentra el próximo cumpleaños
+    all_emps_with_bday = db.query(models.Employee).filter(models.Employee.birthday_date != None, models.Employee.birthday_date != "").all()
+    closest_emp = None
+    if all_emps_with_bday:
+        today = datetime.now().date()
+        
+        def get_next_bday(emp):
+            try:
+                # El HTML envia YYYY-MM-DD
+                bday = datetime.strptime(emp.birthday_date, '%Y-%m-%d').date()
+                this_year_bday = bday.replace(year=today.year)
+                if this_year_bday < today:
+                    this_year_bday = this_year_bday.replace(year=today.year + 1)
+                return this_year_bday
+            except:
+                return datetime(9999, 12, 31).date()
+
+        sorted_emps = sorted(all_emps_with_bday, key=get_next_bday)
+        closest_emp = sorted_emps[0]
+        
+        # Formatear la fecha para que se vea bonita (ej. 15 de Octubre)
+        meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        try:
+            bday_dt = datetime.strptime(closest_emp.birthday_date, '%Y-%m-%d').date()
+            closest_emp.birthday_date = f"{bday_dt.day} de {meses[bday_dt.month - 1]}"
+        except:
+            pass
+            
+    birthday_emp = closest_emp
 
     return {
         "user": {
@@ -294,15 +321,53 @@ async def delete_resource(
     db.commit()
     return {"message": "Recurso eliminado."}
 
+@app.get("/api/rrhh/departments")
+async def get_departments(
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    return db.query(models.Department).order_by(models.Department.name).all()
+
+@app.post("/api/rrhh/departments")
+async def add_department(
+    name: str = Form(...),
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    dep = db.query(models.Department).filter(models.Department.name == name).first()
+    if dep:
+        raise HTTPException(status_code=400, detail="El departamento ya existe.")
+    
+    new_dep = models.Department(name=name)
+    db.add(new_dep)
+    db.commit()
+    db.refresh(new_dep)
+    return {"message": "Departamento creado con éxito.", "department": new_dep}
+
 @app.post("/api/rrhh/employees")
 async def add_employee(
     name: str = Form(...),
     position: str = Form(...),
+    department: str = Form(None),
+    cedula: str = Form(None),
+    birthday_date: str = Form(None),
+    usuario: str = Form(None),
+    password: str = Form(None),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     admin_user: models.User = Depends(security.require_admin)
 ):
-    photo_url = "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png"
+    if cedula:
+        existing = db.query(models.Employee).filter(models.Employee.cedula == cedula).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Empleado ya se encuentra en sistema")
+
+    if usuario and password:
+        existing_user = db.query(models.User).filter(models.User.email == usuario).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="El usuario generado ya existe. Por favor, modifica el nombre.")
+
+    photo_url = "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/WhatsApp_Image_2026-03-20_at_3.44.14_PM-removebg-preview.png"
     if photo and photo.filename:
         filename = f"emp_{int(datetime.utcnow().timestamp())}_{photo.filename}"
         filepath = os.path.join(UPLOAD_DIR, filename)
@@ -310,11 +375,23 @@ async def add_employee(
             shutil.copyfileobj(photo.file, buffer)
         photo_url = f"/{UPLOAD_DIR}/{filename}"
 
-    emp = models.Employee(name=name, position=position, photo_url=photo_url)
+    emp = models.Employee(name=name, position=position, department=department or "General", cedula=cedula, birthday_date=birthday_date, photo_url=photo_url)
     db.add(emp)
+    
+    if usuario and password:
+        hashed_pw = security.get_password_hash(password)
+        new_user = models.User(
+            email=usuario,
+            hashed_password=hashed_pw,
+            full_name=name,
+            role="user",
+            avatar_url=photo_url
+        )
+        db.add(new_user)
+        
     db.commit()
     db.refresh(emp)
-    return {"message": "Empleado agregado.", "employee": emp}
+    return {"message": "Empleado y credenciales agregados.", "employee": emp}
 
 @app.post("/api/rrhh/kpis")
 async def update_kpis(
@@ -329,38 +406,6 @@ async def update_kpis(
     db.commit()
     return {"message": "Métricas KPI actualizadas."}
 
-@app.post("/api/rrhh/birthday")
-async def update_birthday(
-    name: str = Form(...),
-    birthday_date: str = Form(...),
-    photo: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db),
-    admin_user: models.User = Depends(security.require_admin)
-):
-    emp = db.query(models.Employee).filter(models.Employee.name == name).first()
-    photo_url = None
-    if photo and photo.filename:
-        filename = f"bday_{int(datetime.utcnow().timestamp())}_{photo.filename}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(photo.file, buffer)
-        photo_url = f"/{UPLOAD_DIR}/{filename}"
-
-    if not emp:
-        emp = models.Employee(
-            name=name,
-            position="Empleado",
-            birthday_date=birthday_date,
-            photo_url=photo_url or "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png"
-        )
-        db.add(emp)
-    else:
-        emp.birthday_date = birthday_date
-        if photo_url:
-            emp.photo_url = photo_url
-
-    db.commit()
-    return {"message": "Cumpleaños actualizado."}
 
 @app.post("/api/rrhh/calendar")
 async def add_calendar_event(

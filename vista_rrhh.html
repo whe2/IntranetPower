@@ -9,11 +9,16 @@
     <style>
         /* --- VARIABLES DE COLOR (MISMA PALETA BLACK AND GOLD ELEGANCE) --- */
         :root {
-            --fondo-principal: #E5E5E5;
+            --fondo-principal: #F4F7F6;
             --blanco: #FFFFFF;
             --cabeceras: #14213D;
             --acento: #FCA311;
-            --texto-negro: #000000;
+            --texto-negro: #111111;
+            --texto-gris: #555555;
+            --borde: #E0E0E0;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 16px rgba(0,0,0,0.1);
+            --shadow-lg: 0 15px 30px rgba(0,0,0,0.15);
         }
 
         * {
@@ -40,11 +45,13 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: var(--shadow-sm);
         }
 
         .navbar .logo {
             font-size: 22px;
             font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         .navbar .logo span {
@@ -55,79 +62,233 @@
             background-color: var(--acento);
             color: #000000;
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: bold;
             margin-left: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .navbar .user-menu {
             display: flex;
             align-items: center;
             gap: 20px;
+            font-size: 14px;
         }
 
-        /* --- 2. PANEL PRINCIPAL (HERO CONFIGURABLE) --- */
-        .hero {
-            background: linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
-            color: var(--blanco);
-            padding: 40px 30px;
+        .navbar .user-menu i {
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s ease;
         }
 
-        .hero h1 {
-            font-size: 24px;
-            margin-bottom: 15px;
+        .navbar .user-menu i:hover {
             color: var(--acento);
         }
 
-        .hero-form {
-            display: grid;
-            grid-template-columns: 2fr 1fr auto;
-            gap: 15px;
-            align-items: end;
+        /* --- 2. PANEL PRINCIPAL (HERO / CONTENEDOR DE ANUNCIOS) --- */
+        .hero-container {
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: linear-gradient(135deg, rgba(20, 33, 61, 0.05) 0%, rgba(20, 33, 61, 0) 100%);
+        }
+
+        .hero-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-header h2 {
+            font-size: 24px;
+            color: var(--cabeceras);
+        }
+
+        .btn-create-announcement {
+            background-color: var(--acento);
+            color: var(--texto-negro);
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-create-announcement:hover {
+            background-color: #e08f0e;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Contenedor del anuncio activo */
+        .active-announcement-preview {
+            background: linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
+            color: var(--blanco);
+            border-radius: 12px;
+            padding: 40px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .active-announcement-preview h1 {
+            font-size: 28px;
+            color: var(--acento);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .active-announcement-preview p {
+            font-size: 16px;
+            color: #ddd;
+            position: relative;
+            z-index: 2;
+        }
+
+        .preview-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* --- MODAL WIZARD --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--blanco);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--borde);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            color: var(--cabeceras);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--texto-gris);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .btn-close-modal:hover {
+            color: #dc3545;
         }
 
         /* --- ESTILOS DE FORMULARIO COMUNES --- */
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #444;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cabeceras);
         }
 
         .form-control {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px 12px;
+            border: 1px solid var(--borde);
+            border-radius: 6px;
             outline: none;
-            font-size: 13px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: #FAFAFA;
         }
 
         .form-control:focus {
             border-color: var(--acento);
+            background-color: var(--blanco);
+            box-shadow: 0 0 0 3px rgba(252, 163, 17, 0.2);
         }
 
         .btn-action {
             background-color: var(--cabeceras);
             color: var(--blanco);
             border: none;
-            padding: 10px 15px;
-            font-weight: bold;
-            border-radius: 4px;
+            padding: 12px 18px;
+            font-weight: 600;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.3s;
-            font-size: 13px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: inline-block;
+            text-align: center;
         }
 
         .btn-action:hover {
             background-color: #243556;
+            transform: translateY(-2px);
         }
 
         .btn-gold {
@@ -139,65 +300,89 @@
             background-color: #e08f0e;
         }
 
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--borde);
+        }
+
         /* --- CONTAINER PRINCIPAL (MISMA ESTRUCTURA DE TRES COLUMNAS) --- */
         .main-container {
             max-width: 1300px;
-            margin: 30px auto;
-            padding: 0 20px;
+            margin: 0 auto;
+            padding: 0 30px;
             display: grid;
             grid-template-columns: 1fr 1.5fr 1fr;
-            gap: 25px;
+            gap: 30px;
         }
 
         .card {
             background-color: var(--blanco);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--shadow-sm);
             margin-bottom: 25px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(252, 163, 17, 0.3);
         }
 
         .section-title {
             font-size: 16px;
             text-transform: uppercase;
             border-left: 4px solid var(--acento);
-            padding-left: 10px;
-            margin-bottom: 15px;
-            font-weight: bold;
+            padding-left: 12px;
+            margin-bottom: 20px;
+            font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: var(--cabeceras);
+            letter-spacing: 0.5px;
         }
 
         /* --- LISTAS DE ARCHIVOS / RECURSOS CARGADOS --- */
         .uploaded-list {
-            margin-top: 15px;
-            font-size: 12px;
+            margin-top: 20px;
+            font-size: 13px;
         }
 
         .uploaded-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px;
+            padding: 10px 12px;
             background-color: #f8f9fa;
-            border-radius: 4px;
-            margin-bottom: 6px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             border-left: 3px solid var(--cabeceras);
+            transition: background 0.2s;
+        }
+        
+        .uploaded-item:hover {
+            background-color: #eef2f5;
         }
 
         .uploaded-item i.delete-btn {
             color: #dc3545;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .uploaded-item i.delete-btn:hover {
+            transform: scale(1.2);
         }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 900px) {
             .main-container {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-form {
                 grid-template-columns: 1fr;
             }
         }
@@ -209,29 +394,31 @@
     <!-- 1. BARRA SUPERIOR -->
     <nav class="navbar">
         <div class="logo">
-            POWER LINK <span>CORP.</span> <span class="admin-badge">Módulo R.R.H.H.</span>
+            POWER LINK <span>CORP.</span> <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Módulo R.R.H.H.</span>
         </div>
         <div class="user-menu">
-            <i class="fa-solid fa-bell"></i>
-            <i class="fa-solid fa-user-gear"></i> Panel Administrador
+            <i class="fa-solid fa-bell" title="Notificaciones"></i>
+            <i class="fa-solid fa-user-gear" title="Perfil"></i> 
+            <span>Panel Administrador</span>
         </div>
     </nav>
 
-    <!-- 2. GESTIÓN DEL ANUNCIO PRINCIPAL (HERO) -->
-    <header class="hero">
-        <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
-        <form class="hero-form" onsubmit="event.preventDefault(); alert('Noticia principal actualizada.');">
-            <div class="form-group" style="margin:0;">
-                <label style="color:#fff;">Texto del Título Destacado</label>
-                <input type="text" class="form-control" value="Sabina, ¡revisa las últimas noticias!">
-            </div>
-            <div class="form-group" style="margin:0;">
-                <label style="color:#fff;">Imagen de Fondo (URL o Archivo)</label>
-                <input type="file" class="form-control" accept="image/*" style="background:#fff;">
-            </div>
-            <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
-        </form>
-    </header>
+    <!-- 2. CONTENEDOR DE ANUNCIOS (HERO) -->
+    <section class="hero-container">
+        <div class="hero-header">
+            <h2>Gestión de Anuncios y Comunicados</h2>
+            <button class="btn-create-announcement" onclick="openAnnouncementModal()">
+                <i class="fa-solid fa-bullhorn"></i> Crear Nuevo Anuncio
+            </button>
+        </div>
+        
+        <!-- Previsualización del Anuncio Actual -->
+        <div class="active-announcement-preview" id="heroPreviewContainer">
+            <div class="preview-badge"><i class="fa-solid fa-eye"></i> Vista Previa en Vivo</div>
+            <h1 id="previewTitle">Sabina, ¡revisa las últimas noticias!</h1>
+            <p id="previewLink">Haz clic para ver más detalles &rarr;</p>
+        </div>
+    </section>
 
     <!-- CONTAINER PRINCIPAL EN 3 COLUMNAS -->
     <main class="main-container">
@@ -240,7 +427,7 @@
         <section>
             <div class="card">
                 <div class="section-title">
-                    <span>📤 Cargar Recursos y PDF</span>
+                    <span><i class="fa-solid fa-cloud-arrow-up"></i> Cargar Recursos y PDF</span>
                 </div>
                 <form onsubmit="event.preventDefault(); alert('Documento publicado.');">
                     <div class="form-group">
@@ -260,18 +447,17 @@
                         <label>Archivo PDF / Documento</label>
                         <input type="file" class="form-control" accept=".pdf,.docx">
                     </div>
-                    <button type="submit" class="btn-action w-100" style="width:100%;">Subir Recurso</button>
+                    <button type="submit" class="btn-action" style="width:100%;">Subir Recurso</button>
                 </form>
 
                 <div class="uploaded-list">
-                    <label class="form-label" style="font-weight:bold; margin-bottom:5px; display:block;">Recursos
-                        Visibles Actuales:</label>
+                    <label style="font-weight:bold; margin-bottom:10px; display:block; color:var(--cabeceras); font-size: 13px;">Recursos Visibles Actuales:</label>
                     <div class="uploaded-item">
-                        <span>📄 Manual_Empleado_2026.pdf</span>
+                        <span><i class="fa-solid fa-file-pdf" style="color:#dc3545;"></i> Manual_Empleado_2026.pdf</span>
                         <i class="fa-solid fa-trash delete-btn" title="Eliminar"></i>
                     </div>
                     <div class="uploaded-item">
-                        <span>📄 Planilla_Vacaciones.pdf</span>
+                        <span><i class="fa-solid fa-file-pdf" style="color:#dc3545;"></i> Planilla_Vacaciones.pdf</span>
                         <i class="fa-solid fa-trash delete-btn" title="Eliminar"></i>
                     </div>
                 </div>
@@ -280,28 +466,54 @@
 
         <!-- COLUMNA 2: REGISTRO DE TRABAJADORES Y MÉTRICAS -->
         <section>
-            <!-- Cargar Empleado al Carousel -->
+            <!-- Cargar Empleado al Directorio -->
             <div class="card">
                 <div class="section-title">
-                    <span>👤 Añadir Empleado al Directorio</span>
+                    <span><i class="fa-solid fa-user-plus"></i> Añadir Empleado</span>
                 </div>
-                <form onsubmit="event.preventDefault(); alert('Empleado añadido al carrusel.');">
+                <form id="addEmployeeForm" onsubmit="event.preventDefault(); alert('Empleado añadido al directorio.');">
                     <div class="form-group">
-                        <label>Nombre y Apellido</label>
-                        <input type="text" class="form-control" placeholder="Ej. Carlos Mendoza">
+                        <label>Nombre</label>
+                        <input type="text" id="empNombre" class="form-control" placeholder="Ej. Carlos" oninput="generateCredentials()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido</label>
+                        <input type="text" id="empApellido" class="form-control" placeholder="Ej. Mendoza" oninput="generateCredentials()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <select id="empDepartamento" class="form-control">
+                            <option>Tecnología</option>
+                            <option>Recursos Humanos</option>
+                            <option>Ventas</option>
+                            <option>Marketing</option>
+                            <option>Administración</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" id="empNacimiento" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Foto de Perfil (JPG/PNG)</label>
-                        <input type="file" class="form-control" accept="image/*">
+                        <input type="file" id="empFoto" class="form-control" accept="image/*">
                     </div>
-                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en Equipo</button>
+                    <div class="form-group">
+                        <label>Usuario Autogenerado (Solo Lectura)</label>
+                        <input type="text" id="empUsuario" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña Autogenerada (Solo Lectura)</label>
+                        <input type="text" id="empPassword" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
+                    </div>
+                    <button type="submit" class="btn-action btn-gold" style="width:100%;">Guardar/Publicar en directorio</button>
                 </form>
             </div>
 
             <!-- Actualizar Métricas KPI -->
             <div class="card">
                 <div class="section-title">
-                    <span>📊 Actualizar Métricas Trimestrales</span>
+                    <span><i class="fa-solid fa-chart-line"></i> Métricas Trimestrales</span>
                 </div>
                 <form onsubmit="event.preventDefault(); alert('Métricas actualizadas.');">
                     <div class="form-group">
@@ -326,7 +538,7 @@
             <!-- Cargar Próximo Cumpleaños -->
             <div class="card">
                 <div class="section-title">
-                    <span>🎉 Configurar Próximo Cumpleaños</span>
+                    <span><i class="fa-solid fa-cake-candles"></i> Próximo Cumpleaños</span>
                 </div>
                 <form onsubmit="event.preventDefault(); alert('Cumpleañero guardado.');">
                     <div class="form-group">
@@ -348,7 +560,7 @@
             <!-- Programar Evento en Calendario -->
             <div class="card">
                 <div class="section-title">
-                    <span>📅 Marcar Evento en Calendario</span>
+                    <span><i class="fa-solid fa-calendar-day"></i> Evento en Calendario</span>
                 </div>
                 <form onsubmit="event.preventDefault(); alert('Evento destacado en el calendario.');">
                     <div class="form-group">
@@ -365,6 +577,118 @@
         </section>
 
     </main>
+
+    <!-- MODAL PARA CREAR ANUNCIOS -->
+    <div class="modal-overlay" id="announcementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Asistente de Anuncios</h3>
+                <button class="btn-close-modal" onclick="closeAnnouncementModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <form id="announcementForm" onsubmit="handleAnnouncementSubmit(event)">
+                <div class="form-group">
+                    <label>Título del Anuncio</label>
+                    <input type="text" id="modalInputTitle" class="form-control" placeholder="Escribe un título llamativo..." oninput="updatePreview()" required>
+                </div>
+                <div class="form-group">
+                    <label>Enlace / URL de la Noticia (Opcional)</label>
+                    <input type="url" id="modalInputLink" class="form-control" placeholder="https://..." oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Imagen de Fondo (URL por ahora)</label>
+                    <input type="text" id="modalInputImage" class="form-control" placeholder="URL de la imagen..." oninput="updatePreview()">
+                    <small style="color:var(--texto-gris); font-size:12px; margin-top:4px;">Para previsualizar, ingresa la URL de una imagen válida.</small>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeAnnouncementModal()">Cancelar</button>
+                    <button type="submit" class="btn-action btn-gold">Publicar Anuncio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS PARA WIZARD/MODAL Y PREVISUALIZACIÓN -->
+    <script>
+        const modal = document.getElementById('announcementModal');
+        const previewContainer = document.getElementById('heroPreviewContainer');
+        const previewTitle = document.getElementById('previewTitle');
+        const previewLink = document.getElementById('previewLink');
+        
+        const inputTitle = document.getElementById('modalInputTitle');
+        const inputLink = document.getElementById('modalInputLink');
+        const inputImage = document.getElementById('modalInputImage');
+
+        // Valores por defecto
+        const defaultTitle = "Sabina, ¡revisa las últimas noticias!";
+        const defaultImage = "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png";
+
+        function openAnnouncementModal() {
+            modal.classList.add('active');
+            // Cargar datos actuales al formulario
+            inputTitle.value = previewTitle.innerText !== defaultTitle ? previewTitle.innerText : '';
+        }
+
+        function closeAnnouncementModal() {
+            modal.classList.remove('active');
+        }
+
+        function updatePreview() {
+            // Actualizar Título
+            previewTitle.innerText = inputTitle.value.trim() || defaultTitle;
+            
+            // Actualizar Enlace
+            if(inputLink.value.trim()) {
+                previewLink.style.display = 'block';
+                previewLink.innerHTML = `<a href="${inputLink.value}" target="_blank" style="color: #FCA311; text-decoration: none;">Ver noticia completa &rarr;</a>`;
+            } else {
+                previewLink.style.display = 'none';
+            }
+
+            // Actualizar Imagen de Fondo
+            const bgUrl = inputImage.value.trim() || defaultImage;
+            previewContainer.style.background = `linear-gradient(rgba(20, 33, 61, 0.85), rgba(20, 33, 61, 0.95)), url('${bgUrl}') center/cover`;
+        }
+
+        function handleAnnouncementSubmit(e) {
+            e.preventDefault();
+            // Aquí enviarías los datos a la DB (API, backend, etc.)
+            
+            // Cerrar el modal y mostrar mensaje
+            closeAnnouncementModal();
+            alert('¡Anuncio guardado y publicado exitosamente en la base de datos!');
+        }
+
+        // Cerrar modal al hacer click afuera
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeAnnouncementModal();
+            }
+        });
+
+        // Generación de credenciales para Empleados
+        const palabras = ['Power', 'Link', 'Gravity', 'System', 'Secure', 'Admin'];
+        function generateCredentials() {
+            const nombre = document.getElementById('empNombre').value.trim().toLowerCase();
+            const apellido = document.getElementById('empApellido').value.trim().toLowerCase();
+            const usuarioInput = document.getElementById('empUsuario');
+            const passwordInput = document.getElementById('empPassword');
+            
+            if (nombre && apellido) {
+                usuarioInput.value = nombre.charAt(0) + apellido;
+                
+                if (!passwordInput.value) {
+                    const randomPalabra = palabras[Math.floor(Math.random() * palabras.length)];
+                    const randomNum = Math.floor(Math.random() * 900) + 100;
+                    const randomEspecial = ['*', '#', '$', '&', '@'][Math.floor(Math.random() * 5)];
+                    passwordInput.value = randomPalabra + randomEspecial + randomNum;
+                }
+            } else {
+                usuarioInput.value = '';
+            }
+        }
+    </script>
 
 </body>
 

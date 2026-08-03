@@ -334,6 +334,54 @@
             display: block;
         }
 
+        /* --- MODAL WIZARD --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--blanco); border-radius: 12px; width: 100%; max-width: 600px;
+            padding: 30px; box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            transform: translateY(20px) scale(0.95); transition: all 0.3s ease; position: relative;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;
+        }
+        .modal-header h3 { color: var(--cabeceras); font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        .btn-close-modal { background: none; border: none; font-size: 20px; color: var(--texto-gris); cursor: pointer; transition: color 0.3s; }
+        .btn-close-modal:hover { color: #ef4444; }
+        .modal-footer {
+            display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0;
+        }
+        .hero-container {
+            padding: 40px 30px; display: flex; flex-direction: column; gap: 20px;
+            background: linear-gradient(135deg, rgba(20, 33, 61, 0.05) 0%, rgba(20, 33, 61, 0) 100%);
+        }
+        .hero-header { display: flex; justify-content: space-between; align-items: center; }
+        .hero-header h2 { font-size: 24px; color: var(--cabeceras); }
+        .btn-create-announcement {
+            background-color: var(--acento); color: var(--texto-negro); border: none;
+            padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer;
+            transition: all 0.3s ease; font-size: 14px; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-create-announcement:hover { background-color: var(--acento-hover); transform: translateY(-2px); }
+        .active-announcement-preview {
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
+            color: var(--blanco); border-radius: 12px; padding: 40px; min-height: 200px;
+            display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden;
+        }
+        .active-announcement-preview h1 { font-size: 28px; color: var(--acento); margin-bottom: 10px; position: relative; z-index: 2; }
+        .active-announcement-preview p { font-size: 16px; color: #ddd; position: relative; z-index: 2; }
+        .preview-badge {
+            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
+            padding: 5px 10px; border-radius: 4px; font-size: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.3);
+        }
+
         @media (max-width: 900px) {
             .main-container {
                 grid-template-columns: 1fr;
@@ -382,23 +430,49 @@
 
         <div id="subtab-rrhh" class="subtab-content active">
 
-        <!-- BANNER HERO CONFIG -->
-        <header class="hero">
-            <h1>⚙️ Configurar Anuncio Principal (Hero)</h1>
-            <form class="hero-form" onsubmit="updateHero(event)">
-                <div class="form-group" style="margin:0;">
-                    <label style="color:#e2e8f0;">Texto del Título Destacado</label>
-                    <input type="text" id="heroTitleInput" class="form-control"
-                        placeholder="Ej. ¡Revisa las últimas noticias corporativas!">
+        <!-- CONTENEDOR DE ANUNCIOS (HERO) -->
+        <section class="hero-container">
+            <div class="hero-header">
+                <h2>Gestión de Anuncios y Comunicados</h2>
+                <button class="btn-create-announcement" onclick="openAnnouncementModal()">
+                    <i class="fa-solid fa-bullhorn"></i> Crear Nuevo Anuncio
+                </button>
+            </div>
+            
+            <!-- Previsualización del Anuncio Actual -->
+            <div class="active-announcement-preview" id="heroPreviewContainer">
+                <div class="preview-badge"><i class="fa-solid fa-eye"></i> Vista Previa en Vivo</div>
+                <h1 id="previewTitle">Sabina, ¡revisa las últimas noticias!</h1>
+                <p id="previewLink" style="display:none;"></p>
+            </div>
+        </section>
+
+        <!-- MODAL PARA CREAR ANUNCIOS -->
+        <div class="modal-overlay" id="announcementModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Asistente de Anuncios</h3>
+                    <button type="button" class="btn-close-modal" onclick="closeAnnouncementModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="form-group" style="margin:0;">
-                    <label style="color:#e2e8f0;">Imagen de Fondo (Archivo JPG/PNG)</label>
-                    <input type="file" id="heroImageInput" class="form-control" accept="image/*"
-                        style="background:#fff;">
-                </div>
-                <button type="submit" class="btn-action btn-gold">Actualizar Banner</button>
-            </form>
-        </header>
+                
+                <form id="announcementForm" onsubmit="updateHero(event)">
+                    <div class="form-group">
+                        <label>Título del Anuncio</label>
+                        <input type="text" id="heroTitleInput" class="form-control" placeholder="Escribe un título llamativo..." oninput="updatePreview()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Imagen de Fondo (Archivo JPG/PNG)</label>
+                        <input type="file" id="heroImageInput" class="form-control" accept="image/*">
+                        <small style="color:var(--texto-gris); font-size:12px; margin-top:4px;">Elige una imagen para el banner principal.</small>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeAnnouncementModal()">Cancelar</button>
+                        <button type="submit" class="btn-action btn-gold">Publicar Anuncio</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <main class="main-container">
 
@@ -441,26 +515,57 @@
 
             <!-- COLUMNA 2: EMPLEADOS Y MÉTRICAS -->
             <section>
+                <!-- GESTIONAR DEPARTAMENTOS -->
+                <div class="card">
+                    <div class="section-title">🏢 Gestionar Departamentos</div>
+                    <form onsubmit="addDepartment(event)">
+                        <div class="form-group">
+                            <label>Nuevo Departamento</label>
+                            <input type="text" id="deptName" class="form-control" placeholder="Ej. Finanzas" required>
+                        </div>
+                        <button type="submit" class="btn-action" style="width:100%; background-color:#334155;">Crear Departamento</button>
+                    </form>
+                </div>
+
                 <!-- AÑADIR EMPLEADO -->
                 <div class="card">
                     <div class="section-title">👤 Añadir Empleado al Directorio</div>
-                    <form onsubmit="addEmployee(event)">
+                    <form id="addEmployeeForm" onsubmit="addEmployee(event)">
                         <div class="form-group">
-                            <label>Nombre y Apellido</label>
-                            <input type="text" id="empName" class="form-control" placeholder="Ej. Carlos Mendoza"
-                                required>
+                            <label>Cédula de Identidad</label>
+                            <input type="text" id="empCedula" class="form-control" placeholder="Ej. V-12345678" required>
                         </div>
                         <div class="form-group">
-                            <label>Cargo / Puesto</label>
-                            <input type="text" id="empPosition" class="form-control" placeholder="Ej. Coordinador de TI"
-                                required>
+                            <label>Nombre</label>
+                            <input type="text" id="empNombre" class="form-control" placeholder="Ej. Carlos" oninput="generateCredentials()" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Apellido</label>
+                            <input type="text" id="empApellido" class="form-control" placeholder="Ej. Mendoza" oninput="generateCredentials()" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento</label>
+                            <select id="empDepartamento" class="form-control">
+                                <option>Cargando departamentos...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Nacimiento</label>
+                            <input type="date" id="empNacimiento" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label>Foto de Perfil (JPG/PNG)</label>
                             <input type="file" id="empPhoto" class="form-control" accept="image/*">
                         </div>
-                        <button type="submit" class="btn-action btn-gold" style="width:100%;">Publicar en
-                            Directorio</button>
+                        <div class="form-group">
+                            <label>Usuario Autogenerado</label>
+                            <input type="text" id="empUsuario" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña Autogenerada</label>
+                            <input type="text" id="empPassword" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
+                        </div>
+                        <button type="submit" class="btn-action btn-gold" style="width:100%;">Guardar/Publicar en directorio</button>
                     </form>
                 </div>
 
@@ -487,28 +592,7 @@
 
             <!-- COLUMNA 3: CUMPLEAÑOS Y CALENDARIO -->
             <section>
-                <!-- CUMPLEAÑOS -->
-                <div class="card">
-                    <div class="section-title">🎉 Configurar Próximo Cumpleaños</div>
-                    <form onsubmit="updateBirthday(event)">
-                        <div class="form-group">
-                            <label>Nombre del Agasajado</label>
-                            <input type="text" id="bdayName" class="form-control" placeholder="Ej. Carlos Mendoza"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Fecha de Cumpleaños</label>
-                            <input type="text" id="bdayDate" class="form-control" placeholder="Ej. 18 de Julio"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Foto del Empleado</label>
-                            <input type="file" id="bdayPhoto" class="form-control" accept="image/*">
-                        </div>
-                        <button type="submit" class="btn-action btn-gold" style="width:100%;">Actualizar Cumpleañero
-                            Destacado</button>
-                    </form>
-                </div>
+
 
                 <!-- CALENDARIO -->
                 <div class="card">
@@ -629,6 +713,19 @@
                 }
                 const data = await res.json();
                 renderResourcesList(data);
+                
+                const depRes = await fetch('/api/rrhh/departments');
+                if (depRes.ok) {
+                    const deps = await depRes.json();
+                    const select = document.getElementById('empDepartamento');
+                    select.innerHTML = '';
+                    deps.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d.name;
+                        opt.textContent = d.name;
+                        select.appendChild(opt);
+                    });
+                }
             } catch (e) { }
         }
 
@@ -657,9 +754,23 @@
 
             try {
                 const res = await fetch('/api/rrhh/hero', { method: 'POST', body: formData });
-                if (res.ok) showToast('¡Anuncio Principal (Hero) actualizado con éxito!');
+                if (res.ok) {
+                    showToast('¡Anuncio Principal (Hero) actualizado con éxito!');
+                    closeAnnouncementModal();
+                }
                 else showToast('Error al actualizar héroe', 'error');
             } catch (err) { showToast('Error de servidor', 'error'); }
+        }
+
+        function openAnnouncementModal() {
+            document.getElementById('announcementModal').classList.add('active');
+        }
+        function closeAnnouncementModal() {
+            document.getElementById('announcementModal').classList.remove('active');
+        }
+        function updatePreview() {
+            const title = document.getElementById('heroTitleInput').value.trim();
+            document.getElementById('previewTitle').innerText = title || "Sabina, ¡revisa las últimas noticias!";
         }
 
         async function uploadResource(e) {
@@ -695,24 +806,80 @@
             } catch (e) { }
         }
 
-        async function addEmployee(e) {
-            e.preventDefault();
-            const name = document.getElementById('empName').value.trim();
-            const position = document.getElementById('empPosition').value.trim();
-            const file = document.getElementById('empPhoto').files[0];
+        const palabras = ['Power', 'Link', 'Gravity', 'System', 'Secure', 'Admin'];
+        function generateCredentials() {
+            const nombre = document.getElementById('empNombre').value.trim().toLowerCase();
+            const apellido = document.getElementById('empApellido').value.trim().toLowerCase();
+            const usuarioInput = document.getElementById('empUsuario');
+            const passwordInput = document.getElementById('empPassword');
+            
+            if (nombre && apellido) {
+                usuarioInput.value = nombre.charAt(0) + apellido + '@empresa.com';
+                if (!passwordInput.value) {
+                    const randomPalabra = palabras[Math.floor(Math.random() * palabras.length)];
+                    const randomNum = Math.floor(Math.random() * 900) + 100;
+                    const randomEspecial = ['*', '#', '$', '&', '@'][Math.floor(Math.random() * 5)];
+                    passwordInput.value = randomPalabra + randomEspecial + randomNum;
+                }
+            } else {
+                usuarioInput.value = '';
+            }
+        }
 
+        async function addDepartment(e) {
+            e.preventDefault();
+            const name = document.getElementById('deptName').value.trim();
             const formData = new FormData();
             formData.append('name', name);
-            formData.append('position', position);
+            try {
+                const res = await fetch('/api/rrhh/departments', { method: 'POST', body: formData });
+                if (res.ok) {
+                    showToast('Departamento creado.');
+                    document.getElementById('deptName').value = '';
+                    loadAdminData(); // Reload the dropdown
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Error al crear departamento', 'error');
+                }
+            } catch(err) {
+                showToast('Error de red', 'error');
+            }
+        }
+
+        async function addEmployee(e) {
+            e.preventDefault();
+            const cedula = document.getElementById('empCedula').value.trim();
+            const nombre = document.getElementById('empNombre').value.trim();
+            const apellido = document.getElementById('empApellido').value.trim();
+            const name = `${nombre} ${apellido}`; 
+            const position = document.getElementById('empDepartamento').value; 
+            const birthday_date = document.getElementById('empNacimiento').value;
+            const file = document.getElementById('empPhoto').files[0];
+            const usuario = document.getElementById('empUsuario').value;
+            const password = document.getElementById('empPassword').value;
+            
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('cedula', cedula);
+            formData.append('department', position);
+            formData.append('position', 'Empleado'); // Default
+            formData.append('birthday_date', birthday_date);
+            formData.append('usuario', usuario);
+            formData.append('password', password);
             if (file) formData.append('photo', file);
 
             try {
                 const res = await fetch('/api/rrhh/employees', { method: 'POST', body: formData });
+                if (res.status === 400) {
+                    const errorData = await res.json();
+                    alert(errorData.detail || "Empleado ya se encuentra en sistema");
+                    return;
+                }
                 if (res.ok) {
                     showToast('Empleado agregado al directorio.');
-                    document.getElementById('empName').value = '';
-                    document.getElementById('empPosition').value = '';
-                    document.getElementById('empPhoto').value = '';
+                    document.getElementById('addEmployeeForm').reset();
+                    document.getElementById('empUsuario').value = '';
+                    document.getElementById('empPassword').value = '';
                 }
             } catch (e) { showToast('Error al guardar empleado', 'error'); }
         }

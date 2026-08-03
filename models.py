@@ -40,10 +40,16 @@ class Employee(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    cedula = Column(String, unique=True, index=True, nullable=True)
     position = Column(String, nullable=True)
     department = Column(String, default="General")
     photo_url = Column(String, nullable=True)
     birthday_date = Column(String, nullable=True) # e.g. "18 de Julio"
+
+class Department(Base):
+    __tablename__ = "departments"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
 
 class KpiMetric(Base):
     __tablename__ = "kpi_metrics"

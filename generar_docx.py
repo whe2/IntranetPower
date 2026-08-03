@@ -135,6 +135,22 @@ def create_server_documentation():
     doc.add_paragraph('systemctl start|stop|restart intranet_prod', style='Quote')
     doc.add_paragraph('systemctl start|stop|restart intranet_qa', style='Quote')
 
+    # 7. Sincronización con GitHub (Despliegue)
+    add_heading(doc, '7. Sincronización con GitHub (Actualizaciones)', 1)
+    doc.add_paragraph('Para actualizar los entornos (QA o Producción) con los últimos cambios subidos a GitHub, sigue estos pasos conectándote por consola (Git Bash) al servidor:')
+    
+    p = doc.add_paragraph()
+    p.add_run('1. Entrar a la carpeta del entorno (ejemplo QA):\n').bold = True
+    doc.add_paragraph('cd /var/www/intranet_qa', style='Quote')
+    
+    p = doc.add_paragraph()
+    p.add_run('2. Descargar los últimos cambios desde GitHub:\n').bold = True
+    doc.add_paragraph('git pull origin qa', style='Quote')
+    
+    p = doc.add_paragraph()
+    p.add_run('3. Reiniciar el servicio para aplicar los cambios:\n').bold = True
+    doc.add_paragraph('systemctl restart intranet_qa', style='Quote')
+
     # Guardar
     doc.save('Documentacion_Servidor.docx')
     print('Documento guardado con éxito como Documentacion_Servidor.docx')
