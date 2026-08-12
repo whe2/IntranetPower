@@ -14,9 +14,13 @@
     <style>
         /* ESTILOS CORPORATIVOS GLOBALES (NAVBAR) */
         :root {
-            --acento: #f59e0b;
-            --acento-hover: #d97706;
-            --texto-negro: #0f172a;
+            --fondo-principal: #ffffff;
+            --blanco: #ffffff;
+            --cabeceras: #1A1A1A;
+            --acento: #FFC107;
+            --acento-hover: #F5C71D;
+            --texto-negro: #1A1A1A;
+            --texto-gris: #4A4A4A;
         }
 
         body {
@@ -27,7 +31,7 @@
 
         /* NAVBAR (IDÉNTICO A INTRANET.HTML) */
         .navbar {
-            background-color: #0f172a;
+            background-color: var(--cabeceras);
             padding: 15px 40px;
             display: flex;
             justify-content: space-between;
@@ -100,7 +104,7 @@
 
         /* FAST LINKS */
         .fast-links {
-            background-color: #0f172a;
+            background-color: var(--cabeceras);
             display: flex;
             justify-content: center;
             gap: 40px;
@@ -124,8 +128,8 @@
         }
 
         /* Ajustes Tailwind a nuestra paleta */
-        .text-blue-700 { color: #0f172a !important; }
-        .bg-blue-600 { background-color: var(--acento) !important; color: #fff !important; }
+        .text-blue-700 { color: var(--texto-negro) !important; }
+        .bg-blue-600 { background-color: var(--acento) !important; color: var(--texto-negro) !important; }
         .bg-blue-600:hover { background-color: var(--acento-hover) !important; }
         
         .bg-blue-50 { background-color: #f1f5f9 !important; }
@@ -161,7 +165,7 @@
     <!-- CONTENIDO ESPECÍFICO DE INTEGRACIÓN (USER HTML) -->
     <div class="max-w-6xl mx-auto p-6 mt-6">
         <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-blue-700" style="color: #0f172a !important;">Extractor y Auditor de Clientes Corporativo</h1>
+            <h1 class="text-3xl font-bold text-blue-700" style="color: var(--texto-negro) !important;">Extractor y Auditor de Clientes Corporativo</h1>
             <p class="text-gray-500 mt-2">Módulo avanzado con control de fechas diferenciadas para cambios de planes y estatus.</p>
         </header>
 

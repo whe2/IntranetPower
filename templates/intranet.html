@@ -5,18 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intranet - POWER LINK CORP.</title>
-    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
+    <link rel="icon" type="image/png"
+        href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --fondo-principal: #f1f5f9;
+            --fondo-principal: #ffffff; /* Clean Pure White */
             --blanco: #ffffff;
-            --cabeceras: #0f172a;
-            --acento: #f59e0b;
-            --acento-hover: #d97706;
-            --texto-negro: #0f172a;
-            --texto-gris: #64748b;
+            --cabeceras: #1A1A1A; /* Deep Coal Black */
+            --acento: #FFC107; /* Vibrant Golden Yellow */
+            --acento-hover: #F5C71D; /* Metallic Gold Dust */
+            --texto-negro: #1A1A1A; /* Deep Coal Black */
+            --texto-gris: #4A4A4A; /* Charcoal Grey */
         }
 
         * {
@@ -144,8 +145,8 @@
 
         /* HERO BANNER */
         .hero {
-            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
-            color: var(--blanco);
+            background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/Gemini_Generated_Image_glf24lglf24lglf2.png') center/cover;
+            color: var(--texto-negro);
             padding: 60px 40px;
             text-align: left;
             transition: background 0.5s ease-in-out;
@@ -175,7 +176,7 @@
 
         /* FAST LINKS */
         .fast-links {
-            background-color: #0f172a;
+            background-color: var(--cabeceras);
             display: flex;
             justify-content: center;
             gap: 40px;
@@ -548,7 +549,8 @@
                 oninput="filterResources()">
         </div>
         <div class="user-menu">
-            <i class="fa-solid fa-comment-dots" onclick="toggleChat()" title="Abrir Chat Interno"></i>
+            <a href="/chat" style="color: inherit; text-decoration: none;"><i class="fa-solid fa-comment-dots"
+                    title="Abrir Chat Interno"></i></a>
             <i class="fa-solid fa-bell" title="Notificaciones"></i>
             <div class="user-badge">
                 <img id="userNavAvatar" class="user-avatar"
@@ -572,6 +574,7 @@
         <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
         <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
         <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="/chat"><i class="fa-solid fa-comments"></i> Chat</a>
         <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
         <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
@@ -683,25 +686,7 @@
 
     </main>
 
-    <!-- WIDGET DE CHAT -->
-    <div class="chat-widget">
-        <div class="chat-window" id="chatWindow">
-            <div class="chat-header">
-                <span><i class="fa-solid fa-comments"></i> Chat Interno #General</span>
-                <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleChat()"></i>
-            </div>
-            <div class="chat-body" id="chatBody">
-                <!-- Mensajes dinámicos -->
-            </div>
-            <div class="chat-footer">
-                <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeypress="checkSend(event)">
-            </div>
-        </div>
 
-        <div class="chat-button" onclick="toggleChat()" title="Chat de la Empresa">
-            <i class="fa-solid fa-comment-dots"></i>
-        </div>
-    </div>
 
     <script>
         let allResources = [];
@@ -726,7 +711,7 @@
                 if (data.hero) {
                     document.getElementById('heroTitle').textContent = data.hero.title;
                     if (data.hero.image_url) {
-                        document.getElementById('heroBanner').style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('${data.hero.image_url}')`;
+                        document.getElementById('heroBanner').style.backgroundImage = `linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('${data.hero.image_url}')`;
                     }
                 }
 
@@ -769,8 +754,7 @@
                     }
                 }
 
-                // Chat
-                loadChatMessages();
+
 
             } catch (err) {
                 console.error('Error cargando dashboard:', err);
@@ -799,10 +783,23 @@
             });
         }
 
+        function containsSQLOrCode(text) {
+            if (typeof text !== 'string') return false;
+            // Prevenir inserción de SQL básico y scripts
+            const sqlPattern = /\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|EXEC|CREATE)\b/i;
+            const codePattern = /(<script.*?>|<\/script>|<iframe.*?>|<\/iframe>|javascript:|<%.*?%>|<\?.*?\?>)/i;
+            return sqlPattern.test(text) || codePattern.test(text);
+        }
+
         async function submitFeedback(e) {
             e.preventDefault();
             const text = document.getElementById('feedbackText').value.trim();
             if (!text) return;
+
+            if (containsSQLOrCode(text)) {
+                alert('Seguridad: El texto contiene caracteres, sentencias SQL o código no permitido.');
+                return;
+            }
 
             try {
                 const res = await fetch('/api/feedback', {
@@ -819,65 +816,11 @@
             }
         }
 
-        async function loadChatMessages() {
-            try {
-                const res = await fetch('/api/chat');
-                if (res.ok) {
-                    const msgs = await res.json();
-                    const chatBody = document.getElementById('chatBody');
-                    const userName = document.getElementById('userNavName').textContent;
-
-                    chatBody.innerHTML = '<p style="color: #94a3b8; font-size: 11px; text-align: center;">Canal Oficial #General</p>';
-                    msgs.forEach(m => {
-                        const isMine = m.user_name === userName;
-                        const div = document.createElement('div');
-                        div.className = `chat-msg ${isMine ? 'mine' : ''}`;
-                        div.innerHTML = `<strong>${m.user_name}:</strong> ${m.message}`;
-                        chatBody.appendChild(div);
-                    });
-                    chatBody.scrollTop = chatBody.scrollHeight;
-                }
-            } catch (err) { }
-        }
-
-        async function checkSend(e) {
-            if (e.key === 'Enter') {
-                const input = document.getElementById('chatInput');
-                const val = input.value.trim();
-                if (!val) return;
-
-                try {
-                    const res = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: val })
-                    });
-                    if (res.ok) {
-                        input.value = '';
-                        loadChatMessages();
-                    }
-                } catch (err) { }
-            }
-        }
-
-        function toggleChat() {
-            const chatWindow = document.getElementById('chatWindow');
-            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
-                chatWindow.style.display = 'flex';
-                loadChatMessages();
-            } else {
-                chatWindow.style.display = 'none';
-            }
-        }
-
         async function logout() {
             await fetch('/api/auth/logout', { method: 'POST' });
             localStorage.clear();
             window.location.href = '/login';
         }
-
-        // Periodic chat update
-        setInterval(loadChatMessages, 5000);
 
         // Init
         window.addEventListener('DOMContentLoaded', loadDashboard);

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - Comunicaciones - POWER LINK CORP.</title>
+    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fondo-principal: #ffffff;
+            --blanco: #ffffff;
+            --cabeceras: #1A1A1A;
+            --acento: #FFC107;
+            --acento-hover: #F5C71D;
+            --texto-negro: #1A1A1A;
+            --texto-gris: #4A4A4A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            color: var(--texto-negro);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .navbar .logo span { color: var(--acento); }
+
+        .navbar .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--acento);
+        }
+
+        .btn-admin-nav {
+            background: var(--acento);
+            color: var(--texto-negro);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        .btn-admin-nav:hover { background: var(--acento-hover); }
+
+        .btn-logout {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        /* FAST LINKS */
+        .fast-links {
+            background-color: var(--cabeceras);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 16px;
+            border-bottom: 3px solid var(--acento);
+            flex-shrink: 0;
+        }
+        .fast-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+        .fast-links a:hover, .fast-links a.active {
+            color: var(--acento);
+        }
+
+        /* CHAT LAYOUT */
+        .chat-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            max-width: 1300px;
+            margin: 20px auto;
+            width: 100%;
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        .chat-sidebar {
+            flex: 1;
+            max-width: 350px;
+            background: var(--blanco);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 700;
+            color: var(--cabeceras);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-left: 4px solid var(--acento);
+        }
+
+        .chat-sidebar-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .dept-group h4 {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: var(--texto-gris);
+            text-transform: uppercase;
+            background: #f8fafc;
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-list li {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .user-list li:hover {
+            background: #f8fafc;
+        }
+
+        .user-list li.active {
+            background: #fef3c7;
+            border-left: 3px solid var(--acento);
+        }
+
+        .user-list li img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-list li span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--texto-negro);
+        }
+
+        .chat-main {
+            flex: 2;
+            background: var(--blanco);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: var(--cabeceras);
+            color: var(--blanco);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--acento);
+            display: none;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-msg {
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            max-width: 75%;
+            font-size: 14px;
+            align-self: flex-start;
+        }
+
+        .chat-msg.mine {
+            align-self: flex-end;
+            background: #fef3c7;
+            border-color: #fde68a;
+        }
+
+        .chat-msg strong {
+            display: block;
+            font-size: 12px;
+            color: var(--texto-gris);
+            margin-bottom: 4px;
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input-area button {
+            background: var(--acento);
+            color: var(--texto-negro);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        .chat-input-area button:hover {
+            transform: scale(1.05);
+            background: var(--acento-hover);
+        }
+
+        .placeholder-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--texto-gris);
+            background: #f8fafc;
+        }
+        .placeholder-screen i {
+            font-size: 60px;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">POWER LINK <span>CORP.</span></div>
+        <div class="user-menu">
+            <div class="user-badge">
+                <img class="user-avatar" src="{{ user.avatar_url or '/static/img/default-avatar.png' }}" alt="Usuario">
+                <span id="currentUserEmail" style="display:none;">{{ user.email }}</span>
+                <span id="currentUserName">{{ user.full_name }}</span>
+            </div>
+            {% if user.role == 'admin' %}
+            <a href="/admin" class="btn-admin-nav">⚙️ Panel RRHH</a>
+            {% endif %}
+            <button class="btn-logout" onclick="logout()">Salir</button>
+        </div>
+    </nav>
+
+    <div class="fast-links">
+        <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+        <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="/chat" class="active"><i class="fa-solid fa-comments"></i> Chat</a>
+        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
+        <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
+    </div>
+
+    <div class="chat-container">
+        <!-- COLUMNA IZQUIERDA: Directorio -->
+        <aside class="chat-sidebar">
+            <div class="chat-sidebar-header">
+                Directorio de Chat
+            </div>
+            <div class="chat-sidebar-body">
+                <div class="dept-group">
+                    <h4>Canales Grupales</h4>
+                    <ul class="user-list">
+                        <li onclick="openChat(null, '#General', 'https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png')" id="li_general">
+                            <img src="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png" alt="General">
+                            <span># General</span>
+                        </li>
+                    </ul>
+                </div>
+                {% for dept, users in departments.items() %}
+                <div class="dept-group">
+                    <h4>{{ dept }}</h4>
+                    <ul class="user-list">
+                        {% for u in users %}
+                        <!-- No mostrarte a ti mismo en la lista -->
+                        {% if u.email != user.email %}
+                        <li onclick="openChat('{{ u.email }}', '{{ u.full_name }}', '{{ u.avatar_url }}')" id="li_{{ u.email | replace('@', '_') | replace('.', '_') }}">
+                            <img src="{{ u.avatar_url or '/static/img/default-avatar.png' }}" alt="{{ u.full_name }}">
+                            <span>{{ u.full_name }}</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <!-- COLUMNA DERECHA: Ventana de Chat -->
+        <main class="chat-main">
+            <div id="placeholderScreen" class="placeholder-screen">
+                <i class="fa-regular fa-comments"></i>
+                <h2>Comunicaciones POWER LINK</h2>
+                <p>Selecciona un compañero o canal para iniciar una conversación.</p>
+            </div>
+
+            <div id="activeChat" style="display: none; height: 100%; flex-direction: column;">
+                <div class="chat-header">
+                    <img id="chatHeaderImg" src="" alt="Avatar" style="display: block;">
+                    <span id="chatHeaderName">Nombre del Usuario</span>
+                </div>
+                <div class="chat-messages" id="chatBody">
+                    <!-- Mensajes cargados dinámicamente -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeypress="checkSend(event)">
+                    <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let chatWs = null;
+        let currentRecipientEmail = null;
+        let currentChannel = null;
+
+        function connectWebSocket() {
+            if (chatWs) return; // Ya conectado
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            chatWs = new WebSocket(`${protocol}//${window.location.host}/api/ws/chat`);
+            
+            chatWs.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                // Si estamos en este chat, inyectar el mensaje
+                if ((currentRecipientEmail && (data.user_email === currentRecipientEmail || data.user_email === document.getElementById('currentUserEmail').textContent)) ||
+                    (!currentRecipientEmail && data.channel === '#General' && currentChannel === '#General')) {
+                    appendMessage(data);
+                }
+            };
+
+            chatWs.onclose = () => {
+                chatWs = null;
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        async function openChat(email, name, avatar) {
+            document.getElementById('placeholderScreen').style.display = 'none';
+            document.getElementById('activeChat').style.display = 'flex';
+            
+            currentRecipientEmail = email;
+            
+            if (email) {
+                // Es un chat privado
+                const myEmail = document.getElementById('currentUserEmail').textContent;
+                const emails = [myEmail, email].sort();
+                currentChannel = `private_${emails[0]}_${emails[1]}`;
+            } else {
+                // Es el chat general
+                currentChannel = '#General';
+            }
+
+            document.getElementById('chatHeaderName').textContent = name;
+            document.getElementById('chatHeaderImg').src = avatar;
+            
+            // Resaltar en lista
+            document.querySelectorAll('.user-list li').forEach(li => li.classList.remove('active'));
+            if(email) {
+                const id = 'li_' + email.replace('@', '_').replace(/\./g, '_');
+                const el = document.getElementById(id);
+                if(el) el.classList.add('active');
+            } else {
+                document.getElementById('li_general').classList.add('active');
+            }
+
+            await loadChatMessages();
+            connectWebSocket(); // Asegurarnos de que el socket esté listo
+        }
+
+        async function loadChatMessages() {
+            const chatBody = document.getElementById('chatBody');
+            chatBody.innerHTML = '';
+            
+            try {
+                const res = await fetch(`/api/chat?channel=${encodeURIComponent(currentChannel)}`);
+                if (res.ok) {
+                    const msgs = await res.json();
+                    msgs.forEach(m => {
+                        appendMessage(m);
+                    });
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function appendMessage(m) {
+            const chatBody = document.getElementById('chatBody');
+            const myName = document.getElementById('currentUserName').textContent;
+            const isMine = m.user_name === myName;
+            
+            const div = document.createElement('div');
+            div.className = `chat-msg ${isMine ? 'mine' : ''}`;
+            div.innerHTML = `<strong>${m.user_name}</strong> ${m.message}`;
+            
+            chatBody.appendChild(div);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function checkSend(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const val = input.value.trim();
+            if (!val) return;
+
+            if (chatWs && chatWs.readyState === WebSocket.OPEN) {
+                const payload = {
+                    message: val,
+                    recipient_email: currentRecipientEmail
+                };
+                chatWs.send(JSON.stringify(payload));
+                input.value = '';
+            } else {
+                alert("Desconectado. Reconectando al chat...");
+                connectWebSocket();
+            }
+        }
+
+        async function logout() {
+            if(chatWs) chatWs.close();
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        }
+
+        // Init connection on load
+        window.addEventListener('DOMContentLoaded', () => {
+            connectWebSocket();
+        });
+    </script>
+</body>
+
+</html>

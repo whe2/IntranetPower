@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime
 from dotenv import load_dotenv
 
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, File, UploadFile, Response
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, File, UploadFile, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -84,6 +84,34 @@ class CalendarEventCreate(BaseModel):
     title: str
     description: Optional[str] = None
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: dict[str, WebSocket] = {}
+
+    async def connect(self, email: str, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections[email] = websocket
+
+    def disconnect(self, email: str):
+        if email in self.active_connections:
+            del self.active_connections[email]
+
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections.values():
+            try:
+                await connection.send_json(message)
+            except:
+                pass
+                
+    async def send_personal_message(self, message: dict, email: str):
+        if email in self.active_connections:
+            try:
+                await self.active_connections[email].send_json(message)
+            except:
+                pass
+
+manager = ConnectionManager()
+
 # ==========================================
 # RUTAS DE AUTENTICACIÓN
 # ==========================================
@@ -152,6 +180,36 @@ async def get_me(current_user: models.User = Depends(security.get_current_user))
         "role": current_user.role,
         "avatar_url": current_user.avatar_url
     }
+
+@app.get("/chat", response_class=HTMLResponse)
+async def chat_page(request: Request, db: Session = Depends(get_db)):
+    token = security.get_token_from_request(request)
+    if not token:
+        return RedirectResponse(url="/login")
+    try:
+        email = security._decode_token(token)
+        current_user = db.query(models.User).filter(models.User.email == email).first()
+        if not current_user:
+            return RedirectResponse(url="/login")
+    except:
+        return RedirectResponse(url="/login")
+
+    all_users = db.query(models.User).filter(models.User.is_active == True).all()
+    employees = db.query(models.Employee).all()
+    emp_map = {emp.name: emp.department for emp in employees}
+    
+    departments = {}
+    for u in all_users:
+        dept = emp_map.get(u.full_name, "General")
+        if dept not in departments:
+            departments[dept] = []
+        departments[dept].append(u)
+
+    return templates.TemplateResponse("chat.html", {
+        "request": request,
+        "user": current_user,
+        "departments": departments
+    })
 
 # ==========================================
 # RUTAS DE INTRANET GENERAL (USUARIOS)
@@ -223,29 +281,81 @@ async def create_feedback(
     db.commit()
     return {"message": "Feedback guardado exitosamente."}
 
+import json
+
 @app.get("/api/chat")
 async def get_chat_messages(
+    channel: str = "#General",
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
-    messages = db.query(models.ChatMessage).order_by(models.ChatMessage.id.asc()).limit(50).all()
+    messages = db.query(models.ChatMessage).filter(models.ChatMessage.channel == channel).order_by(models.ChatMessage.id.asc()).limit(50).all()
     return messages
 
-@app.post("/api/chat")
-async def post_chat_message(
-    data: ChatMessageCreate,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(security.get_current_user)
-):
-    msg = models.ChatMessage(
-        user_email=current_user.email,
-        user_name=current_user.full_name,
-        channel="#General",
-        message=data.message
-    )
-    db.add(msg)
-    db.commit()
-    return {"message": "Mensaje enviado."}
+@app.websocket("/api/ws/chat")
+async def websocket_chat(websocket: WebSocket, db: Session = Depends(get_db)):
+    token = websocket.cookies.get("access_token")
+    if not token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+    if token.startswith("Bearer "):
+        token = token[len("Bearer "):]
+    
+    try:
+        email = security._decode_token(token)
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user:
+            raise Exception()
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
+    await manager.connect(user.email, websocket)
+    try:
+        while True:
+            data_str = await websocket.receive_text()
+            try:
+                data = json.loads(data_str)
+            except:
+                # Fallback para mensajes de texto plano del chat antiguo
+                data = {"message": data_str, "recipient_email": None}
+                
+            recipient_email = data.get("recipient_email")
+            message_text = data.get("message")
+            
+            if recipient_email:
+                emails = sorted([user.email, recipient_email])
+                channel = f"private_{emails[0]}_{emails[1]}"
+            else:
+                channel = "#General"
+
+            # Save to db
+            msg = models.ChatMessage(
+                user_email=user.email,
+                user_name=user.full_name,
+                channel=channel,
+                message=message_text
+            )
+            db.add(msg)
+            db.commit()
+            
+            payload = {
+                "user_name": user.full_name,
+                "user_email": user.email,
+                "message": message_text,
+                "channel": channel
+            }
+            
+            # Broadcast o personal
+            if recipient_email:
+                await manager.send_personal_message(payload, recipient_email)
+                # Opcional: enviarlo a ti mismo (si tienes varias pestañas)
+                if recipient_email != user.email:
+                    await manager.send_personal_message(payload, user.email)
+            else:
+                await manager.broadcast(payload)
+    except WebSocketDisconnect:
+        manager.disconnect(user.email)
 
 # ==========================================
 # RUTAS DE GESTIÓN DE RRHH / ADMIN
