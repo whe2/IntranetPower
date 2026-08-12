@@ -45,6 +45,7 @@ def init_db():
         admin_user = db.query(models.User).filter(models.User.email == "admin@empresa.com").first()
         if not admin_user:
             admin_user = models.User(
+                username="admin",
                 email="admin@empresa.com",
                 hashed_password=get_password_hash("Admin123!"),
                 full_name="Gestor RRHH / Admin",
@@ -57,6 +58,7 @@ def init_db():
         sabina_user = db.query(models.User).filter(models.User.email == "sabina@empresa.com").first()
         if not sabina_user:
             sabina_user = models.User(
+                username="ssabina",
                 email="sabina@empresa.com",
                 hashed_password=get_password_hash("User123!"),
                 full_name="Sabina S.",
@@ -90,11 +92,11 @@ def init_db():
         # 4. Seed Employees
         if db.query(models.Employee).count() == 0:
             employees = [
-                models.Employee(name="Sabina S.", position="Analista de Procesos", photo_url="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150", birthday_date="12 de Mayo"),
-                models.Employee(name="Yaroslav P.", position="Desarrollador Senior", photo_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150", birthday_date="24 de Septiembre"),
-                models.Employee(name="Jane Smith", position="Diseñadora UX/UI", photo_url="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150", birthday_date="03 de Noviembre"),
-                models.Employee(name="Rosa Bell", position="Especialista RRHH", photo_url="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150", birthday_date="08 de Agosto"),
-                models.Employee(name="Carlos Mendoza", position="Coordinador de Operaciones", photo_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150", birthday_date="18 de Julio"),
+                models.Employee(name="Sabina S.", email="sabina@empresa.com", position="Analista de Procesos", photo_url="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150", birthday_date="12 de Mayo"),
+                models.Employee(name="Yaroslav P.", email="yaroslav@empresa.com", position="Desarrollador Senior", photo_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150", birthday_date="24 de Septiembre"),
+                models.Employee(name="Jane Smith", email="jsmith@empresa.com", position="Diseñadora UX/UI", photo_url="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150", birthday_date="03 de Noviembre"),
+                models.Employee(name="Rosa Bell", email="rbell@empresa.com", position="Especialista RRHH", photo_url="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150", birthday_date="08 de Agosto"),
+                models.Employee(name="Carlos Mendoza", email="cmendoza@empresa.com", position="Coordinador de Operaciones", photo_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150", birthday_date="18 de Julio"),
             ]
             db.add_all(employees)
             print("  + Empleados iniciales agregados.")

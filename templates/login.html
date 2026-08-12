@@ -392,10 +392,10 @@
                 <form id="loginForm" onsubmit="handleLogin(event)">
 
                     <div class="form-group">
-                        <label for="email">Correo Corporativo</label>
+                        <label for="email">Usuario (ID Corporativo)</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-envelope input-icon"></i>
-                            <input type="email" id="email" name="email" placeholder="nombre@empresa.com" required
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" id="email" name="username" placeholder="ej. cmendoza" required
                                 autocomplete="username">
                         </div>
                     </div>
@@ -513,14 +513,14 @@
             e.preventDefault();
             hideAlert();
 
-            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             setLoading(true);
 
             try {
                 const formData = new URLSearchParams();
-                formData.append('username', email);
+                formData.append('username', username);
                 formData.append('password', password);
 
                 const res = await fetch('/api/auth/login', {
@@ -532,7 +532,7 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    showAlert(data.detail || 'Correo o contraseña incorrectos.', 'error');
+                    showAlert(data.detail || 'Usuario o contraseña incorrectos.', 'error');
                     setLoading(false);
                     return;
                 }

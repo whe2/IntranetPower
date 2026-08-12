@@ -131,7 +131,7 @@ async def login_for_access_token(
             detail="Demasiados intentos fallidos. Tu IP está temporalmente bloqueada por 5 minutos.",
         )
 
-    user = db.query(models.User).filter(models.User.email == form_data.username.strip()).first()
+    user = db.query(models.User).filter(models.User.username == form_data.username.strip()).first()
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         security.record_failed_attempt(client_ip)
         raise HTTPException(
@@ -143,7 +143,7 @@ async def login_for_access_token(
     # Success: reset rate limit attempts for this IP
     security.clear_failed_attempts(client_ip)
 
-    access_token = security.create_access_token(data={"sub": user.email, "role": user.role})
+    access_token = security.create_access_token(data={"sub": user.username, "role": user.role})
 
     # Set HTTP-Only Secure Cookie
     response.set_cookie(
@@ -159,6 +159,7 @@ async def login_for_access_token(
         "token_type": "bearer",
         "user": {
             "id": user.id,
+            "username": user.username,
             "email": user.email,
             "full_name": user.full_name,
             "role": user.role,
@@ -175,6 +176,7 @@ async def logout(response: Response):
 async def get_me(current_user: models.User = Depends(security.get_current_user)):
     return {
         "id": current_user.id,
+        "username": current_user.username,
         "email": current_user.email,
         "full_name": current_user.full_name,
         "role": current_user.role,
@@ -187,8 +189,8 @@ async def chat_page(request: Request, db: Session = Depends(get_db)):
     if not token:
         return RedirectResponse(url="/login")
     try:
-        email = security._decode_token(token)
-        current_user = db.query(models.User).filter(models.User.email == email).first()
+        username = security._decode_token(token)
+        current_user = db.query(models.User).filter(models.User.username == username).first()
         if not current_user:
             return RedirectResponse(url="/login")
     except:
@@ -258,6 +260,7 @@ async def get_dashboard_data(
     return {
         "user": {
             "full_name": current_user.full_name,
+            "username": current_user.username,
             "email": current_user.email,
             "role": current_user.role,
             "avatar_url": current_user.avatar_url
@@ -302,8 +305,8 @@ async def websocket_chat(websocket: WebSocket, db: Session = Depends(get_db)):
         token = token[len("Bearer "):]
     
     try:
-        email = security._decode_token(token)
-        user = db.query(models.User).filter(models.User.email == email).first()
+        username = security._decode_token(token)
+        user = db.query(models.User).filter(models.User.username == username).first()
         if not user:
             raise Exception()
     except Exception:
@@ -461,6 +464,7 @@ async def add_employee(
     department: str = Form(None),
     cedula: str = Form(None),
     birthday_date: str = Form(None),
+    email: str = Form(None),
     usuario: str = Form(None),
     password: str = Form(None),
     photo: Optional[UploadFile] = File(None),
@@ -472,10 +476,17 @@ async def add_employee(
         if existing:
             raise HTTPException(status_code=400, detail="Empleado ya se encuentra en sistema")
 
-    if usuario and password:
-        existing_user = db.query(models.User).filter(models.User.email == usuario).first()
-        if existing_user:
-            raise HTTPException(status_code=400, detail="El usuario generado ya existe. Por favor, modifica el nombre.")
+    if email:
+        existing_emp = db.query(models.Employee).filter(models.Employee.email == email).first()
+        if existing_emp:
+            raise HTTPException(status_code=400, detail="El correo electrónico ya existe para otro empleado.")
+
+    if usuario:
+        base_username = usuario
+        counter = 1
+        while db.query(models.User).filter(models.User.username == usuario).first():
+            usuario = f"{base_username}{counter}"
+            counter += 1
 
     photo_url = "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/WhatsApp_Image_2026-03-20_at_3.44.14_PM-removebg-preview.png"
     if photo and photo.filename:
@@ -485,13 +496,14 @@ async def add_employee(
             shutil.copyfileobj(photo.file, buffer)
         photo_url = f"/{UPLOAD_DIR}/{filename}"
 
-    emp = models.Employee(name=name, position=position, department=department or "General", cedula=cedula, birthday_date=birthday_date, photo_url=photo_url)
+    emp = models.Employee(name=name, email=email, position=position, department=department or "General", cedula=cedula, birthday_date=birthday_date, photo_url=photo_url)
     db.add(emp)
     
     if usuario and password:
         hashed_pw = security.get_password_hash(password)
         new_user = models.User(
-            email=usuario,
+            username=usuario,
+            email=email or f"{usuario}@empresa.com",
             hashed_password=hashed_pw,
             full_name=name,
             role="user",

@@ -544,6 +544,10 @@
                             <input type="text" id="empApellido" class="form-control" placeholder="Ej. Mendoza" oninput="generateCredentials()" required>
                         </div>
                         <div class="form-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="empEmail" class="form-control" placeholder="Ej. carlos@empresa.com" required>
+                        </div>
+                        <div class="form-group">
                             <label>Departamento</label>
                             <select id="empDepartamento" class="form-control">
                                 <option>Cargando departamentos...</option>
@@ -814,7 +818,9 @@
             const passwordInput = document.getElementById('empPassword');
             
             if (nombre && apellido) {
-                usuarioInput.value = nombre.charAt(0) + apellido + '@empresa.com';
+                // Generar username: inicial del nombre + apellido (sin espacios, minúsculas)
+                const baseUsuario = (nombre.charAt(0) + apellido).replace(/\s+/g, '');
+                usuarioInput.value = baseUsuario;
                 if (!passwordInput.value) {
                     const randomPalabra = palabras[Math.floor(Math.random() * palabras.length)];
                     const randomNum = Math.floor(Math.random() * 900) + 100;
@@ -854,6 +860,7 @@
             const name = `${nombre} ${apellido}`; 
             const position = document.getElementById('empDepartamento').value; 
             const birthday_date = document.getElementById('empNacimiento').value;
+            const email = document.getElementById('empEmail').value.trim();
             const file = document.getElementById('empPhoto').files[0];
             const usuario = document.getElementById('empUsuario').value;
             const password = document.getElementById('empPassword').value;
@@ -864,6 +871,7 @@
             formData.append('department', position);
             formData.append('position', 'Empleado'); // Default
             formData.append('birthday_date', birthday_date);
+            formData.append('email', email);
             formData.append('usuario', usuario);
             formData.append('password', password);
             if (file) formData.append('photo', file);

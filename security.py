@@ -86,16 +86,16 @@ def get_token_from_request(request: Request) -> Optional[str]:
 
 
 def _decode_token(token: str) -> str:
-    """Decodifica un JWT y retorna el email del sujeto. Lanza HTTPException si es inválido."""
+    """Decodifica un JWT y retorna el username del sujeto. Lanza HTTPException si es inválido."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: Optional[str] = payload.get("sub")
-        if not email:
+        username: Optional[str] = payload.get("sub")
+        if not username:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token invalido: sin sujeto.",
             )
-        return email
+        return username
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -116,9 +116,9 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> models.
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    email = _decode_token(token)
+    username = _decode_token(token)
 
-    user = db.query(models.User).filter(models.User.email == email).first()
+    user = db.query(models.User).filter(models.User.username == username).first()
     if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
