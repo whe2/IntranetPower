@@ -424,8 +424,15 @@
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-directorio')" class="subtab-btn"><i class="fa-solid fa-address-book"></i> Directorio</a>
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-helpdesk')" class="subtab-btn"><i class="fa-solid fa-headset"></i> Helpdesk</a>
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-reportes')" class="subtab-btn"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+            {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-rrhh')" class="subtab-btn active"><i class="fa-solid fa-users"></i> RRHH</a>
+            {% endif %}
+            {% if user.role == 'admin' or 'ver_integracion' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-integracion')" class="subtab-btn"><i class="fa-solid fa-network-wired"></i> Integración</a>
+            {% endif %}
+            {% if user.role == 'admin' %}
+            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-permisos')" class="subtab-btn"><i class="fa-solid fa-shield-halved"></i> Permisos</a>
+            {% endif %}
         </div>
 
         <div id="subtab-rrhh" class="subtab-content active">
@@ -623,6 +630,34 @@
         <iframe src="/integracion?embed=1" class="iframe-preview" title="Integración"></iframe>
     </div>
 
+    {% if user.role == 'admin' %}
+    <div id="subtab-permisos" class="subtab-content">
+        <main class="main-container" style="grid-template-columns: 1fr;">
+            <section>
+                <div class="card">
+                    <div class="section-title">🛡️ Gestión de Permisos de Usuarios</div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <thead>
+                                <tr style="background-color: var(--cabeceras); color: white;">
+                                    <th style="padding: 12px; text-align: left;">Nombre</th>
+                                    <th style="padding: 12px; text-align: left;">Email</th>
+                                    <th style="padding: 12px; text-align: center;">Cargar Datos Usuarios</th>
+                                    <th style="padding: 12px; text-align: center;">Ver Integración</th>
+                                    <th style="padding: 12px; text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="permissionsTableBody">
+                                <!-- Dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    {% endif %}
+
     <!-- NUEVAS PESTAÑAS (PLACEHOLDERS) -->
     <div id="subtab-proyectos" class="subtab-content">
         <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
@@ -730,7 +765,70 @@
                         select.appendChild(opt);
                     });
                 }
+                
+                {% if user.role == 'admin' %}
+                loadUsersPermissions();
+                {% endif %}
             } catch (e) { }
+        }
+
+        async function loadUsersPermissions() {
+            try {
+                const res = await fetch('/api/rrhh/users');
+                if (res.ok) {
+                    const users = await res.json();
+                    const tbody = document.getElementById('permissionsTableBody');
+                    tbody.innerHTML = '';
+                    users.forEach(u => {
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid #e2e8f0';
+                        
+                        const hasCargar = u.permissions.includes('cargar_datos_usuarios');
+                        const hasIntegracion = u.permissions.includes('ver_integracion');
+                        
+                        tr.innerHTML = `
+                            <td style="padding: 12px;">${u.full_name} <br><small style="color:#64748b;">${u.role}</small></td>
+                            <td style="padding: 12px;">${u.email}</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" id="perm_cargar_${u.id}" ${hasCargar ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" id="perm_integ_${u.id}" ${hasIntegracion ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                ${u.role !== 'admin' ? `<button onclick="savePermissions(${u.id})" class="btn-action btn-gold" style="padding: 6px 12px; font-size: 12px;">Guardar</button>` : '<span style="color:#64748b; font-size: 12px;">Admin Full</span>'}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (e) { console.error('Error cargando usuarios', e); }
+        }
+
+        async function savePermissions(userId) {
+            const cargar = document.getElementById('perm_cargar_' + userId).checked;
+            const integ = document.getElementById('perm_integ_' + userId).checked;
+            
+            let perms = [];
+            if (cargar) perms.push('cargar_datos_usuarios');
+            if (integ) perms.push('ver_integracion');
+            
+            const formData = new FormData();
+            formData.append('permissions', perms.join(','));
+            
+            try {
+                const res = await fetch(`/api/rrhh/users/${userId}/permissions`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    showToast('Permisos guardados con éxito');
+                } else {
+                    showToast('Error al guardar permisos', 'error');
+                }
+            } catch (e) {
+                showToast('Error de servidor', 'error');
+            }
         }
 
         function renderResourcesList(list) {

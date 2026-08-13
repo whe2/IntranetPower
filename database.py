@@ -66,18 +66,27 @@ def _ensure_db_exists():
 
 def get_engine():
     global _using_sqlite
+    engine = None
     if "postgresql" in DATABASE_URL:
         try:
             _ensure_db_exists()
             engine = _get_pg_engine_with_encoding()
             print(f"[DATABASE] OK Conectado a PostgreSQL exitosamente.")
-            return engine
         except Exception as e:
             msg = str(e).encode("ascii", "ignore").decode("ascii")
             print(f"[DATABASE] PostgreSQL no disponible ({msg[:80]}). Usando SQLite fallback.")
-    _using_sqlite = True
-    engine = create_engine(SQLITE_FALLBACK_URL, connect_args={"check_same_thread": False})
-    print(f"[DATABASE] OK Usando SQLite local: {SQLITE_FALLBACK_URL}")
+    if engine is None:
+        _using_sqlite = True
+        engine = create_engine(SQLITE_FALLBACK_URL, connect_args={"check_same_thread": False})
+        print(f"[DATABASE] OK Usando SQLite local: {SQLITE_FALLBACK_URL}")
+
+    # Auto-migrate: add permissions column if it doesn't exist
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN permissions VARCHAR DEFAULT ''"))
+    except Exception:
+        pass # Column likely already exists
+
     return engine
 
 

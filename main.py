@@ -163,6 +163,7 @@ async def login_for_access_token(
             "email": user.email,
             "full_name": user.full_name,
             "role": user.role,
+            "permissions": user.permissions or "",
             "avatar_url": user.avatar_url
         }
     }
@@ -180,6 +181,7 @@ async def get_me(current_user: models.User = Depends(security.get_current_user))
         "email": current_user.email,
         "full_name": current_user.full_name,
         "role": current_user.role,
+        "permissions": current_user.permissions or "",
         "avatar_url": current_user.avatar_url
     }
 
@@ -263,6 +265,7 @@ async def get_dashboard_data(
             "username": current_user.username,
             "email": current_user.email,
             "role": current_user.role,
+            "permissions": current_user.permissions or "",
             "avatar_url": current_user.avatar_url
         },
         "hero": hero,
@@ -540,6 +543,28 @@ async def add_calendar_event(
     db.commit()
     return {"message": "Evento agregado al calendario."}
 
+@app.get("/api/rrhh/users")
+async def list_users_permissions(
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    users = db.query(models.User).order_by(models.User.full_name).all()
+    return [{"id": u.id, "full_name": u.full_name, "email": u.email, "role": u.role, "permissions": u.permissions or ""} for u in users]
+
+@app.post("/api/rrhh/users/{user_id}/permissions")
+async def update_user_permissions(
+    user_id: int,
+    permissions: str = Form(""),
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    user.permissions = permissions
+    db.commit()
+    return {"message": "Permisos actualizados correctamente"}
+
 # ==========================================
 # RUTAS DE PLANTILLAS VISTA HTML
 # ==========================================
@@ -567,7 +592,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login")
     try:
         user = security.get_current_user(request, db)
-        if user.role not in ["admin", "rrhh"]:
+        if user.role not in ["admin", "rrhh"] and "cargar_datos_usuarios" not in (user.permissions or ""):
             return RedirectResponse(url="/")
         return templates.TemplateResponse(request, "rrhh.html", {"user": user})
     except HTTPException:
@@ -580,7 +605,7 @@ async def integracion_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login")
     try:
         user = security.get_current_user(request, db)
-        if user.role not in ["admin", "integracion", "rrhh"]:
+        if user.role not in ["admin", "integracion", "rrhh"] and "ver_integracion" not in (user.permissions or ""):
             return RedirectResponse(url="/")
         embed = request.query_params.get("embed") == "1"
         return templates.TemplateResponse(request, "integracion.html", {"user": user, "embed": embed})

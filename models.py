@@ -12,6 +12,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=False)
     role = Column(String, default="user") # "admin" (RRHH) or "user"
+    permissions = Column(String, default="") # e.g. "cargar_datos_usuarios,ver_integracion"
     avatar_url = Column(String, default="/static/img/default-avatar.png")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
