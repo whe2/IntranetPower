@@ -754,6 +754,11 @@ async def procesar_auditoria(
             except:
                 costoOld = 0.0
                 
+            # Lógica de Comparativa 1: Calcular la facturación real y variación
+            billingAyer = costoOld if estatusOld == 'ACTIVO' else 0.0
+            billingHoy = costoDelPlanNew if estatusNew == 'ACTIVO' else 0.0
+            variacionNeta = billingHoy - billingAyer
+            
             if planOld != planNew:
                 datosCambiosPlan.append({
                     'ID Servicio': sid,
@@ -763,6 +768,7 @@ async def procesar_auditoria(
                     'Plan Nuevo': row.get('Plan', ''),
                     'Costo Anterior': costoOld,
                     'Costo Nuevo': costoDelPlanNew,
+                    'Variación de Costo': variacionNeta,
                     'Estado Actual': row.get('Estado servicio', ''),
                     'Fecha Plan Actual Desde': fechaPlanDesdeFormat 
                 })
@@ -776,6 +782,7 @@ async def procesar_auditoria(
                     'Plan Nuevo': row.get('Plan', ''),
                     'Costo Anterior': costoOld,
                     'Costo Nuevo': costoDelPlanNew,
+                    'Variación de Costo': variacionNeta,
                     'Estado Anterior': row_old.get('Estado servicio', ''),
                     'Estado Nuevo': row.get('Estado servicio', ''),
                     'Fecha Último Cambio Estado': fechaEstadoFormat,
@@ -788,7 +795,9 @@ async def procesar_auditoria(
                     'Cédula': row.get('Cédula', ''),
                     'Nombres': row.get('Nombres', ''),
                     'Plan Actual': row.get('Plan', ''),
+                    'Costo Anterior': costoOld,
                     'Costo del Plan (Actual)': costoDelPlanNew,
+                    'Variación de Costo': variacionNeta,
                     'Estado Anterior': row_old.get('Estado servicio', ''),
                     'Estado Nuevo': row.get('Estado servicio', ''),
                     'Fecha Último Cambio Estado': fechaEstadoFormat

@@ -421,9 +421,15 @@
 
         <div class="fast-links">
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-proyectos')" class="subtab-btn"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+            {% if user.role == 'admin' or 'ver_directorio' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-directorio')" class="subtab-btn"><i class="fa-solid fa-address-book"></i> Directorio</a>
+            {% endif %}
+            {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-helpdesk')" class="subtab-btn"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+            {% endif %}
+            {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-reportes')" class="subtab-btn"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+            {% endif %}
             {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-rrhh')" class="subtab-btn active"><i class="fa-solid fa-users"></i> RRHH</a>
             {% endif %}
@@ -481,34 +487,174 @@
             </div>
         </div>
 
+        <!-- MODAL PARA GESTIONAR DEPARTAMENTOS -->
+        <div class="modal-overlay" id="deptModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-building"></i> Gestionar Departamentos</h3>
+                    <button type="button" class="btn-close-modal" onclick="closeModal('deptModal')"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form onsubmit="addDepartment(event)">
+                    <div class="form-group">
+                        <label>Nuevo Departamento</label>
+                        <input type="text" id="deptName" class="form-control" placeholder="Ej. Finanzas" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('deptModal')">Cancelar</button>
+                        <button type="submit" class="btn-action btn-gold">Crear Departamento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL PARA AÑADIR EMPLEADO -->
+        <div class="modal-overlay" id="empModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-user-plus"></i> Añadir Empleado al Directorio</h3>
+                    <button type="button" class="btn-close-modal" onclick="closeModal('empModal')"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form id="addEmployeeForm" onsubmit="addEmployee(event)">
+                    <div class="form-group">
+                        <label>Cédula de Identidad</label>
+                        <input type="text" id="empCedula" class="form-control" placeholder="Ej. V-12345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="empNombre" class="form-control" placeholder="Ej. Carlos" oninput="generateCredentials()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido</label>
+                        <input type="text" id="empApellido" class="form-control" placeholder="Ej. Mendoza" oninput="generateCredentials()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="empEmail" class="form-control" placeholder="Ej. carlos@empresa.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <select id="empDepartamento" class="form-control">
+                            <option>Cargando departamentos...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" id="empNacimiento" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Foto de Perfil (JPG/PNG)</label>
+                        <input type="file" id="empPhoto" class="form-control" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label>Usuario Autogenerado</label>
+                        <input type="text" id="empUsuario" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña Autogenerada</label>
+                        <input type="text" id="empPassword" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('empModal')">Cancelar</button>
+                        <button type="submit" class="btn-action btn-gold">Guardar/Publicar en directorio</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL PARA CARGAR RECURSOS -->
+        <div class="modal-overlay" id="resModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-file-arrow-up"></i> Cargar Recursos y Documentos PDF</h3>
+                    <button type="button" class="btn-close-modal" onclick="closeModal('resModal')"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form onsubmit="uploadResource(event)">
+                    <div class="form-group">
+                        <label>Nombre del Recurso / Plantilla</label>
+                        <input type="text" id="resTitle" class="form-control" placeholder="Ej. Solicitud de Permiso Laboral" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="resCategory" class="form-control">
+                            <option value="Solicitudes">Solicitudes</option>
+                            <option value="Aplicaciones">Aplicaciones</option>
+                            <option value="Plantillas">Plantillas</option>
+                            <option value="Manual Empleado">Manual Empleado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Archivo (PDF / DOCX / ZIP)</label>
+                        <input type="file" id="resFile" class="form-control" accept=".pdf,.docx,.zip,.xlsx" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('resModal')">Cancelar</button>
+                        <button type="submit" class="btn-action btn-gold">Subir y Publicar Documento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL PARA MÉTRICAS KPI -->
+        <div class="modal-overlay" id="kpiModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-chart-line"></i> Actualizar Métricas Trimestrales (KPIs)</h3>
+                    <button type="button" class="btn-close-modal" onclick="closeModal('kpiModal')"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form onsubmit="updateKPIs(event)">
+                    <div class="form-group">
+                        <label>Métrica 1: Clientes Activos</label>
+                        <input type="text" id="kpi1" class="form-control" value="23% ↑">
+                    </div>
+                    <div class="form-group">
+                        <label>Métrica 2: Clientes Powerlink Go</label>
+                        <input type="text" id="kpi2" class="form-control" value="5.2% ↑">
+                    </div>
+                    <div class="form-group">
+                        <label>Métrica 3: Zonas Habilitadas</label>
+                        <input type="text" id="kpi3" class="form-control" value="27.6K ↓">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('kpiModal')">Cancelar</button>
+                        <button type="submit" class="btn-action btn-gold">Guardar Métricas</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL PARA MARCAR EVENTO -->
+        <div class="modal-overlay" id="calModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-regular fa-calendar-plus"></i> Marcar Evento en Calendario</h3>
+                    <button type="button" class="btn-close-modal" onclick="closeModal('calModal')"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form onsubmit="addCalendarEvent(event)">
+                    <div class="form-group">
+                        <label>Día del Mes (Número)</label>
+                        <input type="number" id="calDay" class="form-control" min="1" max="31" value="15" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Título del Evento</label>
+                        <input type="text" id="calTitle" class="form-control" placeholder="Ej. Reunión General de Personal" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('calModal')">Cancelar</button>
+                        <button type="submit" class="btn-action btn-gold">Destacar Día en Calendario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <main class="main-container">
 
             <!-- COLUMNA 1: GESTIÓN DE RECURSOS -->
             <section>
                 <div class="card">
                     <div class="section-title">📤 Cargar Recursos y Documentos PDF</div>
-                    <form onsubmit="uploadResource(event)">
-                        <div class="form-group">
-                            <label>Nombre del Recurso / Plantilla</label>
-                            <input type="text" id="resTitle" class="form-control"
-                                placeholder="Ej. Solicitud de Permiso Laboral" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Categoría</label>
-                            <select id="resCategory" class="form-control">
-                                <option value="Solicitudes">Solicitudes</option>
-                                <option value="Aplicaciones">Aplicaciones</option>
-                                <option value="Plantillas">Plantillas</option>
-                                <option value="Manual Empleado">Manual Empleado</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Archivo (PDF / DOCX / ZIP)</label>
-                            <input type="file" id="resFile" class="form-control" accept=".pdf,.docx,.zip,.xlsx"
-                                required>
-                        </div>
-                        <button type="submit" class="btn-action" style="width:100%;">Subir y Publicar Documento</button>
-                    </form>
+                    <button class="btn-action btn-gold" style="width:100%; margin-bottom: 20px;" onclick="openModal('resModal')">
+                        <i class="fa-solid fa-upload"></i> Subir Nuevo Recurso
+                    </button>
 
                     <div class="uploaded-list">
                         <label style="font-weight:700; margin-bottom:8px; display:block; color:#334155;">Documentos
@@ -525,79 +671,31 @@
                 <!-- GESTIONAR DEPARTAMENTOS -->
                 <div class="card">
                     <div class="section-title">🏢 Gestionar Departamentos</div>
-                    <form onsubmit="addDepartment(event)">
-                        <div class="form-group">
-                            <label>Nuevo Departamento</label>
-                            <input type="text" id="deptName" class="form-control" placeholder="Ej. Finanzas" required>
-                        </div>
-                        <button type="submit" class="btn-action" style="width:100%; background-color:#334155;">Crear Departamento</button>
-                    </form>
+                    <button class="btn-action" style="width:100%; background-color:#334155;" onclick="openModal('deptModal')">
+                        <i class="fa-solid fa-folder-plus"></i> Crear Departamento
+                    </button>
                 </div>
 
                 <!-- AÑADIR EMPLEADO -->
                 <div class="card">
                     <div class="section-title">👤 Añadir Empleado al Directorio</div>
-                    <form id="addEmployeeForm" onsubmit="addEmployee(event)">
-                        <div class="form-group">
-                            <label>Cédula de Identidad</label>
-                            <input type="text" id="empCedula" class="form-control" placeholder="Ej. V-12345678" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="empNombre" class="form-control" placeholder="Ej. Carlos" oninput="generateCredentials()" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Apellido</label>
-                            <input type="text" id="empApellido" class="form-control" placeholder="Ej. Mendoza" oninput="generateCredentials()" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Correo Electrónico</label>
-                            <input type="email" id="empEmail" class="form-control" placeholder="Ej. carlos@empresa.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Departamento</label>
-                            <select id="empDepartamento" class="form-control">
-                                <option>Cargando departamentos...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Fecha de Nacimiento</label>
-                            <input type="date" id="empNacimiento" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Foto de Perfil (JPG/PNG)</label>
-                            <input type="file" id="empPhoto" class="form-control" accept="image/*">
-                        </div>
-                        <div class="form-group">
-                            <label>Usuario Autogenerado</label>
-                            <input type="text" id="empUsuario" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Contraseña Autogenerada</label>
-                            <input type="text" id="empPassword" class="form-control" style="background:#eee; cursor:not-allowed;" readonly>
-                        </div>
-                        <button type="submit" class="btn-action btn-gold" style="width:100%;">Guardar/Publicar en directorio</button>
-                    </form>
+                    <button class="btn-action btn-gold" style="width:100%;" onclick="openModal('empModal')">
+                        <i class="fa-solid fa-user-plus"></i> Añadir Empleado
+                    </button>
                 </div>
 
                 <!-- ACTUALIZAR MÉTRICAS KPI -->
                 <div class="card">
                     <div class="section-title">📊 Actualizar Métricas Trimestrales (KPIs)</div>
-                    <form onsubmit="updateKPIs(event)">
-                        <div class="form-group">
-                            <label>Métrica 1: Clientes Activos</label>
-                            <input type="text" id="kpi1" class="form-control" value="23% ↑">
-                        </div>
-                        <div class="form-group">
-                            <label>Métrica 2: Clientes Powerlink Go</label>
-                            <input type="text" id="kpi2" class="form-control" value="5.2% ↑">
-                        </div>
-                        <div class="form-group">
-                            <label>Métrica 3: Zonas Habilitadas</label>
-                            <input type="text" id="kpi3" class="form-control" value="27.6K ↓">
-                        </div>
-                        <button type="submit" class="btn-action" style="width:100%;">Guardar Métricas</button>
-                    </form>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h4 style="margin:0 0 10px 0; color:#334155;">Valores Actuales</h4>
+                        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 5px;"><span>Clientes Activos:</span> <strong id="kpiPreview1">23% ↑</strong></div>
+                        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 5px;"><span>Powerlink Go:</span> <strong id="kpiPreview2">5.2% ↑</strong></div>
+                        <div style="display:flex; justify-content:space-between; font-size:14px;"><span>Zonas Habilitadas:</span> <strong id="kpiPreview3">27.6K ↓</strong></div>
+                    </div>
+                    <button class="btn-action" style="width:100%; background-color:#334155;" onclick="openModal('kpiModal')">
+                        <i class="fa-solid fa-pen-to-square"></i> Actualizar Métricas
+                    </button>
                 </div>
             </section>
 
@@ -608,18 +706,9 @@
                 <!-- CALENDARIO -->
                 <div class="card">
                     <div class="section-title">📅 Marcar Evento en Calendario</div>
-                    <form onsubmit="addCalendarEvent(event)">
-                        <div class="form-group">
-                            <label>Día del Mes (Número)</label>
-                            <input type="number" id="calDay" class="form-control" min="1" max="31" value="15" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Título del Evento</label>
-                            <input type="text" id="calTitle" class="form-control"
-                                placeholder="Ej. Reunión General de Personal" required>
-                        </div>
-                        <button type="submit" class="btn-action" style="width:100%;">Destacar Día en Calendario</button>
-                    </form>
+                    <button class="btn-action" style="width:100%; background-color:#334155;" onclick="openModal('calModal')">
+                        <i class="fa-regular fa-calendar-plus"></i> Marcar Evento
+                    </button>
                 </div>
             </section>
 
@@ -644,6 +733,9 @@
                                     <th style="padding: 12px; text-align: left;">Email</th>
                                     <th style="padding: 12px; text-align: center;">Cargar Datos Usuarios</th>
                                     <th style="padding: 12px; text-align: center;">Ver Integración</th>
+                                    <th style="padding: 12px; text-align: center;">Ver Reportes</th>
+                                    <th style="padding: 12px; text-align: center;">Ver Helpdesk</th>
+                                    <th style="padding: 12px; text-align: center;">Ver Directorio</th>
                                     <th style="padding: 12px; text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
@@ -785,6 +877,9 @@
                         
                         const hasCargar = u.permissions.includes('cargar_datos_usuarios');
                         const hasIntegracion = u.permissions.includes('ver_integracion');
+                        const hasReportes = u.permissions.includes('ver_reportes');
+                        const hasHelpdesk = u.permissions.includes('ver_helpdesk');
+                        const hasDirectorio = u.permissions.includes('ver_directorio');
                         
                         tr.innerHTML = `
                             <td style="padding: 12px;">${u.full_name} <br><small style="color:#64748b;">${u.role}</small></td>
@@ -794,6 +889,15 @@
                             </td>
                             <td style="padding: 12px; text-align: center;">
                                 <input type="checkbox" id="perm_integ_${u.id}" ${hasIntegracion ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" id="perm_reportes_${u.id}" ${hasReportes ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" id="perm_helpdesk_${u.id}" ${hasHelpdesk ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" id="perm_directorio_${u.id}" ${hasDirectorio ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
                             </td>
                             <td style="padding: 12px; text-align: center;">
                                 ${u.role !== 'admin' ? `<button onclick="savePermissions(${u.id})" class="btn-action btn-gold" style="padding: 6px 12px; font-size: 12px;">Guardar</button>` : '<span style="color:#64748b; font-size: 12px;">Admin Full</span>'}
@@ -808,10 +912,16 @@
         async function savePermissions(userId) {
             const cargar = document.getElementById('perm_cargar_' + userId).checked;
             const integ = document.getElementById('perm_integ_' + userId).checked;
+            const reportes = document.getElementById('perm_reportes_' + userId).checked;
+            const helpdesk = document.getElementById('perm_helpdesk_' + userId).checked;
+            const directorio = document.getElementById('perm_directorio_' + userId).checked;
             
             let perms = [];
             if (cargar) perms.push('cargar_datos_usuarios');
             if (integ) perms.push('ver_integracion');
+            if (reportes) perms.push('ver_reportes');
+            if (helpdesk) perms.push('ver_helpdesk');
+            if (directorio) perms.push('ver_directorio');
             
             const formData = new FormData();
             formData.append('permissions', perms.join(','));
@@ -864,11 +974,17 @@
             } catch (err) { showToast('Error de servidor', 'error'); }
         }
 
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
         function openAnnouncementModal() {
-            document.getElementById('announcementModal').classList.add('active');
+            openModal('announcementModal');
         }
         function closeAnnouncementModal() {
-            document.getElementById('announcementModal').classList.remove('active');
+            closeModal('announcementModal');
         }
         function updatePreview() {
             const title = document.getElementById('heroTitleInput').value.trim();
@@ -892,6 +1008,7 @@
                     showToast('Documento subido y publicado.');
                     document.getElementById('resTitle').value = '';
                     document.getElementById('resFile').value = '';
+                    closeModal('resModal');
                     loadAdminData();
                 } else showToast('Error al subir recurso', 'error');
             } catch (err) { showToast('Error de servidor', 'error'); }
@@ -940,6 +1057,7 @@
                 if (res.ok) {
                     showToast('Departamento creado.');
                     document.getElementById('deptName').value = '';
+                    closeModal('deptModal');
                     loadAdminData(); // Reload the dropdown
                 } else {
                     const data = await res.json();
@@ -986,6 +1104,7 @@
                     document.getElementById('addEmployeeForm').reset();
                     document.getElementById('empUsuario').value = '';
                     document.getElementById('empPassword').value = '';
+                    closeModal('empModal');
                 }
             } catch (e) { showToast('Error al guardar empleado', 'error'); }
         }
@@ -1008,7 +1127,13 @@
                         ]
                     })
                 });
-                if (res.ok) showToast('Métricas KPI actualizadas.');
+                if (res.ok) {
+                    showToast('Métricas KPI actualizadas.');
+                    document.getElementById('kpiPreview1').innerText = kpi1;
+                    document.getElementById('kpiPreview2').innerText = kpi2;
+                    document.getElementById('kpiPreview3').innerText = kpi3;
+                    closeModal('kpiModal');
+                }
             } catch (e) { showToast('Error al actualizar métricas', 'error'); }
         }
 
@@ -1040,7 +1165,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ day: parseInt(day), title: title })
                 });
-                if (res.ok) showToast('Evento registrado en calendario.');
+                if (res.ok) {
+                    showToast('Evento registrado en calendario.');
+                    closeModal('calModal');
+                }
             } catch (e) { }
         }
 
