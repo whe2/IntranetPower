@@ -253,15 +253,7 @@
         <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-200 mb-8">
             <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4">1. Parámetros de Carga y Filtros de Fecha</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Archivo Excel Anterior:</label>
-                    <input type="file" id="fileOld" accept=".xlsx, .xls" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-slate-200">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Archivo Excel Nuevo (Actual):</label>
-                    <input type="file" id="fileNew" accept=".xlsx, .xls" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-slate-200">
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Cuadro Resumen (Contar Suspendidos desde):</label>
                     <input type="date" id="fechaCorteInput" value="2026-07-01" class="w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
@@ -271,12 +263,27 @@
                     <input type="date" id="fechaInstalacionesInput" value="2026-07-13" class="w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
+
+            <!-- Sección Opcional: Cargar Archivo Antiguo -->
+            <div class="mt-6 border-t border-gray-200 pt-4">
+                <button type="button" onclick="document.getElementById('opcionalExcel').classList.toggle('hidden')" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer flex items-center">
+                    <i class="fa-solid fa-file-excel mr-2"></i> ¿Deseas comparar con un Excel de un día en particular? (Opcional)
+                </button>
+                <div id="opcionalExcel" class="hidden mt-4 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                    <label class="block text-sm font-semibold text-indigo-800 mb-2">Cargar Archivo Excel Antiguo (.xlsx):</label>
+                    <input type="file" id="fileOld" accept=".xlsx, .xls" class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+                    <p class="text-xs text-indigo-600 mt-2">Si subes un archivo, la comparativa cruzará los datos de este archivo con la API en vivo, ignorando el registro base.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Botón de Acción -->
-        <div class="flex justify-center mb-8">
-            <button id="btnProcesar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all cursor-pointer">
-                Procesar y Comparar Archivos
+        <div class="flex justify-center mb-8 gap-4">
+            <button id="btnGuardarRegistro" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all cursor-pointer">
+                <i class="fa-solid fa-save mr-2"></i> Guardar Registro Actual (Como Anterior)
+            </button>
+            <button id="btnProcesarApi" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all cursor-pointer">
+                <i class="fa-solid fa-rotate mr-2"></i> Comparar API (Actual) vs Registro Guardado
             </button>
         </div>
 
@@ -301,6 +308,25 @@
                     <div class="p-4 bg-indigo-50 rounded-lg">
                         <p class="text-sm font-medium text-indigo-700">Exonerados Regulares</p>
                         <p id="resumenExonReg" class="text-2xl font-bold text-indigo-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuadro de Resumen Financiero -->
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-200 mb-6">
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">💰 Resumen Financiero de Variaciones</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div class="p-4 bg-emerald-50 rounded-lg">
+                        <p class="text-sm font-medium text-emerald-700">Total Nuevas Instalaciones</p>
+                        <p id="resumenFinancieroInstalaciones" class="text-2xl font-bold text-emerald-900">$0.00</p>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg">
+                        <p class="text-sm font-medium text-purple-700">Variación Neta por Cambios de Estatus</p>
+                        <p id="resumenFinancieroEstatus" class="text-2xl font-bold text-purple-900">$0.00</p>
+                    </div>
+                    <div class="p-4 bg-orange-50 rounded-lg">
+                        <p class="text-sm font-medium text-orange-700">Variación Neta por Cambios de Plan</p>
+                        <p id="resumenFinancieroPlan" class="text-2xl font-bold text-orange-900">$0.00</p>
                     </div>
                 </div>
             </div>
@@ -380,6 +406,14 @@
                 </div>
             </div>
         </div>
+        </div>
+    </div>
+
+    <!-- Spinner Overlay Anaranjado -->
+    <div id="globalSpinnerOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 flex flex-col items-center justify-center hidden">
+        <i class="fa-solid fa-circle-notch fa-spin text-7xl text-orange-500 mb-4"></i>
+        <h2 id="spinnerText" class="text-2xl font-bold text-white tracking-wider">Procesando...</h2>
+        <p class="text-gray-200 mt-2">Por favor, espera unos segundos.</p>
     </div>
 
     <script>
@@ -398,6 +432,20 @@
         let datosEstatus = [];
         let datosDeudores = [];
         let cuadroResumenFinal = [];
+
+        // Inicializar fechas por defecto (Instalaciones = Ayer, Corte = 1ro del mes actual)
+        document.addEventListener("DOMContentLoaded", () => {
+            const hoy = new Date();
+            
+            // Ayer
+            const ayer = new Date(hoy);
+            ayer.setDate(ayer.getDate() - 1);
+            document.getElementById('fechaInstalacionesInput').value = ayer.toISOString().split('T')[0];
+            
+            // 1ro del mes actual
+            const primeroMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            document.getElementById('fechaCorteInput').value = primeroMes.toISOString().split('T')[0];
+        });
 
         function limpiarFechaSoloDia(valorCelda) {
             if (!valorCelda) return '';
@@ -438,30 +486,78 @@
             return new Date(`${partes[2]}-${partes[1]}-${partes[0]}T00:00:00`).getTime();
         }
 
-        document.getElementById('btnProcesar').addEventListener('click', async () => {
-            const fileOld = document.getElementById('fileOld').files[0];
-            const fileNew = document.getElementById('fileNew').files[0];
+        document.getElementById('btnGuardarRegistro').addEventListener('click', async () => {
+            if (!confirm('¿Deseas guardar los datos actuales de la API como tu nuevo registro base (Anterior)? Esto sobreescribirá el anterior.')) return;
+
+            const btn = document.getElementById('btnGuardarRegistro');
+            const origText = btn.innerHTML;
+            
+            const overlay = document.getElementById('globalSpinnerOverlay');
+            const spinnerText = document.getElementById('spinnerText');
+            
+            btn.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin text-orange-500 mr-2'></i> Obteniendo y guardando...";
+            btn.disabled = true;
+            
+            spinnerText.innerText = "Guardando Registro Actual...";
+            overlay.classList.remove('hidden');
+
+            try {
+                const cookies = document.cookie.split(';').reduce((acc, current) => {
+                    const [key, value] = current.trim().split('=');
+                    acc[key] = value;
+                    return acc;
+                }, {});
+                const token = cookies['token'] || '';
+
+                const response = await fetch('/api/integracion/guardar_snapshot', {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Error al guardar el snapshot en la API');
+                }
+
+                alert(`¡Registro guardado exitosamente!\n\nHora del registro base: ${result.time}\n\nAhora puedes usar el botón de comparar cuando haya cambios nuevos.`);
+            } catch (error) {
+                console.error(error);
+                alert('Ocurrió un error: ' + error.message);
+            } finally {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+                overlay.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btnProcesarApi').addEventListener('click', async () => {
             const fechaCorteUsuario = document.getElementById('fechaCorteInput').value;
             const fechaInstalacionesUsuario = document.getElementById('fechaInstalacionesInput').value;
-
-            if (!fileOld || !fileNew) {
-                alert('Por favor, selecciona ambos archivos Excel (.xlsx) para continuar.');
-                return;
-            }
+            const fileOldInput = document.getElementById('fileOld');
 
             const formData = new FormData();
-            formData.append('fileOld', fileOld);
-            formData.append('fileNew', fileNew);
             formData.append('fechaCorte', fechaCorteUsuario);
             formData.append('fechaInstalaciones', fechaInstalacionesUsuario);
+            
+            if (fileOldInput && fileOldInput.files.length > 0) {
+                formData.append('fileOld', fileOldInput.files[0]);
+            }
 
             // Limpiar matrices
             datosInstalaciones = []; datosCambiosPlan = []; datosSeguimiento = []; datosEstatus = []; datosDeudores = []; cuadroResumenFinal = [];
 
-            const btn = document.getElementById('btnProcesar');
-            const origText = btn.innerText;
-            btn.innerText = "Procesando en backend...";
+            const btn = document.getElementById('btnProcesarApi');
+            const origText = btn.innerHTML;
+            
+            const overlay = document.getElementById('globalSpinnerOverlay');
+            const spinnerText = document.getElementById('spinnerText');
+            
+            btn.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin text-orange-500 mr-2'></i> Comparando en backend (aprox 10s)...";
             btn.disabled = true;
+            
+            spinnerText.innerText = "Comparando API vs Registro...";
+            overlay.classList.remove('hidden');
 
             try {
                 // Obtener token para la petición si existe
@@ -472,14 +568,15 @@
                 }, {});
                 const token = cookies['token'] || '';
 
-                const response = await fetch('/api/integracion/procesar', {
+                const response = await fetch('/api/integracion/procesar_api', {
                     method: 'POST',
                     body: formData,
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 if (!response.ok) {
-                    throw new Error('Error al procesar los archivos en el backend');
+                    const errInfo = await response.json().catch(()=>({}));
+                    throw new Error(errInfo.detail || 'Error al procesar los archivos en el backend');
                 }
 
                 const result = await response.json();
@@ -511,6 +608,26 @@
                 document.getElementById('badge-seguimiento').innerText = datosSeguimiento.length;
                 document.getElementById('badge-deudores').innerText = datosDeudores.length;
                 
+                // Calcular y renderizar sumatoria de variaciones
+                let sumEstatus = 0;
+                datosEstatus.forEach(item => {
+                    sumEstatus += parseFloat(item['Variación de Costo'] || 0);
+                });
+
+                let sumPlan = 0;
+                datosCambiosPlan.forEach(item => {
+                    sumPlan += parseFloat(item['Variación de Costo'] || 0);
+                });
+
+                let sumInstalaciones = 0;
+                datosInstalaciones.forEach(item => {
+                    sumInstalaciones += parseFloat(item['Costo del plan'] || 0);
+                });
+
+                document.getElementById('resumenFinancieroEstatus').innerText = '$' + sumEstatus.toFixed(2);
+                document.getElementById('resumenFinancieroPlan').innerText = '$' + sumPlan.toFixed(2);
+                document.getElementById('resumenFinancieroInstalaciones').innerText = '$' + sumInstalaciones.toFixed(2);
+                
                 // Llenar dropdown de planes
                 populatePlanFilter();
                 
@@ -519,14 +636,15 @@
                 // Renderizar tabla por defecto
                 changeTab('estatus');
 
-                alert('¡Análisis ultrarrápido completado en backend de manera exitosa!');
+                alert('¡Análisis automático completado de manera exitosa!');
 
             } catch (error) {
                 console.error(error);
-                alert('Ocurrió un error general durante la comparación.');
+                alert('Ocurrió un error general durante la comparación: ' + error.message);
             } finally {
-                btn.innerText = origText;
+                btn.innerHTML = origText;
                 btn.disabled = false;
+                overlay.classList.add('hidden');
             }
         });
 

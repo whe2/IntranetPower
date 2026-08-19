@@ -314,26 +314,83 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: var(--cabeceras);
-            color: var(--blanco);
+            background-color: #fef9c3; /* Amarillo pastel muy suave y elegante (Tailwind yellow-100) */
+            color: var(--texto-negro);
             padding: 18px 20px;
             border-radius: 8px;
+            border-left: 5px solid var(--acento); /* Detalle de marca lateral */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .kpi-card.alt {
-            background-color: #1e293b;
+            background-color: #fefce8; /* Amarillo aún más claro para intercalar (Tailwind yellow-50) */
         }
 
         .kpi-card .kpi-title {
             font-size: 14px;
             font-weight: 600;
-            color: #cbd5e1;
+            color: var(--texto-negro);
         }
 
         .kpi-card .kpi-value {
             font-size: 20px;
-            font-weight: 700;
-            color: var(--acento);
+            font-weight: 800;
+            color: var(--cabeceras);
+        }
+
+        /* POP-UP BIENVENIDA */
+        .welcome-popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .welcome-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .welcome-popup {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s ease;
+            position: relative;
+            border-top: 5px solid var(--acento);
+        }
+        .welcome-popup-overlay.active .welcome-popup {
+            transform: translateY(0) scale(1);
+        }
+        .welcome-popup h2 {
+            color: var(--cabeceras);
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        .welcome-popup p {
+            color: var(--texto-gris);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .welcome-popup .close-popup {
+            position: absolute;
+            top: 10px; right: 15px;
+            background: none; border: none;
+            font-size: 20px; color: #94a3b8;
+            cursor: pointer;
+        }
+        .welcome-popup .close-popup:hover {
+            color: #ef4444;
         }
 
         /* CALENDARIO */
@@ -698,6 +755,15 @@
 
 
 
+    <!-- POP-UP BIENVENIDA -->
+    <div class="welcome-popup-overlay" id="welcomePopupOverlay">
+        <div class="welcome-popup">
+            <button class="close-popup" onclick="closeWelcomePopup()"><i class="fa-solid fa-xmark"></i></button>
+            <h2>¡Bienvenido/a, <span id="welcomeName"></span>!</h2>
+            <p id="welcomeMessage" style="margin-top: 10px;"></p>
+        </div>
+    </div>
+
     <script>
         let allResources = [];
 
@@ -711,12 +777,16 @@
                 const data = await res.json();
 
                 // User profile
-                document.getElementById('userNavName').textContent = data.user.full_name;
+                const fullName = data.user.full_name;
+                document.getElementById('userNavName').textContent = fullName;
                 if (data.user.avatar_url) document.getElementById('userNavAvatar').src = data.user.avatar_url;
                 if (data.user.role === 'admin' || data.user.role === 'rrhh' || (data.user.permissions || '').includes('cargar_datos_usuarios')) {
                     const btn = document.getElementById('adminNavBtn');
                     if (btn) btn.style.display = 'inline-block';
                 }
+
+                // Mostrar Pop-up de Bienvenida
+                showWelcomePopup(fullName);
 
                 // Hero
                 if (data.hero) {
@@ -743,18 +813,10 @@
                     empContainer.appendChild(div);
                 });
 
-                // KPIs
+                // KPIs - Llenado ahora desde la API de crecimiento en la función loadMetricasCrecimiento()
+                // Limpiamos el contenedor por si acaso.
                 const kpiContainer = document.getElementById('kpiContainer');
-                kpiContainer.innerHTML = '';
-                (data.kpis || []).forEach((kpi, idx) => {
-                    const div = document.createElement('div');
-                    div.className = `kpi-card ${idx % 2 === 1 ? 'alt' : ''}`;
-                    div.innerHTML = `
-                        <span class="kpi-title">${kpi.title}</span>
-                        <span class="kpi-value">${kpi.value}</span>
-                    `;
-                    kpiContainer.appendChild(div);
-                });
+                kpiContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: #fff;"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-yellow-500"></i></div>';
 
                 // Birthday
                 if (data.birthday_employee) {
@@ -768,8 +830,40 @@
 
 
             } catch (err) {
-                console.error('Error cargando dashboard:', err);
+                console.error("Error cargando dashboard:", err);
             }
+        }
+
+        async function showWelcomePopup(name) {
+            document.getElementById('welcomeName').textContent = name.split(" ")[0]; // Primer nombre
+            
+            try {
+                const res = await fetch('/api/popup');
+                if (res.ok) {
+                    const data = await res.json();
+                    if(data.message) {
+                        document.getElementById('welcomeMessage').textContent = data.message;
+                        document.getElementById('welcomeMessage').style.display = 'block';
+                    } else {
+                        document.getElementById('welcomeMessage').style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                document.getElementById('welcomeMessage').style.display = 'none';
+            }
+
+            const overlay = document.getElementById('welcomePopupOverlay');
+            overlay.classList.add('active');
+
+            // Cerrar automáticamente a los 5 segundos
+            setTimeout(() => {
+                closeWelcomePopup();
+            }, 5000);
+        }
+
+        function closeWelcomePopup() {
+            const overlay = document.getElementById('welcomePopupOverlay');
+            overlay.classList.remove('active');
         }
 
         function renderFilteredResources() {
@@ -833,8 +927,63 @@
             window.location.href = '/login';
         }
 
+        async function loadMetricasCrecimiento() {
+            try {
+                const res = await fetch('/api/metricas/crecimiento');
+                let activos = 0, iptv = 0;
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    activos = data.activos_power || 0;
+                    iptv = data.activos_iptv || 0;
+                }
+                
+                const kpiContainer = document.getElementById('kpiContainer');
+                kpiContainer.innerHTML = '';
+                
+                // Formateador
+                const fmt = new Intl.NumberFormat('en-US');
+                
+                // Cliente Activos
+                const div1 = document.createElement('div');
+                div1.className = 'kpi-card';
+                div1.innerHTML = `
+                    <span class="kpi-title">Clientes activos</span>
+                    <span class="kpi-value">${fmt.format(activos)} <i class="fa-solid fa-arrow-trend-up ml-1 text-sm text-green-600"></i></span>
+                `;
+                
+                // Clientes Powerlink Go (IPTV)
+                const div2 = document.createElement('div');
+                div2.className = 'kpi-card alt';
+                div2.innerHTML = `
+                    <span class="kpi-title">Clientes powerlink Go</span>
+                    <span class="kpi-value">${fmt.format(iptv)} <i class="fa-solid fa-arrow-trend-up ml-1 text-sm text-green-600"></i></span>
+                `;
+                
+                // Zonas habilitadas (0)
+                const div3 = document.createElement('div');
+                div3.className = 'kpi-card';
+                div3.innerHTML = `
+                    <span class="kpi-title">Zonas habilitadas</span>
+                    <span class="kpi-value">0 <i class="fa-solid fa-minus ml-1 text-sm text-gray-500"></i></span>
+                `;
+                
+                kpiContainer.appendChild(div1);
+                kpiContainer.appendChild(div2);
+                kpiContainer.appendChild(div3);
+                
+            } catch(e) {
+                console.error("Error cargando métricas:", e);
+                const kpiContainer = document.getElementById('kpiContainer');
+                kpiContainer.innerHTML = '<div style="color: #ef4444; text-align: center; font-size: 12px; padding: 10px;">Error al cargar datos</div>';
+            }
+        }
+
         // Init
-        window.addEventListener('DOMContentLoaded', loadDashboard);
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadMetricasCrecimiento();
+        });
     </script>
 </body>
 

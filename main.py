@@ -565,6 +565,33 @@ async def update_user_permissions(
     db.commit()
     return {"message": "Permisos actualizados correctamente"}
 
+@app.get("/api/popup")
+async def get_popup_notification(
+    db: Session = Depends(get_db)
+):
+    popup = db.query(models.PopupNotification).order_by(models.PopupNotification.id.desc()).first()
+    if popup and popup.is_active:
+        return {"message": popup.message}
+    return {"message": ""}
+
+@app.post("/api/rrhh/popup")
+async def update_popup_notification(
+    message: str = Form(""),
+    is_active: str = Form("true"),
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    is_act = is_active.lower() == "true"
+    popup = db.query(models.PopupNotification).first()
+    if not popup:
+        popup = models.PopupNotification(message=message, is_active=is_act)
+        db.add(popup)
+    else:
+        popup.message = message
+        popup.is_active = is_act
+    db.commit()
+    return {"status": "success", "message": "Pop-up actualizado."}
+
 # ==========================================
 # RUTAS DE PLANTILLAS VISTA HTML
 # ==========================================
@@ -619,28 +646,160 @@ def safe_date_str(val):
         return val.strftime("%d/%m/%Y")
     return str(val).split(" ")[0]
 
-@app.post("/api/integracion/procesar")
-async def procesar_auditoria(
+import urllib.request
+import urllib.parse
+import json
+import time
+
+def fetch_powerlink_data():
+    login_url = "https://powerlink.rubpi.com/api/login"
+    creds = {"username": "api_exp", "password": "-?J+\\FcmKT2zWl5A28=~"}
+    data = json.dumps(creds).encode('utf-8')
+
+    req = urllib.request.Request(login_url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode())
+            api_token = res_data.get('token') or res_data.get('access_token')
+    except Exception as e:
+        raise Exception(f"Error en login API: {str(e)}")
+
+    if not api_token:
+        raise Exception("No se pudo obtener token de la API")
+
+    export_url = "https://powerlink.rubpi.com/api/exports/users"
+    req2 = urllib.request.Request(export_url, headers={'Authorization': f'Bearer {api_token}', 'Content-Type': 'application/json', 'Accept': 'application/json'}, method='POST')
+    try:
+        with urllib.request.urlopen(req2) as response:
+            res2_data = json.loads(response.read().decode())
+            task_id = res2_data.get('task_id') or res2_data.get('id')
+    except Exception as e:
+        raise Exception(f"Error al iniciar exportación: {str(e)}")
+
+    if not task_id:
+        raise Exception("No se obtuvo task_id")
+
+    get_url = f"https://powerlink.rubpi.com/api/exports/users/{task_id}"
+    
+    for i in range(20): # try for 60 seconds
+        time.sleep(3)
+        req3 = urllib.request.Request(get_url, headers={'Authorization': f'Bearer {api_token}'}, method='GET')
+        try:
+            with urllib.request.urlopen(req3) as response:
+                res3_data = json.loads(response.read().decode())
+                return res3_data
+        except urllib.error.HTTPError as e:
+            if e.code == 400:
+                continue
+            raise Exception("Error de API: " + str(e.code))
+        except Exception as e:
+            raise Exception(f"Error al consultar tarea: {str(e)}")
+
+    raise Exception("Tiempo de espera agotado para la tarea")
+
+@app.get("/api/integracion/api_users")
+def get_api_users(request: Request, db: Session = Depends(get_db)):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+    try:
+        data = fetch_powerlink_data()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/integracion/guardar_snapshot")
+def guardar_snapshot(request: Request, db: Session = Depends(get_db)):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+    try:
+        data = fetch_powerlink_data()
+        snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+        with open(snapshot_path, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+            
+        current_time = datetime.now().strftime("%d/%m/%Y a las %I:%M %p")
+        return {"message": "Registro anterior guardado exitosamente.", "time": current_time}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/integracion/procesar_api")
+async def procesar_auditoria_api(
     request: Request,
     db: Session = Depends(get_db),
-    fileOld: UploadFile = File(...),
-    fileNew: UploadFile = File(...),
+    fileOld: Optional[UploadFile] = File(None),
     fechaCorte: str = Form(...),
     fechaInstalaciones: str = Form(...)
 ):
     token = security.get_token_from_request(request)
     if not token:
         raise HTTPException(status_code=401, detail="No autorizado")
+        
+    try:
+        data_new = fetch_powerlink_data()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error obteniendo datos actuales: {str(e)}")
+        
+    old_dict = {}
+    if fileOld and fileOld.filename:
+        # Modo: Comparar con Excel Subido
+        content_old = await fileOld.read()
+        df_old = pd.read_excel(io.BytesIO(content_old))
+        df_old = df_old.fillna("")
+        for _, row in df_old.iterrows():
+            sid = str(row.get('ID Servicio', '')).strip()
+            if sid:
+                old_dict[sid] = {
+                    'ID Servicio': sid,
+                    'Plan': row.get('Plan', ''),
+                    'Estado servicio': row.get('Estado servicio', ''),
+                    'Costo del plan': row.get('Costo del plan', 0)
+                }
+    else:
+        # Modo: Comparar con Snapshot Local
+        snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+        if not os.path.exists(snapshot_path):
+            raise HTTPException(status_code=400, detail="No existe un registro anterior. Por favor, haz clic en 'Guardar Registro Actual (Anterior)' antes de comparar, o sube un Excel.")
+            
+        try:
+            with open(snapshot_path, "r", encoding="utf-8") as f:
+                data_old = json.load(f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error leyendo el registro anterior: {str(e)}")
+            
+        list_old = data_old.get("data", [])
+        for item in list_old:
+            sid = str(item.get('id_servicio', '')).strip()
+            if sid:
+                old_dict[sid] = {
+                    'ID Servicio': sid,
+                    'Plan': item.get('plan', ''),
+                    'Estado servicio': item.get('service_status', ''),
+                    'Costo del plan': item.get('amount', 0)
+                }
+
+    list_new = data_new.get("data", [])
     
-    content_old = await fileOld.read()
-    content_new = await fileNew.read()
-    
-    df_old = pd.read_excel(io.BytesIO(content_old))
-    df_new = pd.read_excel(io.BytesIO(content_new))
-    
-    df_old = df_old.fillna("")
-    df_new = df_new.fillna("")
-    
+    def map_to_excel_format(item):
+        return {
+            'ID Servicio': item.get('id_servicio', ''),
+            'Cédula': f"{item.get('doc_type', '')}-{item.get('doc', '')}",
+            'Nombres': item.get('name', ''),
+            'Plan': item.get('plan', ''),
+            'Tipo de servicio': item.get('service_type', ''),
+            'Costo del plan': item.get('amount', 0),
+            'Estado servicio': item.get('service_status', ''),
+            'Saldo actual': item.get('balance', 0),
+            'Fecha última cambio de estado': item.get('last_status_change_date', ''),
+            'Plan actual desde': item.get('current_plan_since', ''),
+            'Fecha de instalación': item.get('creation_date', ''),
+            'Teléfono 1': item.get('phone', ''),
+            'Urbanismo': item.get('urban', '')
+        }
+
     try:
         corte_dt = datetime.strptime(fechaCorte, "%Y-%m-%d")
     except:
@@ -652,12 +811,6 @@ async def procesar_auditoria(
     except:
         inst_str = ""
 
-    old_dict = {}
-    for _, row in df_old.iterrows():
-        sid = str(row.get('ID Servicio', '')).strip()
-        if sid:
-            old_dict[sid] = row
-
     totalActivos = 0
     totalSuspendidosFecha = 0
     totalExoneradosEmp = 0
@@ -668,44 +821,63 @@ async def procesar_auditoria(
     datosSeguimiento = []
     datosEstatus = []
     datosDeudores = []
-
-    for _, row in df_new.iterrows():
-        sid = str(row.get('ID Servicio', '')).strip()
+    
+    for item in list_new:
+        row = map_to_excel_format(item)
+        sid = str(row['ID Servicio']).strip()
         if not sid:
             continue
             
-        planNew = str(row.get('Plan', '')).strip()
-        tipoServicioNew = str(row.get('Tipo de servicio', '')).strip().upper()
+        planNew = str(row['Plan']).strip()
+        tipoServicioNew = str(row['Tipo de servicio']).strip().upper()
         
         try:
-            costoDelPlanNew = float(row.get('Costo del plan', 0))
+            costoDelPlanNew = float(row['Costo del plan'])
         except:
             costoDelPlanNew = 0.0
             
         if planNew.upper() == 'TV' or planNew.upper() == 'IPTV' or tipoServicioNew == 'IPTV':
             continue
             
-        estadoServicioNew = str(row.get('Estado servicio', '')).strip().upper()
+        estadoServicioNew = str(row['Estado servicio']).strip().upper()
         
         try:
-            saldoActual = float(row.get('Saldo actual', 0))
+            saldoActual = float(row['Saldo actual'])
         except:
             saldoActual = 0.0
             
-        raw_estado = row.get('Fecha última cambio de estado', '')
-        raw_plan = row.get('Plan actual desde', '')
-        raw_inst = row.get('Fecha de instalación', '')
+        raw_estado = row['Fecha última cambio de estado']
+        raw_plan = row['Plan actual desde']
+        raw_inst = row['Fecha de instalación']
         
         fechaEstadoFormat = safe_date_str(raw_estado)
         fechaPlanDesdeFormat = safe_date_str(raw_plan)
         fechaInstalacionFormat = safe_date_str(raw_inst)
         
         estado_dt = datetime.min
-        if fechaEstadoFormat:
+        if raw_estado:
+            date_only = str(raw_estado).split("T")[0]
             try:
-                estado_dt = datetime.strptime(fechaEstadoFormat, "%d/%m/%Y")
+                estado_dt = datetime.strptime(date_only, "%Y-%m-%d")
+                fechaEstadoFormat = estado_dt.strftime("%d/%m/%Y")
             except:
                 pass
+
+        if raw_inst:
+            date_only = str(raw_inst).split("T")[0]
+            try:
+                inst_p = datetime.strptime(date_only, "%Y-%m-%d")
+                fechaInstalacionFormat = inst_p.strftime("%d/%m/%Y")
+            except:
+                pass
+                 
+        if raw_plan:
+             date_only = str(raw_plan).split("T")[0]
+             try:
+                 plan_p = datetime.strptime(date_only, "%Y-%m-%d")
+                 fechaPlanDesdeFormat = plan_p.strftime("%d/%m/%Y")
+             except:
+                 pass
                 
         if estadoServicioNew == 'ACTIVO':
             totalActivos += 1
@@ -722,39 +894,39 @@ async def procesar_auditoria(
             if planNew.upper().startswith("3 MESES BENEFICIO"):
                 datosInstalaciones.append({
                     'ID Servicio': sid,
-                    'Cédula': row.get('Cédula', ''),
-                    'Nombres': row.get('Nombres', ''),
-                    'Estado servicio': row.get('Estado servicio', ''),
-                    'Plan Instalado': row.get('Plan', ''),
-                    'Costo del plan': row.get('Costo del plan', ''),
-                    'Fecha de Instalación': fechaInstalacionFormat,
-                    'Urbanismo': row.get('Urbanismo', '')
+                    'Cédula': row['Cédula'],
+                    'Nombres': row['Nombres'],
+                    'Estado servicio': row['Estado servicio'],
+                    'Plan': row['Plan'],
+                    'Costo del plan': row['Costo del plan'],
+                    'Fecha de instalación': fechaInstalacionFormat,
+                    'Urbanismo': row['Urbanismo'],
+                    'Saldo Actual': saldoActual
                 })
                 
         if estadoServicioNew == 'ACTIVO' and saldoActual < 0:
             datosDeudores.append({
                 'ID Servicio': sid,
-                'Cédula': row.get('Cédula', ''),
-                'Nombres': row.get('Nombres', ''),
-                'Estado servicio': row.get('Estado servicio', ''),
+                'Cédula': row['Cédula'],
+                'Nombres': row['Nombres'],
+                'Estado servicio': row['Estado servicio'],
                 'Saldo Actual (Deuda)': saldoActual,
-                'Plan': row.get('Plan', ''),
-                'Costo del plan': row.get('Costo del plan', ''),
+                'Plan': row['Plan'],
+                'Costo del plan': row['Costo del plan'],
                 'Fecha Último Cambio Estado': fechaEstadoFormat,
-                'Teléfono 1': row.get('Teléfono 1', '')
+                'Teléfono 1': row['Teléfono 1']
             })
             
         row_old = old_dict.get(sid)
         if row_old is not None:
-            planOld = str(row_old.get('Plan', '')).strip()
-            estatusOld = str(row_old.get('Estado servicio', '')).strip()
-            estatusNew = str(row.get('Estado servicio', '')).strip()
+            planOld = str(row_old['Plan']).strip()
+            estatusOld = str(row_old['Estado servicio']).strip().upper()
+            estatusNew = estadoServicioNew
             try:
-                costoOld = float(row_old.get('Costo del plan', 0))
+                costoOld = float(row_old['Costo del plan'])
             except:
                 costoOld = 0.0
                 
-            # Lógica de Comparativa 1: Calcular la facturación real y variación
             billingAyer = costoOld if estatusOld == 'ACTIVO' else 0.0
             billingHoy = costoDelPlanNew if estatusNew == 'ACTIVO' else 0.0
             variacionNeta = billingHoy - billingAyer
@@ -762,29 +934,31 @@ async def procesar_auditoria(
             if planOld != planNew:
                 datosCambiosPlan.append({
                     'ID Servicio': sid,
-                    'Cédula': row.get('Cédula', ''),
-                    'Nombres': row.get('Nombres', ''),
-                    'Plan Anterior': row_old.get('Plan', ''),
-                    'Plan Nuevo': row.get('Plan', ''),
+                    'Cédula': row['Cédula'],
+                    'Nombres': row['Nombres'],
+                    'Plan Anterior': planOld,
+                    'Plan Nuevo': planNew,
                     'Costo Anterior': costoOld,
                     'Costo Nuevo': costoDelPlanNew,
                     'Variación de Costo': variacionNeta,
-                    'Estado Actual': row.get('Estado servicio', ''),
+                    'Estado Actual': row['Estado servicio'],
+                    'Estado Anterior': estatusOld,
+                    'Estado Nuevo': estatusNew,
                     'Fecha Plan Actual Desde': fechaPlanDesdeFormat 
                 })
                 
             if planOld != planNew or estatusOld != estatusNew:
                 datosSeguimiento.append({
                     'ID Servicio': sid,
-                    'Cédula': row.get('Cédula', ''),
-                    'Nombres': row.get('Nombres', ''),
-                    'Plan Anterior': row_old.get('Plan', ''),
-                    'Plan Nuevo': row.get('Plan', ''),
+                    'Cédula': row['Cédula'],
+                    'Nombres': row['Nombres'],
+                    'Plan Anterior': planOld,
+                    'Plan Nuevo': planNew,
                     'Costo Anterior': costoOld,
                     'Costo Nuevo': costoDelPlanNew,
                     'Variación de Costo': variacionNeta,
-                    'Estado Anterior': row_old.get('Estado servicio', ''),
-                    'Estado Nuevo': row.get('Estado servicio', ''),
+                    'Estado Anterior': estatusOld,
+                    'Estado Nuevo': estatusNew,
                     'Fecha Último Cambio Estado': fechaEstadoFormat,
                     'Fecha Plan Actual Desde': fechaPlanDesdeFormat
                 })
@@ -792,40 +966,82 @@ async def procesar_auditoria(
             if estatusOld != estatusNew:
                 datosEstatus.append({
                     'ID Servicio': sid,
-                    'Cédula': row.get('Cédula', ''),
-                    'Nombres': row.get('Nombres', ''),
-                    'Plan Actual': row.get('Plan', ''),
+                    'Cédula': row['Cédula'],
+                    'Nombres': row['Nombres'],
+                    'Plan Actual': planNew,
                     'Costo Anterior': costoOld,
-                    'Costo del Plan (Actual)': costoDelPlanNew,
+                    'Costo Nuevo': costoDelPlanNew,
                     'Variación de Costo': variacionNeta,
-                    'Estado Anterior': row_old.get('Estado servicio', ''),
-                    'Estado Nuevo': row.get('Estado servicio', ''),
+                    'Estado Anterior': estatusOld,
+                    'Estado Nuevo': estatusNew,
                     'Fecha Último Cambio Estado': fechaEstadoFormat
                 })
 
-    corte_str = f"{corte_dt.day:02d}/{corte_dt.month:02d}/{corte_dt.year}" if corte_dt != datetime.min else ""
+    def _sort_by_nombres(x): return x.get('Nombres', '')
     
-    cuadroResumenFinal = [
-        { "Métrica Operativa (Sin IPTV)": "Clientes Activos Totales", "Cantidad": totalActivos },
-        { "Métrica Operativa (Sin IPTV)": f"Clientes Suspendidos (A partir del {corte_str})", "Cantidad": totalSuspendidosFecha },
-        { "Métrica Operativa (Sin IPTV)": "Clientes Exonerados - Empleados [emp]", "Cantidad": totalExoneradosEmp },
-        { "Métrica Operativa (Sin IPTV)": "Clientes Exonerados - Regulares", "Cantidad": totalExoneradosReg }
+    datosInstalaciones.sort(key=_sort_by_nombres)
+    datosCambiosPlan.sort(key=_sort_by_nombres)
+    datosSeguimiento.sort(key=_sort_by_nombres)
+    datosEstatus.sort(key=_sort_by_nombres)
+    datosDeudores.sort(key=_sort_by_nombres)
+
+    resumen_list = [
+        {"Indicador": "Activos Totales", "Valor": totalActivos},
+        {"Indicador": f"Suspendidos (desde {fechaCorte})", "Valor": totalSuspendidosFecha},
+        {"Indicador": "Exonerados (Empleados)", "Valor": totalExoneradosEmp},
+        {"Indicador": "Exonerados (Regulares)", "Valor": totalExoneradosReg}
     ]
 
-    return JSONResponse(content={
-        "resumen": cuadroResumenFinal,
-        "instalaciones": datosInstalaciones,
-        "cambiosPlan": datosCambiosPlan,
-        "seguimiento": datosSeguimiento,
-        "estatus": datosEstatus,
-        "deudores": datosDeudores,
+    return {
         "totales": {
             "activos": totalActivos,
             "suspendidos": totalSuspendidosFecha,
             "exonEmp": totalExoneradosEmp,
             "exonReg": totalExoneradosReg
-        }
-    })
+        },
+        "resumen": resumen_list,
+        "instalaciones": datosInstalaciones,
+        "cambiosPlan": datosCambiosPlan,
+        "seguimiento": datosSeguimiento,
+        "estatus": datosEstatus,
+        "deudores": datosDeudores
+    }
+
+@app.get("/api/metricas/crecimiento")
+def get_metricas_crecimiento(request: Request, db: Session = Depends(get_db)):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+        
+    snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+    if not os.path.exists(snapshot_path):
+        return {"activos_power": 0}
+        
+    try:
+        with open(snapshot_path, "r", encoding="utf-8") as f:
+            data_old = json.load(f)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error leyendo snapshot: {str(e)}")
+        
+    list_old = data_old.get("data", [])
+    activos_power = 0
+    activos_iptv = 0
+    
+    for item in list_old:
+        status = str(item.get('service_status', '')).strip().upper()
+        plan = str(item.get('plan', '')).strip().upper()
+        service_type = str(item.get('service_type', '')).strip().upper()
+        
+        if status == 'ACTIVO':
+            if plan == 'TV' or plan == 'IPTV' or service_type == 'IPTV':
+                activos_iptv += 1
+            else:
+                activos_power += 1
+            
+    return {
+        "activos_power": activos_power,
+        "activos_iptv": activos_iptv
+    }
 
 if __name__ == "__main__":
     import uvicorn

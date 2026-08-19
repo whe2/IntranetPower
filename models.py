@@ -63,6 +63,14 @@ class KpiMetric(Base):
     trend = Column(String, default="up") # "up", "down", "neutral"
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
+class PopupNotification(Base):
+    __tablename__ = "popup_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
 class CalendarEvent(Base):
     __tablename__ = "calendar_events"
 

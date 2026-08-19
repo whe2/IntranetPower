@@ -710,6 +710,24 @@
                         <i class="fa-regular fa-calendar-plus"></i> Marcar Evento
                     </button>
                 </div>
+
+                <!-- NOTIFICACIONES POP-UP -->
+                <div class="card" style="margin-top: 25px;">
+                    <div class="section-title">🔔 Notificación General (Pop-up)</div>
+                    <form onsubmit="updatePopup(event)">
+                        <div class="form-group">
+                            <label>Mensaje del Pop-up (Opcional)</label>
+                            <textarea id="popupMessage" class="form-control" rows="3" placeholder="Mensaje que verán todos al iniciar sesión..."></textarea>
+                        </div>
+                        <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                            <label style="margin-bottom:0;">Activar Pop-up</label>
+                            <input type="checkbox" id="popupActive" checked style="width: 18px; height: 18px; cursor: pointer;">
+                        </div>
+                        <button type="submit" class="btn-action btn-gold" style="width:100%; margin-top:10px;">
+                            <i class="fa-solid fa-save"></i> Guardar Pop-up
+                        </button>
+                    </form>
+                </div>
             </section>
 
         </main>
@@ -1176,6 +1194,30 @@
             await fetch('/api/auth/logout', { method: 'POST' });
             localStorage.clear();
             window.location.href = '/login';
+        }
+        
+        async function updatePopup(e) {
+            e.preventDefault();
+            const message = document.getElementById('popupMessage').value;
+            const isActive = document.getElementById('popupActive').checked;
+            
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('is_active', isActive);
+
+            try {
+                const res = await fetch('/api/rrhh/popup', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    showToast('Notificación Pop-up actualizada');
+                } else {
+                    showToast('Error al actualizar pop-up', true);
+                }
+            } catch (err) {
+                showToast('Error de conexión', true);
+            }
         }
 
         window.addEventListener('DOMContentLoaded', loadAdminData);
