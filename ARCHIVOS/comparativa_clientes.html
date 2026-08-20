@@ -1,0 +1,3294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparativa de Clientes: 02 07 2026 vs 03 07 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.15);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.15);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+            --purple: #8b5cf6;
+            --purple-glow: rgba(139, 92, 246, 0.15);
+            --border-color: #242f41;
+            --hover-bg: #1e293b;
+            --font-main: 'Inter', sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            line-height: 1.5;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .logo-area h1 {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-area p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .date-badge {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-badge span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: #ffffff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            box-shadow: 0 4px 12px var(--success-glow);
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .btn-toggle-upload {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-toggle-upload:hover {
+            background: var(--hover-bg);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Collapsible Upload Panel */
+        .upload-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .upload-panel.active {
+            display: block;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #0f1422;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-zone-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .drop-zone-desc {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .drop-zone-file-name {
+            color: var(--success);
+            font-weight: 600;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-compare-web {
+            background: linear-gradient(135deg, var(--primary), #2563eb);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: var(--font-main);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .btn-compare-web:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .btn-compare-web:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Metric Dashboard Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary);
+        }
+
+        .metric-card.success::before { background-color: var(--success); }
+        .metric-card.warning::before { background-color: var(--warning); }
+        .metric-card.purple::before { background-color: var(--purple); }
+        .metric-card.danger::before { background-color: var(--danger); }
+
+        .metric-card .title {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card .value {
+            font-family: var(--font-heading);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-card .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend-up { color: #10b981 !important; }
+        .trend-down { color: #ef4444 !important; }
+
+        .badge-type-var {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Main Workspace: Filter & Tabs Box */
+        .workspace {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Navigation Tabs */
+        .tabs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: #0f1422;
+            padding: 0.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-color);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .tab-btn .badge-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: inherit;
+            padding: 0.1rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Search & Filter bar */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-wrapper {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: #0f1422;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            color: var(--text-color);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .select-filter {
+            background-color: #0f1422;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem 0.75rem 1rem;
+            color: var(--text-color);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            min-width: 180px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+
+        .select-filter:focus {
+            border-color: var(--primary);
+        }
+
+        .clear-filters-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .clear-filters-btn:hover {
+            background: var(--hover-bg);
+            color: var(--text-color);
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: #0f1422;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background-color: #171f30;
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: #d1d5db;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .client-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        /* Status Badge System */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-activo {
+            background-color: var(--success-glow);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-suspendido {
+            background-color: var(--warning-glow);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-retirado, .status-inactivo {
+            background-color: var(--danger-glow);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-por_retirar, .status-por-retirar {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-exonerado, .status-transferido {
+            background-color: var(--purple-glow);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .status-eliminado {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .transition-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .arrow-svg {
+            color: var(--text-muted);
+            animation: pulse-arrow 1.5s infinite;
+        }
+
+        @keyframes pulse-arrow {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(3px); opacity: 1; }
+        }
+
+        .date-cell {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            display: none;
+            padding: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            margin-bottom: 1rem;
+            color: var(--border-color);
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            .date-badge {
+                align-self: flex-start;
+            }
+
+            .btn-download {
+                justify-content: center;
+            }
+
+            .tabs-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .tabs {
+                width: 100%;
+            }
+
+            .tab-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-area">
+            <h1>GRAVITY INTEGRACIÓN</h1>
+            <p>Monitoreo diario de listados de clientes residenciales</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-toggle-upload" id="btn-toggle-upload" onclick="toggleUploadPanel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Cargar Archivos Manuales
+            </button>
+            <div class="date-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                Análisis: Ayer <span id="lbl-badge-yesterday">02 07 2026</span> vs Hoy <span id="lbl-badge-today">03 07 2026</span>
+            </div>
+            <a href="comparativa_clientes.xlsx" id="btn-download-excel" class="btn-download" download>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download-cloud"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/><polyline points="8 17 12 21 16 17"/></svg>
+                Descargar en Excel
+            </a>
+        </div>
+    </header>
+
+    <!-- Collapsible Upload Panel -->
+    <div class="upload-panel" id="upload-panel">
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--primary);">
+            Cargar archivos manualmente para comparar en el navegador
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Arrastra y suelta tus archivos Excel o haz clic en los recuadros para cargarlos. La comparación se realizará por completo en tu navegador de forma segura.
+        </p>
+        <div class="upload-grid">
+            <div class="drop-zone" id="dz-yesterday" onclick="document.getElementById('input-yesterday').click()">
+                <div class="drop-zone-title">Archivo Anterior (Ayer)</div>
+                <div class="drop-zone-desc" id="dz-yesterday-desc">Arrastra el archivo aquí o haz clic para buscar</div>
+                <div class="drop-zone-file-name" id="dz-yesterday-file"></div>
+                <input type="file" id="input-yesterday" style="display: none;" accept=".xlsx,.xls" onchange="handleFileSelect(event, 'yesterday')">
+            </div>
+            <div class="drop-zone" id="dz-today" onclick="document.getElementById('input-today').click()">
+                <div class="drop-zone-title">Archivo Nuevo (Hoy)</div>
+                <div class="drop-zone-desc" id="dz-today-desc">Arrastra el archivo aquí o haz clic para buscar</div>
+                <div class="drop-zone-file-name" id="dz-today-file"></div>
+                <input type="file" id="input-today" style="display: none;" accept=".xlsx,.xls" onchange="handleFileSelect(event, 'today')">
+            </div>
+        </div>
+        <button class="btn-compare-web" id="btn-compare-web" onclick="runWebComparison()" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Iniciar Comparación
+        </button>
+    </div>
+
+    <!-- Metrics Dashboard Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="title">Total de Clientes Hoy</div>
+            <div class="value">49,155</div>
+            <div class="subtitle">
+                Ayer: 49,096 | 
+                <span class="trend-up">
+                    +59 (+0.12%)
+                </span>
+            </div>
+        </div>
+        <div class="metric-card warning">
+            <div class="title">Cambios de Estatus</div>
+            <div class="value">17</div>
+            <div class="subtitle">Clientes que pasaron a otro estado</div>
+        </div>
+        <div class="metric-card success">
+            <div class="title">Clientes Nuevos</div>
+            <div class="value">59</div>
+            <div class="subtitle">Nuevas instalaciones agregadas hoy</div>
+        </div>
+        <div class="metric-card purple">
+            <div class="title">Variación Facturación</div>
+            <div class="value trend-up">+$1,160.80</div>
+            <div class="subtitle">
+                <span class="trend-up" style="font-weight:600;">+69</span>&nbsp;|&nbsp;
+                <span class="trend-down" style="font-weight:600;">-8</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <div class="tabs-header">
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-btn-changes" onclick="switchTab('changes')">
+                    Cambios de Estatus
+                    <span class="badge-count">17</span>
+                </button>
+                <button class="tab-btn" id="tab-btn-new-clients" onclick="switchTab('new-clients')">
+                    Nuevos Clientes
+                    <span class="badge-count">59</span>
+                </button>
+                <button class="tab-btn" id="tab-btn-variations" onclick="switchTab('variations')">
+                    Variaciones de Costo
+                    <span class="badge-count">77</span>
+                </button>
+            </div>
+
+            <!-- Global search and filters -->
+            <div class="filters-bar">
+                <div class="search-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" class="search-input" placeholder="Buscar por Nombre, Cédula o ID..." oninput="applyFilters()">
+                </div>
+                
+                <select id="plan-filter" class="select-filter" onchange="applyFilters()">
+                    <option value="">Todos los Planes</option>
+                    <option value="3 MESES Beneficio  Plan 1Gb + TV">3 MESES Beneficio  Plan 1Gb + TV</option><option value="3 MESES Beneficio 400Mb">3 MESES Beneficio 400Mb</option><option value="3 MESES Beneficio Plan 800 Mb + TV">3 MESES Beneficio Plan 800 Mb + TV</option><option value="3 Meses Beneficio  Plan 600 Mb +TV">3 Meses Beneficio  Plan 600 Mb +TV</option><option value="Empleado Convenio 400Mb">Empleado Convenio 400Mb</option><option value="PLAN AFICIONADO 400Mbps">PLAN AFICIONADO 400Mbps</option><option value="PLAN COMPARTIDO 20 MB">PLAN COMPARTIDO 20 MB</option><option value="Plan 1Gb + TV">Plan 1Gb + TV</option><option value="Plan 400 Mb">Plan 400 Mb</option><option value="Plan 600 Mb + TV">Plan 600 Mb + TV</option><option value="PowerLink Básico">PowerLink Básico</option><option value="PowerLink Plus">PowerLink Plus</option>
+                </select>
+
+                <button class="clear-filters-btn" onclick="clearFilters()">Limpiar Filtros</button>
+            </div>
+        </div>
+
+        <!-- Panel 1: Changes -->
+        <div id="changes-panel" class="tab-panel active">
+            <div class="table-container">
+                <table class="data-table" id="changes-table">
+                    <thead>
+                        <tr>
+                            <th>ID Servicio</th>
+                            <th>Cédula</th>
+                            <th>Cliente</th>
+                            <th>Plan de Internet</th>
+                            <th>Estado Anterior</th>
+                            <th>Estado Nuevo</th>
+                            <th>Fecha Cambio de Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="changes-tbody">
+                        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>1859</strong></td>
+            <td>26296964</td>
+            <td class="client-name">Yeximar Machado</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 09:55 AM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>1891</strong></td>
+            <td>8097652</td>
+            <td class="client-name">Samuel Perez</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 03:09 PM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>7023</strong></td>
+            <td>16369757</td>
+            <td class="client-name">Yaris Andreina Pacheco De Lopez</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 09:18 AM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>7445</strong></td>
+            <td>10276340</td>
+            <td class="client-name">Ingrid Maria Hernandez Alvarez</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 05:53 PM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>13350</strong></td>
+            <td>15316440</td>
+            <td class="client-name">Francisco Jose Perez Yanez</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 10:20 AM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>15174</strong></td>
+            <td>16020304</td>
+            <td class="client-name">Yasiree Oliveros Rojas</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 02:42 PM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>15359</strong></td>
+            <td>13233267</td>
+            <td class="client-name">Deisy Josefina Barrios Quijada</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 07:19 AM</td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>18329</strong></td>
+            <td>30930680</td>
+            <td class="client-name">Veronica Angel Pires</td>
+            <td>PLAN AFICIONADO 400Mbps</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 09:16 PM</td>
+        </tr>
+        
+        <tr data-plan="Empleado Convenio 400Mb" data-status-old="ACTIVO" data-status-new="EXONERADO">
+            <td><strong>21287</strong></td>
+            <td>17855757</td>
+            <td class="client-name">(Emp) Rayner Revette Analista de Operaciones</td>
+            <td>Empleado Convenio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-exonerado">EXONERADO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 11:02 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Plus" data-status-old="INACTIVO" data-status-new="ACTIVO">
+            <td><strong>32807</strong></td>
+            <td>17744027</td>
+            <td class="client-name">Ricardo Javier Berbesi</td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-inactivo">INACTIVO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">N/A</td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>46138</strong></td>
+            <td>11444487</td>
+            <td class="client-name">Albertina  Marcano </td>
+            <td>Plan 400 Mb</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 09:49 PM</td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>46172</strong></td>
+            <td>20756326</td>
+            <td class="client-name">Andy Pagua</td>
+            <td>Plan 400 Mb</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 01:04 PM</td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>46655</strong></td>
+            <td>19734203</td>
+            <td class="client-name">Yuly Roso</td>
+            <td>Plan 400 Mb</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 06:19 PM</td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>47416</strong></td>
+            <td>16922869</td>
+            <td class="client-name">Ismael Diaz </td>
+            <td>Plan 400 Mb</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 04:23 PM</td>
+        </tr>
+        
+        <tr data-plan="Plan 1Gb + TV" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>48404</strong></td>
+            <td>15932485</td>
+            <td class="client-name">Joan García </td>
+            <td>Plan 1Gb + TV</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 04:39 PM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status-old="ACTIVO" data-status-new="SUSPENDIDO">
+            <td><strong>49713</strong></td>
+            <td>20603187</td>
+            <td class="client-name">Dalianis  Suárez </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-suspendido">SUSPENDIDO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 10:39 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status-old="SUSPENDIDO" data-status-new="ACTIVO">
+            <td><strong>49848</strong></td>
+            <td>25205139</td>
+            <td class="client-name">Emely Oviedo</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-suspendido">SUSPENDIDO</span></td>
+            <td>
+                <div class="transition-cell">
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="badge status-activo">ACTIVO</span>
+                </div>
+            </td>
+            <td class="date-cell">02/07/2026 09:13 AM</td>
+        </tr>
+        
+                    </tbody>
+                </table>
+                <div class="empty-state" id="changes-empty">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <p>No se encontraron cambios de estado con los filtros aplicados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel 2: New Clients -->
+        <div id="new-clients-panel" class="tab-panel">
+            <div class="table-container">
+                <table class="data-table" id="new-clients-table">
+                    <thead>
+                        <tr>
+                            <th>ID Servicio</th>
+                            <th>Cédula</th>
+                            <th>Cliente</th>
+                            <th>Plan de Internet</th>
+                            <th>Estado Inicial</th>
+                            <th>Fecha de Instalación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="new-clients-tbody">
+                        
+        <tr data-plan="PowerLink Plus" data-status="ACTIVO">
+            <td><strong>51813</strong></td>
+            <td>21072406</td>
+            <td class="client-name">Keimer Ramirez </td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51814</strong></td>
+            <td>22036833</td>
+            <td class="client-name">Angie Aponte</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Plus" data-status="ACTIVO">
+            <td><strong>51815</strong></td>
+            <td>25717301</td>
+            <td class="client-name">David Polo</td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51816</strong></td>
+            <td>19931118</td>
+            <td class="client-name">Diego Murillo</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51817</strong></td>
+            <td>24524003</td>
+            <td class="client-name">Gessine Guatache</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51818</strong></td>
+            <td>17059307</td>
+            <td class="client-name">Lerbis Uribe</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51819</strong></td>
+            <td>29768998</td>
+            <td class="client-name">Alexaida  Martinez</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio  Plan 1Gb + TV" data-status="ACTIVO">
+            <td><strong>51820</strong></td>
+            <td>24283977</td>
+            <td class="client-name">Melvis Ramos</td>
+            <td>3 MESES Beneficio  Plan 1Gb + TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Plus" data-status="ACTIVO">
+            <td><strong>51821</strong></td>
+            <td>24283977</td>
+            <td class="client-name">Melvis Ramos</td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-status="ACTIVO">
+            <td><strong>51822</strong></td>
+            <td>29711744</td>
+            <td class="client-name">Diego Buitrago</td>
+            <td>3 Meses Beneficio  Plan 600 Mb +TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Plus" data-status="ACTIVO">
+            <td><strong>51823</strong></td>
+            <td>29711744</td>
+            <td class="client-name">Diego Buitrago</td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio Plan 800 Mb + TV" data-status="ACTIVO">
+            <td><strong>51824</strong></td>
+            <td>16832505</td>
+            <td class="client-name">José  Álvarez </td>
+            <td>3 MESES Beneficio Plan 800 Mb + TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Básico" data-status="ACTIVO">
+            <td><strong>51825</strong></td>
+            <td>16832505</td>
+            <td class="client-name">José  Álvarez </td>
+            <td>PowerLink Básico</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51826</strong></td>
+            <td>17441702</td>
+            <td class="client-name">Valentín  Jauregui </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51827</strong></td>
+            <td>11044679</td>
+            <td class="client-name">Coromoto Castro </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51828</strong></td>
+            <td>26367818</td>
+            <td class="client-name">Jose Toro</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51829</strong></td>
+            <td>10352048</td>
+            <td class="client-name">Clara  Duran</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51830</strong></td>
+            <td>15090676</td>
+            <td class="client-name">Liliana  Valdez</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51831</strong></td>
+            <td>9936719</td>
+            <td class="client-name">Jose Angel  Leiva</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51832</strong></td>
+            <td>25948530</td>
+            <td class="client-name">Jesus Fuente</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio Plan 800 Mb + TV" data-status="ACTIVO">
+            <td><strong>51833</strong></td>
+            <td>15208820</td>
+            <td class="client-name">Vanessa  Lucena </td>
+            <td>3 MESES Beneficio Plan 800 Mb + TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Plus" data-status="ACTIVO">
+            <td><strong>51834</strong></td>
+            <td>15208820</td>
+            <td class="client-name">Vanessa  Lucena </td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio  Plan 1Gb + TV" data-status="ACTIVO">
+            <td><strong>51835</strong></td>
+            <td>6274631</td>
+            <td class="client-name">Jose Palmero</td>
+            <td>3 MESES Beneficio  Plan 1Gb + TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51836</strong></td>
+            <td>25448805</td>
+            <td class="client-name">Laudenys López </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51837</strong></td>
+            <td>14742662</td>
+            <td class="client-name">Flabio  Cortez</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-status="ACTIVO">
+            <td><strong>51838</strong></td>
+            <td>29896008</td>
+            <td class="client-name">Luis Rodriguez </td>
+            <td>Plan 400 Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51839</strong></td>
+            <td>15757960</td>
+            <td class="client-name">Evelin Vaamonde</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51840</strong></td>
+            <td>5890641</td>
+            <td class="client-name"> Omar Herrera Fernandez</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51841</strong></td>
+            <td>26078412</td>
+            <td class="client-name">Aura  Girardet</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51842</strong></td>
+            <td>26731310</td>
+            <td class="client-name">Yuseidy Zambrano</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio  Plan 1Gb + TV" data-status="ACTIVO">
+            <td><strong>51843</strong></td>
+            <td>20977748</td>
+            <td class="client-name">Diana  Leal</td>
+            <td>3 MESES Beneficio  Plan 1Gb + TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Básico" data-status="ACTIVO">
+            <td><strong>51844</strong></td>
+            <td>20977748</td>
+            <td class="client-name">Diana  Leal</td>
+            <td>PowerLink Básico</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-status="ACTIVO">
+            <td><strong>51845</strong></td>
+            <td>12056479</td>
+            <td class="client-name">Ruth  Fariñas</td>
+            <td>3 Meses Beneficio  Plan 600 Mb +TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Básico" data-status="ACTIVO">
+            <td><strong>51846</strong></td>
+            <td>12056479</td>
+            <td class="client-name">Ruth  Fariñas</td>
+            <td>PowerLink Básico</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51847</strong></td>
+            <td>12148194</td>
+            <td class="client-name">Wilfredo  Rodulfo Piñate</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51848</strong></td>
+            <td>16257339</td>
+            <td class="client-name">Jorvis Campos</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51849</strong></td>
+            <td>32019858</td>
+            <td class="client-name">Yohangely  Hurtado </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-status="ACTIVO">
+            <td><strong>51850</strong></td>
+            <td>16031734</td>
+            <td class="client-name">Luis  Gonzalez</td>
+            <td>3 Meses Beneficio  Plan 600 Mb +TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="PowerLink Plus" data-status="ACTIVO">
+            <td><strong>51851</strong></td>
+            <td>16031734</td>
+            <td class="client-name">Luis  Gonzalez</td>
+            <td>PowerLink Plus</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51852</strong></td>
+            <td>25562705</td>
+            <td class="client-name">Dayana  Yendez</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51853</strong></td>
+            <td>13582848</td>
+            <td class="client-name">Norka Alejandra Soto Mulato</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51854</strong></td>
+            <td>21370765</td>
+            <td class="client-name">Wioderman Madrid</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51855</strong></td>
+            <td>18186258</td>
+            <td class="client-name">Franklin  Guerrero </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51856</strong></td>
+            <td>24436952</td>
+            <td class="client-name">Yoselin Franco</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51857</strong></td>
+            <td>24887465</td>
+            <td class="client-name">Esther Berrio</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51858</strong></td>
+            <td>85004876</td>
+            <td class="client-name">Able Chilambe</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51859</strong></td>
+            <td>25883060</td>
+            <td class="client-name">Dervy Ferrer </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51860</strong></td>
+            <td>14481303</td>
+            <td class="client-name">Jhon  Valero</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51861</strong></td>
+            <td>18749523</td>
+            <td class="client-name">Jamilker Montero</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51862</strong></td>
+            <td>5756906</td>
+            <td class="client-name">María  Ocanto</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-status="ACTIVO">
+            <td><strong>51863</strong></td>
+            <td>19672389</td>
+            <td class="client-name">Jhoana Planchard</td>
+            <td>3 Meses Beneficio  Plan 600 Mb +TV</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51864</strong></td>
+            <td>23926705</td>
+            <td class="client-name">Ideily Soto</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51865</strong></td>
+            <td>10543618</td>
+            <td class="client-name">Elemin Sanchez</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51866</strong></td>
+            <td>21117472</td>
+            <td class="client-name">Leroy Gudiño</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51867</strong></td>
+            <td>13540360</td>
+            <td class="client-name">Briceida Torrealba</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51868</strong></td>
+            <td>14757795</td>
+            <td class="client-name">Neyda  Rondón </td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51869</strong></td>
+            <td>26443401</td>
+            <td class="client-name">Princesa Anunziata</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51870</strong></td>
+            <td>29557389</td>
+            <td class="client-name">Ciosvely Valero</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-status="ACTIVO">
+            <td><strong>51871</strong></td>
+            <td>13253425</td>
+            <td class="client-name">Lisbeth Benavides</td>
+            <td>3 MESES Beneficio 400Mb</td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td class="date-cell">02/07/2026 12:00 AM</td>
+        </tr>
+        
+                    </tbody>
+                </table>
+                <div class="empty-state" id="new-clients-empty">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <p>No se encontraron nuevos clientes con los filtros aplicados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel 3: Variations -->
+        <div id="variations-panel" class="tab-panel">
+            <div class="table-container">
+                <table class="data-table" id="variations-table">
+                    <thead>
+                        <tr>
+                            <th>ID Servicio</th>
+                            <th>Cédula</th>
+                            <th>Cliente</th>
+                            <th>Tipo de Variación</th>
+                            <th>Plan Anterior / Nuevo</th>
+                            <th>Estado Anterior / Nuevo</th>
+                            <th>Costo Ant.</th>
+                            <th>Costo Nuevo</th>
+                            <th>Variación Mensual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="variations-tbody">
+                        
+        <tr data-plan="Plan 600 Mb + TV" data-type-var="Cambio de Plan">
+            <td><strong>249</strong></td>
+            <td>25717301</td>
+            <td class="client-name">David Polo</td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">PLAN COMPARTIDO 20 MB</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">Plan 600 Mb + TV</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$23.20</td>
+            <td>$36.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$12.80</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>1859</strong></td>
+            <td>26296964</td>
+            <td class="client-name">Yeximar Machado</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>1891</strong></td>
+            <td>8097652</td>
+            <td class="client-name">Samuel Perez</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>7023</strong></td>
+            <td>16369757</td>
+            <td class="client-name">Yaris Andreina Pacheco De Lopez</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>7445</strong></td>
+            <td>10276340</td>
+            <td class="client-name">Ingrid Maria Hernandez Alvarez</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 600 Mb + TV" data-type-var="Cambio de Plan">
+            <td><strong>11272</strong></td>
+            <td>17744027</td>
+            <td class="client-name">Ricardo Javier Berbesi</td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">PLAN AFICIONADO 400Mbps</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">Plan 600 Mb + TV</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$36.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$7.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>13350</strong></td>
+            <td>15316440</td>
+            <td class="client-name">Francisco Jose Perez Yanez</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>15174</strong></td>
+            <td>16020304</td>
+            <td class="client-name">Yasiree Oliveros Rojas</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>15359</strong></td>
+            <td>13233267</td>
+            <td class="client-name">Deisy Josefina Barrios Quijada</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="PLAN AFICIONADO 400Mbps" data-type-var="Reconexión">
+            <td><strong>18329</strong></td>
+            <td>30930680</td>
+            <td class="client-name">Veronica Angel Pires</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">PLAN AFICIONADO 400Mbps</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="Empleado Convenio 400Mb" data-type-var="Suspensión / Desactivación">
+            <td><strong>21287</strong></td>
+            <td>17855757</td>
+            <td class="client-name">(Emp) Rayner Revette Analista de Operaciones</td>
+            <td><span class="badge-type-var">Suspensión / Desactivación</span></td>
+            <td><span class="client-name">Empleado Convenio 400Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-activo">ACTIVO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-exonerado">EXONERADO</span>
+            </div>
+            </td>
+            <td>$58.00</td>
+            <td>$58.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-58.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 600 Mb + TV" data-type-var="Cambio de Plan">
+            <td><strong>44963</strong></td>
+            <td>16330127</td>
+            <td class="client-name">Jacksi Rodríguez </td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">Plan 600 Mb + TV</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$36.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$7.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-type-var="Reconexión">
+            <td><strong>46138</strong></td>
+            <td>11444487</td>
+            <td class="client-name">Albertina  Marcano </td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">Plan 400 Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-type-var="Reconexión">
+            <td><strong>46172</strong></td>
+            <td>20756326</td>
+            <td class="client-name">Andy Pagua</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">Plan 400 Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-type-var="Reconexión">
+            <td><strong>46655</strong></td>
+            <td>19734203</td>
+            <td class="client-name">Yuly Roso</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">Plan 400 Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-type-var="Reconexión">
+            <td><strong>47416</strong></td>
+            <td>16922869</td>
+            <td class="client-name">Ismael Diaz </td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">Plan 400 Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$29.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 1Gb + TV" data-type-var="Reconexión">
+            <td><strong>48404</strong></td>
+            <td>15932485</td>
+            <td class="client-name">Joan García </td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">Plan 1Gb + TV</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$46.00</td>
+            <td>$46.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$46.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Cambio de Plan">
+            <td><strong>49462</strong></td>
+            <td>3967439</td>
+            <td class="client-name">Marta  Iglesias </td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 MESES Beneficio 400Mb</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-14.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 600 Mb + TV" data-type-var="Cambio de Plan">
+            <td><strong>49482</strong></td>
+            <td>2813098</td>
+            <td class="client-name">Carmen De Rodríguez </td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">3 Meses Beneficio  Plan 600 Mb +TV</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">Plan 600 Mb + TV</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$22.00</td>
+            <td>$36.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$14.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Cambio de Plan">
+            <td><strong>49523</strong></td>
+            <td>21468914</td>
+            <td class="client-name">Yusbely  Hurtado </td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 MESES Beneficio 400Mb</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-14.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Cambio de Plan">
+            <td><strong>49549</strong></td>
+            <td>5453980</td>
+            <td class="client-name">Felix García </td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 MESES Beneficio 400Mb</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-14.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Cambio de Plan">
+            <td><strong>49559</strong></td>
+            <td>18234375</td>
+            <td class="client-name">Daffny Vallejo</td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 MESES Beneficio 400Mb</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-14.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Cambio de Plan">
+            <td><strong>49585</strong></td>
+            <td>14583780</td>
+            <td class="client-name">Henry  Baez</td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 MESES Beneficio 400Mb</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-14.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Cambio de Plan">
+            <td><strong>49635</strong></td>
+            <td>9936719</td>
+            <td class="client-name">Jose Angel  Leiva</td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">Plan 400 Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 MESES Beneficio 400Mb</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$29.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-14.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Suspensión / Desactivación">
+            <td><strong>49713</strong></td>
+            <td>20603187</td>
+            <td class="client-name">Dalianis  Suárez </td>
+            <td><span class="badge-type-var">Suspensión / Desactivación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-activo">ACTIVO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+            </div>
+            </td>
+            <td>$15.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-down" style="font-weight: 700;">$-15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Reconexión">
+            <td><strong>49848</strong></td>
+            <td>25205139</td>
+            <td class="client-name">Emely Oviedo</td>
+            <td><span class="badge-type-var">Reconexión</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="badge status-suspendido">SUSPENDIDO</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="badge status-activo">ACTIVO</span>
+            </div>
+            </td>
+            <td>$15.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-type-var="Cambio de Plan">
+            <td><strong>51810</strong></td>
+            <td>21072406</td>
+            <td class="client-name">Keimer Ramirez </td>
+            <td><span class="badge-type-var">Cambio de Plan</span></td>
+            <td>
+            <div class="transition-cell">
+                <span class="text-muted">3 MESES Beneficio 400Mb</span>
+                <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                <span class="client-name">3 Meses Beneficio  Plan 600 Mb +TV</span>
+            </div>
+            </td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$15.00</td>
+            <td>$22.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$7.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51814</strong></td>
+            <td>22036833</td>
+            <td class="client-name">Angie Aponte</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51816</strong></td>
+            <td>19931118</td>
+            <td class="client-name">Diego Murillo</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51817</strong></td>
+            <td>24524003</td>
+            <td class="client-name">Gessine Guatache</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51818</strong></td>
+            <td>17059307</td>
+            <td class="client-name">Lerbis Uribe</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51819</strong></td>
+            <td>29768998</td>
+            <td class="client-name">Alexaida  Martinez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio  Plan 1Gb + TV" data-type-var="Nueva Instalación">
+            <td><strong>51820</strong></td>
+            <td>24283977</td>
+            <td class="client-name">Melvis Ramos</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio  Plan 1Gb + TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$30.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$30.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-type-var="Nueva Instalación">
+            <td><strong>51822</strong></td>
+            <td>29711744</td>
+            <td class="client-name">Diego Buitrago</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 Meses Beneficio  Plan 600 Mb +TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$22.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$22.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio Plan 800 Mb + TV" data-type-var="Nueva Instalación">
+            <td><strong>51824</strong></td>
+            <td>16832505</td>
+            <td class="client-name">José  Álvarez </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio Plan 800 Mb + TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$27.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$27.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51826</strong></td>
+            <td>17441702</td>
+            <td class="client-name">Valentín  Jauregui </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51827</strong></td>
+            <td>11044679</td>
+            <td class="client-name">Coromoto Castro </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51828</strong></td>
+            <td>26367818</td>
+            <td class="client-name">Jose Toro</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51829</strong></td>
+            <td>10352048</td>
+            <td class="client-name">Clara  Duran</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51830</strong></td>
+            <td>15090676</td>
+            <td class="client-name">Liliana  Valdez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51831</strong></td>
+            <td>9936719</td>
+            <td class="client-name">Jose Angel  Leiva</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51832</strong></td>
+            <td>25948530</td>
+            <td class="client-name">Jesus Fuente</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio Plan 800 Mb + TV" data-type-var="Nueva Instalación">
+            <td><strong>51833</strong></td>
+            <td>15208820</td>
+            <td class="client-name">Vanessa  Lucena </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio Plan 800 Mb + TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$27.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$27.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio  Plan 1Gb + TV" data-type-var="Nueva Instalación">
+            <td><strong>51835</strong></td>
+            <td>6274631</td>
+            <td class="client-name">Jose Palmero</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio  Plan 1Gb + TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$30.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$30.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51836</strong></td>
+            <td>25448805</td>
+            <td class="client-name">Laudenys López </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51837</strong></td>
+            <td>14742662</td>
+            <td class="client-name">Flabio  Cortez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="Plan 400 Mb" data-type-var="Nueva Instalación">
+            <td><strong>51838</strong></td>
+            <td>29896008</td>
+            <td class="client-name">Luis Rodriguez </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">Plan 400 Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$29.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$29.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51839</strong></td>
+            <td>15757960</td>
+            <td class="client-name">Evelin Vaamonde</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51840</strong></td>
+            <td>5890641</td>
+            <td class="client-name"> Omar Herrera Fernandez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51841</strong></td>
+            <td>26078412</td>
+            <td class="client-name">Aura  Girardet</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51842</strong></td>
+            <td>26731310</td>
+            <td class="client-name">Yuseidy Zambrano</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio  Plan 1Gb + TV" data-type-var="Nueva Instalación">
+            <td><strong>51843</strong></td>
+            <td>20977748</td>
+            <td class="client-name">Diana  Leal</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio  Plan 1Gb + TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$30.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$30.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-type-var="Nueva Instalación">
+            <td><strong>51845</strong></td>
+            <td>12056479</td>
+            <td class="client-name">Ruth  Fariñas</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 Meses Beneficio  Plan 600 Mb +TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$22.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$22.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51847</strong></td>
+            <td>12148194</td>
+            <td class="client-name">Wilfredo  Rodulfo Piñate</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51848</strong></td>
+            <td>16257339</td>
+            <td class="client-name">Jorvis Campos</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51849</strong></td>
+            <td>32019858</td>
+            <td class="client-name">Yohangely  Hurtado </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-type-var="Nueva Instalación">
+            <td><strong>51850</strong></td>
+            <td>16031734</td>
+            <td class="client-name">Luis  Gonzalez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 Meses Beneficio  Plan 600 Mb +TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$22.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$22.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51852</strong></td>
+            <td>25562705</td>
+            <td class="client-name">Dayana  Yendez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51853</strong></td>
+            <td>13582848</td>
+            <td class="client-name">Norka Alejandra Soto Mulato</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51854</strong></td>
+            <td>21370765</td>
+            <td class="client-name">Wioderman Madrid</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51855</strong></td>
+            <td>18186258</td>
+            <td class="client-name">Franklin  Guerrero </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51856</strong></td>
+            <td>24436952</td>
+            <td class="client-name">Yoselin Franco</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51857</strong></td>
+            <td>24887465</td>
+            <td class="client-name">Esther Berrio</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51858</strong></td>
+            <td>85004876</td>
+            <td class="client-name">Able Chilambe</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51859</strong></td>
+            <td>25883060</td>
+            <td class="client-name">Dervy Ferrer </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51860</strong></td>
+            <td>14481303</td>
+            <td class="client-name">Jhon  Valero</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51861</strong></td>
+            <td>18749523</td>
+            <td class="client-name">Jamilker Montero</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51862</strong></td>
+            <td>5756906</td>
+            <td class="client-name">María  Ocanto</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 Meses Beneficio  Plan 600 Mb +TV" data-type-var="Nueva Instalación">
+            <td><strong>51863</strong></td>
+            <td>19672389</td>
+            <td class="client-name">Jhoana Planchard</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 Meses Beneficio  Plan 600 Mb +TV</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$22.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$22.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51864</strong></td>
+            <td>23926705</td>
+            <td class="client-name">Ideily Soto</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51865</strong></td>
+            <td>10543618</td>
+            <td class="client-name">Elemin Sanchez</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51866</strong></td>
+            <td>21117472</td>
+            <td class="client-name">Leroy Gudiño</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51867</strong></td>
+            <td>13540360</td>
+            <td class="client-name">Briceida Torrealba</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51868</strong></td>
+            <td>14757795</td>
+            <td class="client-name">Neyda  Rondón </td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51869</strong></td>
+            <td>26443401</td>
+            <td class="client-name">Princesa Anunziata</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51870</strong></td>
+            <td>29557389</td>
+            <td class="client-name">Ciosvely Valero</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+        <tr data-plan="3 MESES Beneficio 400Mb" data-type-var="Nueva Instalación">
+            <td><strong>51871</strong></td>
+            <td>13253425</td>
+            <td class="client-name">Lisbeth Benavides</td>
+            <td><span class="badge-type-var">Nueva Instalación</span></td>
+            <td><span class="client-name">3 MESES Beneficio 400Mb</span></td>
+            <td><span class="badge status-activo">ACTIVO</span></td>
+            <td>$0.00</td>
+            <td>$15.00</td>
+            <td><span class="trend-up" style="font-weight: 700;">+$15.00</span></td>
+        </tr>
+        
+                    </tbody>
+                </table>
+                <div class="empty-state" id="variations-empty">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <p>No se encontraron variaciones de costo con los filtros aplicados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Generado automáticamente por Antigravity IDE - 20/08/2026 02:55:38 PM
+    </footer>
+</div>
+
+<script>
+    let activeTab = 'changes';
+    let fileData = {
+        yesterday: null,
+        yesterdayName: '',
+        today: null,
+        todayName: ''
+    };
+
+    function toggleUploadPanel() {
+        const panel = document.getElementById('upload-panel');
+        const btn = document.getElementById('btn-toggle-upload');
+        panel.classList.toggle('active');
+        if (panel.classList.contains('active')) {
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.color = 'var(--primary)';
+        } else {
+            btn.style.borderColor = 'var(--border-color)';
+            btn.style.color = 'var(--text-color)';
+        }
+    }
+
+    function setupDragAndDrop() {
+        ['yesterday', 'today'].forEach(type => {
+            const dz = document.getElementById('dz-' + type);
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dz.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dz.addEventListener(eventName, () => {
+                    dz.classList.add('drag-over');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dz.addEventListener(eventName, () => {
+                    dz.classList.remove('drag-over');
+                }, false);
+            });
+
+            dz.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length) {
+                    processFile(files[0], type);
+                }
+            }, false);
+        });
+    }
+
+    function handleFileSelect(event, type) {
+        const files = event.target.files;
+        if (files.length) {
+            processFile(files[0], type);
+        }
+    }
+
+    function processFile(file, type) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                fileData[type] = jsonData;
+                fileData[type + 'Name'] = file.name;
+                
+                document.getElementById('dz-' + type + '-desc').innerText = "Archivo cargado correctamente";
+                document.getElementById('dz-' + type + '-file').innerText = file.name;
+                
+                if (fileData.yesterday && fileData.today) {
+                    document.getElementById('btn-compare-web').removeAttribute('disabled');
+                }
+            } catch (error) {
+                alert("Error al leer el archivo Excel: " + error.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        setupDragAndDrop();
+    });
+
+    function switchTab(tabId) {
+        activeTab = tabId;
+        
+        // Update tab buttons
+        document.getElementById('tab-btn-changes').classList.remove('active');
+        document.getElementById('tab-btn-new-clients').classList.remove('active');
+        document.getElementById('tab-btn-variations').classList.remove('active');
+        
+        document.getElementById('tab-btn-' + tabId).classList.add('active');
+        
+        // Update tab panels
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        document.getElementById(tabId + '-panel').classList.add('active');
+        
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+        const planVal = document.getElementById('plan-filter').value;
+        
+        const activeTableBody = document.getElementById(activeTab + '-tbody');
+        const rows = activeTableBody.getElementsByTagName('tr');
+        let visibleCount = 0;
+        
+        for (let row of rows) {
+            const idServicio = row.cells[0].innerText.toLowerCase();
+            const cedula = row.cells[1].innerText.toLowerCase();
+            const cliente = row.cells[2].innerText.toLowerCase();
+            const plan = row.getAttribute('data-plan');
+            
+            // Text Search Match
+            const matchesSearch = !searchVal || 
+                                  idServicio.includes(searchVal) || 
+                                  cedula.includes(searchVal) || 
+                                  cliente.includes(searchVal);
+            
+            // Plan Filter Match
+            const matchesPlan = !planVal || plan === planVal;
+            
+            if (matchesSearch && matchesPlan) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+        
+        // Toggle empty state
+        const emptyState = document.getElementById(activeTab + '-empty');
+        const table = document.getElementById(activeTab + '-table');
+        if (visibleCount === 0) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+        } else {
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+        }
+    }
+
+    function clearFilters() {
+        document.getElementById('search-input').value = '';
+        document.getElementById('plan-filter').value = '';
+        applyFilters();
+    }
+
+    function cleanStr(val) {
+        if (val === undefined || val === null) return '';
+        return String(val).trim();
+    }
+
+    function formatJsDateStr(val) {
+        if (!val) return 'N/A';
+        if (typeof val === 'number') {
+            const date = new Date((val - 25569) * 86400 * 1000);
+            return formatDateTime(date);
+        }
+        
+        const strVal = cleanStr(val);
+        if (!strVal || strVal === 'N/A' || strVal === 'NaN') return 'N/A';
+        
+        const dt = new Date(strVal);
+        if (!isNaN(dt.getTime())) {
+            return formatDateTime(dt);
+        }
+        return strVal;
+    }
+
+    function formatDateTime(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        let hours = date.getHours();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const hoursStr = String(hours).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${hoursStr}:${minutes} ${ampm}`;
+    }
+
+    function runWebComparison() {
+        const dfYesterday = fileData.yesterday;
+        const dfToday = fileData.today;
+        
+        const normalizeColumns = rows => {
+            return rows.map(row => {
+                const cleanRow = {};
+                Object.keys(row).forEach(key => {
+                    cleanRow[key.trim()] = row[key];
+                });
+                return cleanRow;
+            });
+        };
+        
+        const yesterdayRows = normalizeColumns(dfYesterday);
+        const todayRows = normalizeColumns(dfToday);
+        
+        const yMap = new Map();
+        yesterdayRows.forEach(row => {
+            const id = cleanStr(row['ID Servicio']);
+            if (id) yMap.set(id, row);
+        });
+        
+        const tMap = new Map();
+        todayRows.forEach(row => {
+            const id = cleanStr(row['ID Servicio']);
+            if (id) tMap.set(id, row);
+        });
+        
+        const changes = [];
+        todayRows.forEach(tRow => {
+            const id = cleanStr(tRow['ID Servicio']);
+            if (yMap.has(id)) {
+                const yRow = yMap.get(id);
+                const estAyer = cleanStr(yRow['Estado servicio']);
+                const estHoy = cleanStr(tRow['Estado servicio']);
+                
+                if (estAyer !== estHoy) {
+                    changes.push({
+                        id: id,
+                        cedula: cleanStr(tRow['Cédula']),
+                        nombres: cleanStr(tRow['Nombres']),
+                        plan: cleanStr(tRow['Plan']),
+                        estadoAyer: estAyer,
+                        estadoHoy: estHoy,
+                        fechaCambio: formatJsDateStr(tRow['Fecha última cambio de estado'])
+                    });
+                }
+            }
+        });
+        
+        const newClients = [];
+        todayRows.forEach(tRow => {
+            const id = cleanStr(tRow['ID Servicio']);
+            if (!yMap.has(id)) {
+                newClients.push({
+                    id: id,
+                    cedula: cleanStr(tRow['Cédula']),
+                    nombres: cleanStr(tRow['Nombres']),
+                    plan: cleanStr(tRow['Plan']),
+                    estado: cleanStr(tRow['Estado servicio']),
+                    fechaInstalacion: formatJsDateStr(tRow['Fecha de instalación'])
+                });
+            }
+        });
+        
+        const removedClients = [];
+        yesterdayRows.forEach(yRow => {
+            const id = cleanStr(yRow['ID Servicio']);
+            if (!tMap.has(id)) {
+                removedClients.push(yRow);
+            }
+        });
+        
+        const variations = [];
+        
+        todayRows.forEach(tRow => {
+            const id = cleanStr(tRow['ID Servicio']);
+            if (yMap.has(id)) {
+                const yRow = yMap.get(id);
+                
+                const estAyer = cleanStr(yRow['Estado servicio']).toUpperCase();
+                const estHoy = cleanStr(tRow['Estado servicio']).toUpperCase();
+                
+                const planCostAyer = parseFloat(yRow['Costo del plan']) || 0;
+                const planCostHoy = parseFloat(tRow['Costo del plan']) || 0;
+                
+                const billingAyer = (estAyer === 'ACTIVO') ? planCostAyer : 0;
+                const billingHoy = (estHoy === 'ACTIVO') ? planCostHoy : 0;
+                const diff = billingHoy - billingAyer;
+                
+                if (diff !== 0) {
+                    let typeVar = 'Otro Cambio';
+                    if (estAyer !== 'ACTIVO' && estHoy === 'ACTIVO') {
+                        typeVar = 'Reconexión';
+                    } else if (estAyer === 'ACTIVO' && estHoy !== 'ACTIVO') {
+                        typeVar = 'Suspensión / Desactivación';
+                    } else if (estAyer === 'ACTIVO' && estHoy === 'ACTIVO') {
+                        typeVar = 'Cambio de Plan';
+                    }
+                    
+                    variations.push({
+                        id: id,
+                        cedula: cleanStr(tRow['Cédula']),
+                        nombres: cleanStr(tRow['Nombres'] || tRow['Cliente'] || yRow['Nombres']),
+                        tipo: typeVar,
+                        planAyer: cleanStr(yRow['Plan']),
+                        planHoy: cleanStr(tRow['Plan']),
+                        estadoAyer: cleanStr(yRow['Estado servicio']),
+                        estadoHoy: cleanStr(tRow['Estado servicio']),
+                        costoAyer: planCostAyer,
+                        costoHoy: planCostHoy,
+                        variacion: diff
+                    });
+                }
+            }
+        });
+        
+        newClients.forEach(tRow => {
+            const estHoy = cleanStr(tRow.estado).toUpperCase();
+            const planCostHoy = parseFloat(dfToday.find(r => cleanStr(r['ID Servicio']) === tRow.id)?.['Costo del plan']) || 0;
+            const billingHoy = (estHoy === 'ACTIVO') ? planCostHoy : 0;
+            
+            if (billingHoy !== 0) {
+                variations.push({
+                    id: tRow.id,
+                    cedula: tRow.cedula,
+                    nombres: tRow.nombres,
+                    tipo: 'Nueva Instalación',
+                    planAyer: 'N/A',
+                    planHoy: tRow.plan,
+                    estadoAyer: 'N/A',
+                    estadoHoy: tRow.estado,
+                    costoAyer: 0,
+                    costoHoy: planCostHoy,
+                    variacion: billingHoy
+                });
+            }
+        });
+        
+        removedClients.forEach(yRow => {
+            const estAyer = cleanStr(yRow['Estado servicio']).toUpperCase();
+            const planCostAyer = parseFloat(yRow['Costo del plan']) || 0;
+            const billingAyer = (estAyer === 'ACTIVO') ? planCostAyer : 0;
+            
+            if (billingAyer !== 0) {
+                variations.push({
+                    id: cleanStr(yRow['ID Servicio']),
+                    cedula: cleanStr(yRow['Cédula']),
+                    nombres: cleanStr(yRow['Nombres']),
+                    tipo: 'Retiro / Eliminación',
+                    planAyer: cleanStr(yRow['Plan']),
+                    planHoy: 'N/A',
+                    estadoAyer: cleanStr(yRow['Estado servicio']),
+                    estadoHoy: 'N/A',
+                    costoAyer: planCostAyer,
+                    costoHoy: 0,
+                    variacion: -billingAyer
+                });
+            }
+        });
+        
+        updateDashboardHTML(todayRows.length, yesterdayRows.length, changes, newClients, variations);
+        
+        generateExcelBlob(changes, newClients, variations);
+        
+        toggleUploadPanel();
+        alert("¡Cruce manual finalizado con éxito en el navegador!");
+    }
+
+    function updateDashboardHTML(totalToday, totalYesterday, changes, newClients, variations) {
+        document.getElementById('lbl-badge-yesterday').innerText = fileData.yesterdayName;
+        document.getElementById('lbl-badge-today').innerText = fileData.todayName;
+        
+        const diffTotal = totalToday - totalYesterday;
+        const diffSign = diffTotal >= 0 ? '+' : '';
+        const pctDiff = totalYesterday > 0 ? (diffTotal / totalYesterday * 100).toFixed(2) : '0.00';
+        const trendClass = diffTotal >= 0 ? 'trend-up' : 'trend-down';
+        
+        const cardTotal = document.querySelector('.metrics-grid > .metric-card:nth-child(1)');
+        cardTotal.querySelector('.value').innerText = totalToday.toLocaleString();
+        cardTotal.querySelector('.subtitle').innerHTML = `Ayer: ${totalYesterday.toLocaleString()} | <span class="${trendClass}">${diffSign}${diffTotal.toLocaleString()} (${diffSign}${pctDiff}%)</span>`;
+        
+        const cardChanges = document.querySelector('.metrics-grid > .metric-card.warning');
+        cardChanges.querySelector('.value').innerText = changes.length;
+        document.querySelector('#tab-btn-changes .badge-count').innerText = changes.length;
+        
+        const cardNew = document.querySelector('.metrics-grid > .metric-card.success');
+        cardNew.querySelector('.value').innerText = newClients.length;
+        document.querySelector('#tab-btn-new-clients .badge-count').innerText = newClients.length;
+        
+        let netVar = 0;
+        let upVarCount = 0;
+        let downVarCount = 0;
+        variations.forEach(v => {
+            netVar += v.variacion;
+            if (v.variacion > 0) upVarCount++;
+            if (v.variacion < 0) downVarCount++;
+        });
+        
+        const cardVar = document.querySelector('.metrics-grid > .metric-card.purple');
+        const signNet = netVar >= 0 ? '+' : '';
+        const trendNetClass = netVar >= 0 ? 'trend-up' : 'trend-down';
+        
+        const varValueNode = cardVar.querySelector('.value');
+        varValueNode.className = `value ${trendNetClass}`;
+        varValueNode.innerText = `${signNet}$${netVar.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        cardVar.querySelector('.subtitle').innerHTML = `<span class="trend-up" style="font-weight:600;">+${upVarCount}</span>&nbsp;|&nbsp;<span class="trend-down" style="font-weight:600;">-${downVarCount}</span>`;
+        document.querySelector('#tab-btn-variations .badge-count').innerText = variations.length;
+        
+        const planSet = new Set();
+        changes.forEach(c => planSet.add(c.plan));
+        newClients.forEach(n => planSet.add(n.plan));
+        variations.forEach(v => {
+            if (v.planHoy !== 'N/A') planSet.add(v.planHoy);
+            if (v.planAyer !== 'N/A') planSet.add(v.planAyer);
+        });
+        
+        const planFilter = document.getElementById('plan-filter');
+        planFilter.innerHTML = '<option value="">Todos los Planes</option>';
+        Array.from(planSet).sort().forEach(p => {
+            if (p) planFilter.innerHTML += `<option value="${p}">${p}</option>`;
+        });
+        
+        const changesTbody = document.getElementById('changes-tbody');
+        changesTbody.innerHTML = '';
+        changes.forEach(row => {
+            const classAyer = cleanStr(row.estadoAyer).toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+            const classHoy = cleanStr(row.estadoHoy).toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+            
+            changesTbody.innerHTML += `
+            <tr data-plan="${row.plan}" data-status-old="${row.estadoAyer}" data-status-new="${row.estadoHoy}">
+                <td><strong>${row.id}</strong></td>
+                <td>${row.cedula}</td>
+                <td class="client-name">${row.nombres}</td>
+                <td>${row.plan}</td>
+                <td><span class="badge status-${classAyer}">${row.estadoAyer}</span></td>
+                <td>
+                    <div class="transition-cell">
+                        <svg class="arrow-svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                        <span class="badge status-${classHoy}">${row.estadoHoy}</span>
+                    </div>
+                </td>
+                <td class="date-cell">${row.fechaCambio}</td>
+            </tr>`;
+        });
+        
+        const newTbody = document.getElementById('new-clients-tbody');
+        newTbody.innerHTML = '';
+        newClients.forEach(row => {
+            const classEst = cleanStr(row.estado).toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+            newTbody.innerHTML += `
+            <tr data-plan="${row.plan}" data-status="${row.estado}">
+                <td><strong>${row.id}</strong></td>
+                <td>${row.cedula}</td>
+                <td class="client-name">${row.nombres}</td>
+                <td>${row.plan}</td>
+                <td><span class="badge status-${classEst}">${row.estado}</span></td>
+                <td class="date-cell">${row.fechaInstalacion}</td>
+            </tr>`;
+        });
+        
+        const varTbody = document.getElementById('variations-tbody');
+        varTbody.innerHTML = '';
+        variations.forEach(row => {
+            const classVar = row.variacion > 0 ? 'trend-up' : 'trend-down';
+            const signVar = row.variacion > 0 ? '+' : '';
+            
+            const classEstAyer = cleanStr(row.estadoAyer).toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+            const classEstHoy = cleanStr(row.estadoHoy).toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+            
+            const badgeEstAyer = row.estadoAyer !== 'N/A' ? `<span class="badge status-${classEstAyer}">${row.estadoAyer}</span>` : `<span class="text-muted">N/A</span>`;
+            const badgeEstHoy = row.estadoHoy !== 'N/A' ? `<span class="badge status-${classEstHoy}">${row.estadoHoy}</span>` : `<span class="text-muted">N/A</span>`;
+            
+            let planCell = '';
+            if (row.planHoy !== 'N/A' && row.planAyer !== 'N/A' && row.planAyer !== row.planHoy) {
+                planCell = `
+                <div class="transition-cell">
+                    <span class="text-muted">${row.planAyer}</span>
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    <span class="client-name">${row.planHoy}</span>
+                </div>`;
+            } else if (row.planHoy !== 'N/A') {
+                planCell = `<span class="client-name">${row.planHoy}</span>`;
+            } else {
+                planCell = `<span class="text-muted">${row.planAyer}</span>`;
+            }
+            
+            let statusCell = '';
+            if (row.estadoHoy !== 'N/A' && row.estadoAyer !== 'N/A' && row.estadoAyer !== row.estadoHoy) {
+                statusCell = `
+                <div class="transition-cell">
+                    ${badgeEstAyer}
+                    <svg class="arrow-svg" viewBox="0 0 24 24" width="12" height="12"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"/></svg>
+                    ${badgeEstHoy}
+                </div>`;
+            } else if (row.estadoHoy !== 'N/A') {
+                statusCell = badgeEstHoy;
+            } else {
+                statusCell = badgeEstAyer;
+            }
+            
+            const filterPlan = row.planHoy !== 'N/A' ? row.planHoy : row.planAyer;
+            
+            varTbody.innerHTML += `
+            <tr data-plan="${filterPlan}" data-type-var="${row.tipo}">
+                <td><strong>${row.id}</strong></td>
+                <td>${row.cedula}</td>
+                <td class="client-name">${row.nombres}</td>
+                <td><span class="badge-type-var">${row.tipo}</span></td>
+                <td>${planCell}</td>
+                <td>${statusCell}</td>
+                <td>$${row.costoAyer.toFixed(2)}</td>
+                <td>$${row.costoHoy.toFixed(2)}</td>
+                <td><span class="${classVar}" style="font-weight: 700;">${signVar}$${row.variacion.toFixed(2)}</span></td>
+            </tr>`;
+        });
+        
+        applyFilters();
+    }
+
+    function generateExcelBlob(changes, newClients, variations) {
+        const excelChanges = changes.map(c => ({
+            'ID Servicio': c.id,
+            'Cédula': c.cedula,
+            'Cliente': c.nombres,
+            'Plan': c.plan,
+            'Estado Anterior': c.estadoAyer,
+            'Estado Nuevo': c.estadoHoy,
+            'Fecha de Cambio': c.fechaCambio
+        }));
+        
+        const excelNew = newClients.map(n => ({
+            'ID Servicio': n.id,
+            'Cédula': n.cedula,
+            'Cliente': n.nombres,
+            'Plan': n.plan,
+            'Estado': n.estado,
+            'Fecha de Instalación': n.fechaInstalacion
+        }));
+        
+        const excelVar = variations.map(v => ({
+            'ID Servicio': v.id,
+            'Cédula': v.cedula,
+            'Cliente': v.nombres,
+            'Tipo de Variación': v.tipo,
+            'Plan Anterior': v.planAyer,
+            'Plan Nuevo': v.planHoy,
+            'Estado Anterior': v.estadoAyer,
+            'Estado Nuevo': v.estadoHoy,
+            'Costo Anterior': v.costoAyer,
+            'Costo Nuevo': v.costoHoy,
+            'Variación': v.variacion
+        }));
+        
+        const wb = XLSX.utils.book_new();
+        const wsChanges = XLSX.utils.json_to_sheet(excelChanges);
+        const wsNew = XLSX.utils.json_to_sheet(excelNew);
+        const wsVar = XLSX.utils.json_to_sheet(excelVar);
+        
+        XLSX.utils.book_append_sheet(wb, wsChanges, "Cambios de Estatus");
+        XLSX.utils.book_append_sheet(wb, wsNew, "Nuevos Clientes");
+        XLSX.utils.book_append_sheet(wb, wsVar, "Variaciones de Costo");
+        
+        const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+        const blob = new Blob([wbout], {type: 'application/octet-stream'});
+        
+        const downloadBtn = document.getElementById('btn-download-excel');
+        downloadBtn.href = URL.createObjectURL(blob);
+        downloadBtn.download = "comparativa_clientes_manual.xlsx";
+    }
+</script>
+
+</body>
+</html>

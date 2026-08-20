@@ -1766,12 +1766,18 @@ def compare_and_report(yesterday, today, yesterday_name=None, today_name=None):
     def classify_cost_change(row):
         st_ayer = str(row['Estado servicio_ayer']).strip().upper()
         st_hoy = str(row['Estado servicio_hoy']).strip().upper()
+        plan_ayer = str(row['Plan_ayer']).strip()
+        plan_hoy = str(row['Plan_hoy']).strip()
+        
         if st_ayer != 'ACTIVO' and st_hoy == 'ACTIVO':
             return 'Reconexión'
         elif st_ayer == 'ACTIVO' and st_hoy != 'ACTIVO':
             return 'Suspensión / Desactivación'
         elif st_ayer == 'ACTIVO' and st_hoy == 'ACTIVO':
-            return 'Cambio de Plan'
+            if plan_ayer != plan_hoy:
+                return 'Cambio de Plan'
+            else:
+                return 'Ajuste de Tarifa / Costo'
         else:
             return 'Otro Cambio'
             
