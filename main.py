@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime
 from dotenv import load_dotenv
 
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, File, UploadFile, Response, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, File, UploadFile, Response, WebSocket, WebSocketDisconnect, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from database import engine, get_db, Base
 import models
 import security
+import email_util
 
 load_dotenv()
 
@@ -463,13 +464,14 @@ async def add_department(
 @app.post("/api/rrhh/employees")
 async def add_employee(
     name: str = Form(...),
+    apellido: str = Form(...),
     position: str = Form(...),
     department: str = Form(None),
     cedula: str = Form(None),
     birthday_date: str = Form(None),
     email: str = Form(None),
-    usuario: str = Form(None),
-    password: str = Form(None),
+    smtp_user: str = Form(None),
+    smtp_pass: str = Form(None),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     admin_user: models.User = Depends(security.require_admin)
@@ -484,12 +486,16 @@ async def add_employee(
         if existing_emp:
             raise HTTPException(status_code=400, detail="El correo electrónico ya existe para otro empleado.")
 
-    if usuario:
-        base_username = usuario
-        counter = 1
-        while db.query(models.User).filter(models.User.username == usuario).first():
-            usuario = f"{base_username}{counter}"
-            counter += 1
+    usuario = (name[0] + apellido).lower() if name and apellido else "usuario"
+    base_username = usuario
+    counter = 1
+    while db.query(models.User).filter(models.User.username == usuario).first():
+        usuario = f"{base_username}{counter}"
+        counter += 1
+        
+    import random
+    palabras = ['Power', 'Link', 'Gravity', 'System', 'Secure', 'Admin']
+    password = random.choice(palabras) + random.choice(['*','#','$','&','@']) + str(random.randint(100,999))
 
     photo_url = "https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/WhatsApp_Image_2026-03-20_at_3.44.14_PM-removebg-preview.png"
     if photo and photo.filename:
@@ -499,24 +505,71 @@ async def add_employee(
             shutil.copyfileobj(photo.file, buffer)
         photo_url = f"/{UPLOAD_DIR}/{filename}"
 
-    emp = models.Employee(name=name, email=email, position=position, department=department or "General", cedula=cedula, birthday_date=birthday_date, photo_url=photo_url)
+    emp = models.Employee(name=name, apellido=apellido, email=email, position=position, department=department or "General", 
+cedula=cedula, birthday_date=birthday_date, photo_url=photo_url)
     db.add(emp)
     
-    if usuario and password:
-        hashed_pw = security.get_password_hash(password)
-        new_user = models.User(
-            username=usuario,
-            email=email or f"{usuario}@empresa.com",
-            hashed_password=hashed_pw,
-            full_name=name,
-            role="user",
-            avatar_url=photo_url
-        )
-        db.add(new_user)
+    hashed_pw = security.get_password_hash(password)
+    new_user = models.User(
+        username=usuario,
+        email=email or f"{usuario}@empresa.com",
+        hashed_password=hashed_pw,
+        full_name=f"{name} {apellido}",
+        role="user",
+        avatar_url=photo_url
+    )
+    db.add(new_user)
         
     db.commit()
     db.refresh(emp)
+    
+    # Send email
+    if email and smtp_user and smtp_pass:
+        email_util.send_welcome_email(email, name, usuario, password, smtp_user, smtp_pass, is_update=False)
+        
     return {"message": "Empleado y credenciales agregados.", "employee": emp}
+
+@app.put("/api/rrhh/employees/{emp_id}")
+async def update_employee(
+    emp_id: int,
+    name: str = Form(...),
+    apellido: str = Form(...),
+    department: str = Form(None),
+    cedula: str = Form(None),
+    birthday_date: str = Form(None),
+    email: str = Form(None),
+    smtp_user: str = Form(None),
+    smtp_pass: str = Form(None),
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    emp = db.query(models.Employee).filter(models.Employee.id == emp_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+        
+    # Validations for unique fields if they changed
+    if cedula and cedula != emp.cedula:
+        if db.query(models.Employee).filter(models.Employee.cedula == cedula).first():
+            raise HTTPException(status_code=400, detail="Cédula ya está en uso")
+            
+    if email and email != emp.email:
+        if db.query(models.Employee).filter(models.Employee.email == email).first():
+            raise HTTPException(status_code=400, detail="Correo ya está en uso")
+
+    emp.name = name
+    emp.apellido = apellido
+    emp.department = department or "General"
+    emp.cedula = cedula
+    emp.birthday_date = birthday_date
+    emp.email = email
+    
+    db.commit()
+    db.refresh(emp)
+    
+    if email and smtp_user and smtp_pass:
+        email_util.send_welcome_email(email, name, "", "", smtp_user, smtp_pass, is_update=True)
+
+    return {"message": "Empleado actualizado exitosamente.", "employee": emp}
 
 @app.post("/api/rrhh/kpis")
 async def update_kpis(
@@ -621,7 +674,15 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         user = security.get_current_user(request, db)
         if user.role not in ["admin", "rrhh"] and "cargar_datos_usuarios" not in (user.permissions or ""):
             return RedirectResponse(url="/")
-        return templates.TemplateResponse(request, "rrhh.html", {"user": user})
+        
+        employees = db.query(models.Employee).all()
+        departments = db.query(models.Department).all()
+        
+        return templates.TemplateResponse(request, "rrhh.html", {
+            "user": user,
+            "employees": employees,
+            "departments": departments
+        })
     except HTTPException:
         return RedirectResponse(url="/login")
 
@@ -890,7 +951,10 @@ async def procesar_auditoria_api(
             else:
                 totalExoneradosReg += 1
                 
-        if estadoServicioNew == 'ACTIVO' and fechaInstalacionFormat == inst_str:
+        is_missing_in_old = (sid not in old_dict)
+        is_exact_date_match = (fechaInstalacionFormat == inst_str)
+        
+        if estadoServicioNew == 'ACTIVO' and (is_exact_date_match or is_missing_in_old):
             if planNew.upper().startswith("3 MESES BENEFICIO"):
                 datosInstalaciones.append({
                     'ID Servicio': sid,
@@ -1042,6 +1106,134 @@ def get_metricas_crecimiento(request: Request, db: Session = Depends(get_db)):
         "activos_power": activos_power,
         "activos_iptv": activos_iptv
     }
+
+
+@app.get("/api/intranet/calendar")
+async def get_calendar_events(
+    year: int = Query(...),
+    month: int = Query(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    # Fetch events
+    events = db.query(models.CalendarEvent).filter(
+        models.CalendarEvent.year == year,
+        models.CalendarEvent.month == month
+    ).all()
+    
+    # Fetch birthdays for this month (we look at all employees with a birthday)
+    employees = db.query(models.Employee).filter(models.Employee.birthday_date != None, models.Employee.birthday_date != "").all()
+    birthdays = []
+    for emp in employees:
+        try:
+            bday = datetime.strptime(emp.birthday_date, '%Y-%m-%d').date()
+            if bday.month == month:
+                birthdays.append({
+                    "day": bday.day,
+                    "name": emp.full_name if hasattr(emp, 'full_name') else f"{emp.name} {emp.apellido or ''}".strip(),
+                    "photo_url": emp.photo_url or "/static/img/default-avatar.png",
+                    "department": emp.department
+                })
+        except:
+            pass
+            
+    # Structure data by day
+    days_data = {}
+    
+    for ev in events:
+        if ev.day not in days_data:
+            days_data[ev.day] = {"events": [], "birthdays": []}
+        days_data[ev.day]["events"].append({
+            "id": ev.id,
+            "title": ev.title,
+            "description": ev.description
+        })
+        
+    for b in birthdays:
+        if b["day"] not in days_data:
+            days_data[b["day"]] = {"events": [], "birthdays": []}
+        days_data[b["day"]]["birthdays"].append(b)
+        
+    return days_data
+
+
+
+@app.post("/api/rrhh/calendar_events")
+async def add_calendar_event(
+    title: str = Form(...),
+    description: str = Form(None),
+    date: str = Form(...), # format YYYY-MM-DD
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    try:
+        dt = datetime.strptime(date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de fecha inválido")
+        
+    ev = models.CalendarEvent(
+        title=title,
+        description=description,
+        day=dt.day,
+        month=dt.month,
+        year=dt.year
+    )
+    db.add(ev)
+    db.commit()
+    db.refresh(ev)
+    return {"message": "Evento agregado", "event": ev}
+
+@app.delete("/api/rrhh/calendar_events/{event_id}")
+async def delete_calendar_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    ev = db.query(models.CalendarEvent).filter(models.CalendarEvent.id == event_id).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="Evento no encontrado")
+    db.delete(ev)
+    db.commit()
+    return {"message": "Evento eliminado"}
+
+@app.get("/api/rrhh/calendar_events")
+async def get_calendar_events_admin(
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(security.require_admin)
+):
+    # Get future events or all events
+    today = datetime.now()
+    events = db.query(models.CalendarEvent).order_by(
+        models.CalendarEvent.year.desc(),
+        models.CalendarEvent.month.desc(),
+        models.CalendarEvent.day.desc()
+    ).limit(50).all()
+    return events
+
+
+# ==========================================
+# DIRECTORIO TELEFONICO
+# ==========================================
+@app.get("/directorio", response_class=HTMLResponse)
+async def view_directorio(request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
+    employees = db.query(models.Employee).all()
+    return templates.TemplateResponse("directorio.html", {"request": request, "user": current_user, "employees": employees})
+
+@app.get("/api/directorio/extensions")
+async def get_extensions(db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
+    extensions = db.query(models.PhoneExtension).all()
+    # Group by department
+    data = {}
+    for ext in extensions:
+        if ext.department not in data:
+            data[ext.department] = []
+        data[ext.department].append({
+            "id": ext.id,
+            "name": ext.name,
+            "extension": ext.extension,
+            "is_group": ext.is_group
+        })
+    return data
 
 if __name__ == "__main__":
     import uvicorn

@@ -342,7 +342,7 @@
     <div class="fast-links">
         <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
         {% if user.role == 'admin' or 'ver_directorio' in (user.permissions or '') %}
-        <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
         <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>

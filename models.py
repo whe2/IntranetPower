@@ -42,6 +42,7 @@ class Employee(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    apellido = Column(String, nullable=True)
     email = Column(String, unique=True, index=True, nullable=True)
     cedula = Column(String, unique=True, index=True, nullable=True)
     position = Column(String, nullable=True)
@@ -98,3 +99,13 @@ class ChatMessage(Base):
     channel = Column(String, default="#General")
     message = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class PhoneExtension(Base):
+    __tablename__ = 'phone_extensions'
+
+    id = Column(Integer, primary_key=True, index=True)
+    department = Column(String, index=True)
+    name = Column(String)
+    extension = Column(String)
+    is_group = Column(Boolean, default=False)

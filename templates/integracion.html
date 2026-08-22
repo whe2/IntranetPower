@@ -55,7 +55,7 @@
         
         .navbar .admin-badge {
             background-color: var(--acento);
-            color: var(--texto-negro);
+            color: var(--texto-negro) !important;
             font-size: 11px;
             padding: 2px 8px;
             border-radius: 12px;
@@ -150,7 +150,7 @@
         }
         .tab-btn.active {
             background-color: var(--acento);
-            color: var(--texto-negro);
+            color: var(--texto-negro) !important;
             border-color: var(--acento);
         }
         .tab-btn .badge-count {
@@ -212,9 +212,9 @@
     {% if not embed %}
     <!-- NAVBAR CORPORATIVO -->
     <nav class="navbar">
-        <div class="logo">
+        <a href="/" class="logo" style="text-decoration:none; color:inherit;">
             POWER LINK <span>CORP</span> <span class="admin-badge">Integración</span>
-        </div>
+        </a>
         <div class="user-menu">
             <span style="font-size: 13px;">Hola, {{ user.full_name }}</span>
             <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
@@ -223,9 +223,10 @@
 
     <!-- ENLACES RÁPIDOS GLOBALES -->
     <div class="fast-links">
+        <a href="/"><i class="fa-solid fa-house"></i> Inicio</a>
         <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
         {% if user.role == 'admin' or 'ver_directorio' in (user.permissions or '') %}
-        <a href="/"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
         <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
@@ -264,15 +265,14 @@
                 </div>
             </div>
 
-            <!-- Sección Opcional: Cargar Archivo Antiguo -->
+            <!-- Sección Principal: Cargar Archivo Antiguo (Día 01 o Mes Anterior) -->
             <div class="mt-6 border-t border-gray-200 pt-4">
-                <button type="button" onclick="document.getElementById('opcionalExcel').classList.toggle('hidden')" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer flex items-center">
-                    <i class="fa-solid fa-file-excel mr-2"></i> ¿Deseas comparar con un Excel de un día en particular? (Opcional)
-                </button>
-                <div id="opcionalExcel" class="hidden mt-4 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                    <label class="block text-sm font-semibold text-indigo-800 mb-2">Cargar Archivo Excel Antiguo (.xlsx):</label>
-                    <input type="file" id="fileOld" accept=".xlsx, .xls" class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
-                    <p class="text-xs text-indigo-600 mt-2">Si subes un archivo, la comparativa cruzará los datos de este archivo con la API en vivo, ignorando el registro base.</p>
+                <div id="opcionalExcel" class="mt-4 bg-indigo-50 p-4 rounded-lg border border-indigo-200 shadow-sm">
+                    <label class="block text-sm font-bold text-indigo-900 mb-2">
+                        <i class="fa-solid fa-file-excel mr-2 text-indigo-700"></i> Comparar con un mes o día anterior (Excel .xlsx):
+                    </label>
+                    <input type="file" id="fileOld" accept=".xlsx, .xls" class="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+                    <p class="text-xs text-indigo-700 mt-2 font-medium">Sube el archivo Excel del día 01 (o de otro mes) para calcular el crecimiento, variaciones de planes y cambios de estatus. Al subirlo, se ignorará el registro base guardado localmente.</p>
                 </div>
             </div>
         </div>
@@ -280,10 +280,10 @@
         <!-- Botón de Acción -->
         <div class="flex justify-center mb-8 gap-4">
             <button id="btnGuardarRegistro" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all cursor-pointer">
-                <i class="fa-solid fa-save mr-2"></i> Guardar Registro Actual (Como Anterior)
+                <i class="fa-solid fa-save mr-2"></i> Guardar Registro Actual (Local)
             </button>
             <button id="btnProcesarApi" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all cursor-pointer">
-                <i class="fa-solid fa-rotate mr-2"></i> Comparar API (Actual) vs Registro Guardado
+                <i class="fa-solid fa-code-compare mr-2"></i> Comparar API (Hoy) vs Excel / Registro
             </button>
         </div>
 
@@ -334,7 +334,7 @@
             <!-- Variaciones detectadas rápidas -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                 <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-r-xl">
-                    <p class="text-xs text-emerald-700 font-semibold">Nuevas Instalaciones</p>
+                    <p class="text-xs text-emerald-700 font-semibold">Crecimiento (Instalaciones)</p>
                     <p id="countInstalaciones" class="text-lg font-bold text-emerald-900">0</p>
                 </div>
                 <div class="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-r-xl">
@@ -366,7 +366,7 @@
                 <!-- Pestañas -->
                 <div class="flex gap-2 p-4 border-b border-gray-100 flex-wrap bg-gray-50/50">
                     <button class="tab-btn active cursor-pointer" onclick="changeTab('estatus')" id="tab-estatus">Cambios de Estatus <span class="badge-count" id="badge-estatus">0</span></button>
-                    <button class="tab-btn cursor-pointer" onclick="changeTab('instalaciones')" id="tab-instalaciones">Nuevas Instalaciones <span class="badge-count" id="badge-instalaciones">0</span></button>
+                    <button class="tab-btn cursor-pointer" onclick="changeTab('instalaciones')" id="tab-instalaciones">Crecimiento (Nuevas Instalaciones) <span class="badge-count" id="badge-instalaciones">0</span></button>
                     <button class="tab-btn cursor-pointer" onclick="changeTab('cambiosPlan')" id="tab-cambiosPlan">Cambios de Plan <span class="badge-count" id="badge-cambiosPlan">0</span></button>
                     <button class="tab-btn cursor-pointer" onclick="changeTab('seguimiento')" id="tab-seguimiento">Seguimiento <span class="badge-count" id="badge-seguimiento">0</span></button>
                     <button class="tab-btn cursor-pointer" onclick="changeTab('deudores')" id="tab-deudores">Activos con Deuda <span class="badge-count" id="badge-deudores">0</span></button>
@@ -749,19 +749,20 @@
             const thead = document.getElementById('tableHeader');
             const tbody = document.getElementById('tableBody');
             
-            thead.innerHTML = '';
-            tbody.innerHTML = '';
-            
             if (data.length === 0) {
+                thead.innerHTML = '';
                 tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-gray-500">No hay registros que coincidan con los filtros.</td></tr>`;
                 return;
             }
             
+            let theadHtml = '';
+            let tbodyHtml = '';
+            
             if (currentTab === 'estatus') {
-                thead.innerHTML = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan</th><th>Estado Anterior</th><th>Estado Nuevo</th><th>Variación</th><th>Fecha</th>`;
+                theadHtml = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan</th><th>Estado Anterior</th><th>Estado Nuevo</th><th>Variación</th><th>Fecha</th>`;
                 data.forEach(row => {
                     const varHtml = row['Variación de Costo'] != null ? `<span class="${row['Variación de Costo'] > 0 ? 'text-green-600' : (row['Variación de Costo'] < 0 ? 'text-red-600' : '')} font-semibold">${row['Variación de Costo'] > 0 ? '+' : ''}${row['Variación de Costo']}</span>` : '-';
-                    tbody.innerHTML += `<tr>
+                    tbodyHtml += `<tr>
                         <td><strong>${row['ID Servicio']}</strong></td>
                         <td>${row['Cédula']}</td>
                         <td class="font-medium text-gray-800">${row['Nombres']}</td>
@@ -774,9 +775,9 @@
                 });
             } 
             else if (currentTab === 'instalaciones') {
-                thead.innerHTML = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan</th><th>Estado</th><th>Saldo Actual</th><th>Fecha Instalación</th>`;
+                theadHtml = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan</th><th>Estado</th><th>Saldo Actual</th><th>Fecha Instalación</th>`;
                 data.forEach(row => {
-                    tbody.innerHTML += `<tr>
+                    tbodyHtml += `<tr>
                         <td><strong>${row['ID Servicio']}</strong></td>
                         <td>${row['Cédula']}</td>
                         <td class="font-medium text-gray-800">${row['Nombres']}</td>
@@ -788,7 +789,7 @@
                 });
             }
             else if (currentTab === 'cambiosPlan' || currentTab === 'seguimiento') {
-                thead.innerHTML = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan Anterior / Nuevo</th><th>Estado</th><th>Costo Ant.</th><th>Costo Nuevo</th><th>Variación</th>`;
+                theadHtml = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan Anterior / Nuevo</th><th>Estado</th><th>Costo Ant.</th><th>Costo Nuevo</th><th>Variación</th>`;
                 data.forEach(row => {
                     const statusOld = row['Estado Anterior'] || row['Estado Actual'];
                     const statusNew = row['Estado Nuevo'] || row['Estado Actual'];
@@ -802,7 +803,7 @@
                         
                     const varHtml = row['Variación de Costo'] != null ? `<span class="${row['Variación de Costo'] > 0 ? 'text-green-600' : (row['Variación de Costo'] < 0 ? 'text-red-600' : '')} font-semibold">${row['Variación de Costo'] > 0 ? '+' : ''}${row['Variación de Costo']}</span>` : '-';
                         
-                    tbody.innerHTML += `<tr>
+                    tbodyHtml += `<tr>
                         <td><strong>${row['ID Servicio']}</strong></td>
                         <td>${row['Cédula']}</td>
                         <td class="font-medium text-gray-800">${row['Nombres']}</td>
@@ -815,9 +816,9 @@
                 });
             }
             else if (currentTab === 'deudores') {
-                thead.innerHTML = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan</th><th>Estado</th><th>Deuda Actual</th><th>Teléfono</th>`;
+                theadHtml = `<th>ID Servicio</th><th>Cédula</th><th>Cliente</th><th>Plan</th><th>Estado</th><th>Deuda Actual</th><th>Teléfono</th>`;
                 data.forEach(row => {
-                    tbody.innerHTML += `<tr>
+                    tbodyHtml += `<tr>
                         <td><strong>${row['ID Servicio']}</strong></td>
                         <td>${row['Cédula']}</td>
                         <td class="font-medium text-gray-800">${row['Nombres']}</td>
@@ -828,6 +829,9 @@
                     </tr>`;
                 });
             }
+            
+            thead.innerHTML = theadHtml;
+            tbody.innerHTML = tbodyHtml;
         }
 
         function readExcel(file) {

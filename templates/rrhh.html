@@ -391,6 +391,25 @@
                 grid-template-columns: 1fr;
             }
         }
+    
+        #deptListContainer li {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            color: var(--texto-negro);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        #deptListContainer li:last-child {
+            border-bottom: none;
+        }
+        #deptListContainer li i {
+            color: var(--acento);
+            font-size: 14px;
+        }
+
     </style>
 </head>
 
@@ -400,7 +419,7 @@
 
     <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="logo">
+        <a href="/" class="logo" style="text-decoration:none; color:inherit;">
             POWER LINK <span>CORP.</span> <span class="admin-badge">Panel Gestor R.R.H.H.</span>
         </div>
 
@@ -409,8 +428,7 @@
                 Gestión de Contenidos</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-vista')"><i class="fa-solid fa-eye"></i> Vista
                 Empleado</button>
-        </div>
-
+        </a>
         <div class="user-menu">
             <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
         </div>
@@ -420,6 +438,7 @@
     <div id="tab-gestion" class="tab-content active">
 
         <div class="fast-links">
+            <a href="/" class="subtab-btn"><i class="fa-solid fa-house"></i> Inicio</a>
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-proyectos')" class="subtab-btn"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
             {% if user.role == 'admin' or 'ver_directorio' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-directorio')" class="subtab-btn"><i class="fa-solid fa-address-book"></i> Directorio</a>
@@ -455,7 +474,7 @@
             <!-- Previsualización del Anuncio Actual -->
             <div class="active-announcement-preview" id="heroPreviewContainer">
                 <div class="preview-badge"><i class="fa-solid fa-eye"></i> Vista Previa en Vivo</div>
-                <h1 id="previewTitle">Sabina, ¡revisa las últimas noticias!</h1>
+                <h1 id="previewTitle">{{ user.full_name.split(' ')[0] }}, ¡revisa las últimas noticias!</h1>
                 <p id="previewLink" style="display:none;"></p>
             </div>
         </section>
@@ -514,7 +533,8 @@
                     <h3><i class="fa-solid fa-user-plus"></i> Añadir Empleado al Directorio</h3>
                     <button type="button" class="btn-close-modal" onclick="closeModal('empModal')"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <form id="addEmployeeForm" onsubmit="addEmployee(event)">
+                <form id="addEmployeeForm" onsubmit="showSmtpModal(event)">
+                    <input type="hidden" id="empId" value="">
                     <div class="form-group">
                         <label>Cédula de Identidad</label>
                         <input type="text" id="empCedula" class="form-control" placeholder="Ej. V-12345678" required>
@@ -533,8 +553,12 @@
                     </div>
                     <div class="form-group">
                         <label>Departamento</label>
-                        <select id="empDepartamento" class="form-control">
-                            <option>Cargando departamentos...</option>
+                        <select id="empDepartamento" class="form-control" onchange="checkNewDept(this)" required>
+                            <option value="">Seleccione...</option>
+                            {% for d in departments %}
+                            <option value="{{ d.name }}">{{ d.name }}</option>
+                            {% endfor %}
+                            <option value="NEW_DEPT" style="font-weight:bold; color:#FCA311;">+ Crear Nuevo Departamento</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -629,18 +653,22 @@
                     <h3><i class="fa-regular fa-calendar-plus"></i> Marcar Evento en Calendario</h3>
                     <button type="button" class="btn-close-modal" onclick="closeModal('calModal')"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <form onsubmit="addCalendarEvent(event)">
+                <form onsubmit="addCalendarEvent(event)" id="calForm">
                     <div class="form-group">
-                        <label>Día del Mes (Número)</label>
-                        <input type="number" id="calDay" class="form-control" min="1" max="31" value="15" required>
+                        <label>Fecha del Evento</label>
+                        <input type="date" id="calDate" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Título del Evento</label>
                         <input type="text" id="calTitle" class="form-control" placeholder="Ej. Reunión General de Personal" required>
                     </div>
+                    <div class="form-group">
+                        <label>Descripción (Opcional)</label>
+                        <textarea id="calDesc" class="form-control" rows="2" placeholder="Detalles de la actividad..."></textarea>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('calModal')">Cancelar</button>
-                        <button type="submit" class="btn-action btn-gold">Destacar Día en Calendario</button>
+                        <button type="submit" class="btn-action btn-gold">Guardar Evento</button>
                     </div>
                 </form>
             </div>
@@ -671,9 +699,15 @@
                 <!-- GESTIONAR DEPARTAMENTOS -->
                 <div class="card">
                     <div class="section-title">🏢 Gestionar Departamentos</div>
-                    <button class="btn-action" style="width:100%; background-color:#334155;" onclick="openModal('deptModal')">
+                    <button class="btn-action" style="width:100%; background-color:#334155; margin-bottom: 12px;" onclick="openModal('deptModal')">
                         <i class="fa-solid fa-folder-plus"></i> Crear Departamento
                     </button>
+                    <div style="max-height: 140px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
+                        <ul id="deptListContainer" style="list-style: none; padding: 0; margin: 0;">
+                            <!-- Insertado por JS -->
+                            <li style="padding:10px; text-align:center; font-size:12px; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- AÑADIR EMPLEADO -->
@@ -706,9 +740,13 @@
                 <!-- CALENDARIO -->
                 <div class="card">
                     <div class="section-title">📅 Marcar Evento en Calendario</div>
-                    <button class="btn-action" style="width:100%; background-color:#334155;" onclick="openModal('calModal')">
+                    <button class="btn-action" style="width:100%; background-color:#334155; margin-bottom:12px;" onclick="openModal('calModal')">
                         <i class="fa-regular fa-calendar-plus"></i> Marcar Evento
                     </button>
+                    <div style="max-height: 180px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;" id="adminEventsList">
+                        <!-- Events injected via JS -->
+                        <div style="padding:10px; text-align:center; font-size:12px; color:#94a3b8;">Cargando...</div>
+                    </div>
                 </div>
 
                 <!-- NOTIFICACIONES POP-UP -->
@@ -778,10 +816,34 @@
     </div>
 
     <div id="subtab-directorio" class="subtab-content">
-        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <i class="fa-solid fa-address-book" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
-            <h2 style="color: var(--cabeceras); margin-bottom: 10px;">Gestión de Directorio</h2>
-            <p>Esta sección se encuentra en desarrollo.</p>
+        <div class="card" style="margin: 20px 30px;">
+            <div class="section-title">
+                <span><i class="fa-solid fa-address-book"></i> Directorio de Trabajadores</span>
+            </div>
+            <table style="width:100%; text-align:left; border-collapse: collapse; font-size:14px;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--acento);">
+                        <th style="padding:10px;">Cédula</th>
+                        <th>Nombre y Apellido</th>
+                        <th>Departamento</th>
+                        <th>Correo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px;">{{ emp.cedula }}</td>
+                        <td>{{ emp.name }} {{ emp.apellido or '' }}</td>
+                        <td>{{ emp.department }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td>
+                            <button onclick='editEmployee({{ emp.id }}, "{{ emp.cedula }}", "{{ emp.name }}", "{{ emp.apellido or "" }}", "{{ emp.email }}", "{{ emp.department }}", "{{ emp.birthday_date }}")' class="btn-action" style="padding:5px 10px; font-size:12px;">Editar</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -868,12 +930,28 @@
                     const deps = await depRes.json();
                     const select = document.getElementById('empDepartamento');
                     select.innerHTML = '';
-                    deps.forEach(d => {
+                    const deptListContainer = document.getElementById('deptListContainer');
+                    deptListContainer.innerHTML = '';
+                    
+                    // Ordenamos para mostrar los ultimos creados primero (asumiendo que vienen en orden o invertimos)
+                    const reversedDeps = [...deps].reverse();
+                    
+                    reversedDeps.forEach(d => {
+                        // Para el select
                         const opt = document.createElement('option');
                         opt.value = d.name;
                         opt.textContent = d.name;
                         select.appendChild(opt);
+                        
+                        // Para la lista visual
+                        const li = document.createElement('li');
+                        li.innerHTML = `<i class="fa-solid fa-building"></i> ${d.name}`;
+                        deptListContainer.appendChild(li);
                     });
+                    
+                    if (reversedDeps.length === 0) {
+                        deptListContainer.innerHTML = '<li style="padding:10px; text-align:center; font-size:12px; color:#94a3b8;">No hay departamentos</li>';
+                    }
                 }
                 
                 {% if user.role == 'admin' %}
@@ -1006,7 +1084,7 @@
         }
         function updatePreview() {
             const title = document.getElementById('heroTitleInput').value.trim();
-            document.getElementById('previewTitle').innerText = title || "Sabina, ¡revisa las últimas noticias!";
+            document.getElementById('previewTitle').innerText = title || "{{ user.full_name.split(' ')[0] }}, ¡revisa las últimas noticias!";
         }
 
         async function uploadResource(e) {
@@ -1086,12 +1164,26 @@
             }
         }
 
-        async function addEmployee(e) {
+        function showSmtpModal(e) {
             e.preventDefault();
+            // Validate first
+            const form = document.getElementById('addEmployeeForm');
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            openModal('smtpModal');
+        }
+
+        async function confirmAddEmployee(e) {
+            e.preventDefault();
+            
+            const smtpUser = document.getElementById('smtpUser').value.trim();
+            const smtpPass = document.getElementById('smtpPass').value.trim();
+            
             const cedula = document.getElementById('empCedula').value.trim();
             const nombre = document.getElementById('empNombre').value.trim();
             const apellido = document.getElementById('empApellido').value.trim();
-            const name = `${nombre} ${apellido}`; 
             const position = document.getElementById('empDepartamento').value; 
             const birthday_date = document.getElementById('empNacimiento').value;
             const email = document.getElementById('empEmail').value.trim();
@@ -1100,31 +1192,44 @@
             const password = document.getElementById('empPassword').value;
             
             const formData = new FormData();
-            formData.append('name', name);
+            formData.append('name', nombre);
+            formData.append('apellido', apellido);
             formData.append('cedula', cedula);
             formData.append('department', position);
-            formData.append('position', 'Empleado'); // Default
+            formData.append('position', 'Empleado');
             formData.append('birthday_date', birthday_date);
             formData.append('email', email);
             formData.append('usuario', usuario);
             formData.append('password', password);
+            formData.append('smtp_user', smtpUser);
+            formData.append('smtp_pass', smtpPass);
             if (file) formData.append('photo', file);
 
             try {
                 const res = await fetch('/api/rrhh/employees', { method: 'POST', body: formData });
+                if (res.status === 422) {
+                    showToast("Faltan datos requeridos", "error");
+                    return;
+                }
                 if (res.status === 400) {
                     const errorData = await res.json();
-                    alert(errorData.detail || "Empleado ya se encuentra en sistema");
+                    showToast(errorData.detail || "Empleado ya se encuentra en sistema", "error");
                     return;
                 }
                 if (res.ok) {
-                    showToast('Empleado agregado al directorio.');
+                    showToast('Empleado agregado con éxito y credenciales enviadas.');
                     document.getElementById('addEmployeeForm').reset();
                     document.getElementById('empUsuario').value = '';
                     document.getElementById('empPassword').value = '';
+                    document.getElementById('smtpUser').value = '';
+                    document.getElementById('smtpPass').value = '';
+                    closeModal('smtpModal');
                     closeModal('empModal');
+                    loadAdminData(); // Refresh list
+                } else {
+                    showToast('Error en el servidor al agregar empleado', 'error');
                 }
-            } catch (e) { showToast('Error al guardar empleado', 'error'); }
+            } catch (err) { showToast('Error de red al guardar empleado', 'error'); }
         }
 
         async function updateKPIs(e) {
@@ -1174,20 +1279,72 @@
 
         async function addCalendarEvent(e) {
             e.preventDefault();
-            const day = document.getElementById('calDay').value;
+            const date = document.getElementById('calDate').value;
             const title = document.getElementById('calTitle').value.trim();
+            const desc = document.getElementById('calDesc').value.trim();
+
+            const formData = new FormData();
+            formData.append('date', date);
+            formData.append('title', title);
+            if(desc) formData.append('description', desc);
 
             try {
-                const res = await fetch('/api/rrhh/calendar', {
+                const res = await fetch('/api/rrhh/calendar_events', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ day: parseInt(day), title: title })
+                    body: formData
                 });
                 if (res.ok) {
-                    showToast('Evento registrado en calendario.');
+                    showToast('Evento registrado exitosamente.');
+                    document.getElementById('calForm').reset();
                     closeModal('calModal');
+                    loadCalendarEventsAdmin();
+                } else {
+                    showToast('Error al registrar el evento', 'error');
                 }
-            } catch (e) { }
+            } catch (err) { showToast('Error de red', 'error'); }
+        }
+
+        async function loadCalendarEventsAdmin() {
+            try {
+                const res = await fetch('/api/rrhh/calendar_events');
+                if (res.ok) {
+                    const events = await res.json();
+                    const container = document.getElementById('adminEventsList');
+                    if(!container) return;
+                    
+                    container.innerHTML = '';
+                    events.forEach(ev => {
+                        const div = document.createElement('div');
+                        div.style.padding = "8px 12px";
+                        div.style.borderBottom = "1px solid #e2e8f0";
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.alignItems = "center";
+                        div.innerHTML = `
+                            <div>
+                                <strong style="font-size:13px; color:var(--texto-negro);">${ev.title}</strong>
+                                <div style="font-size:11px; color:var(--texto-gris);"><i class="fa-regular fa-calendar"></i> ${ev.day}/${ev.month}/${ev.year}</div>
+                            </div>
+                            <button onclick="deleteCalendarEvent(${ev.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                        container.appendChild(div);
+                    });
+                    if(events.length === 0) {
+                        container.innerHTML = '<div style="padding:10px; text-align:center; font-size:12px; color:#94a3b8;">No hay eventos</div>';
+                    }
+                }
+            } catch(e) {}
+        }
+        
+        async function deleteCalendarEvent(id) {
+            if(!confirm("¿Seguro que deseas eliminar este evento?")) return;
+            try {
+                const res = await fetch(`/api/rrhh/calendar_events/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    showToast('Evento eliminado');
+                    loadCalendarEventsAdmin();
+                }
+            } catch(e){}
         }
 
         async function logout() {
@@ -1222,6 +1379,32 @@
 
         window.addEventListener('DOMContentLoaded', loadAdminData);
     </script>
+
+    <!-- MODAL SMTP CREDENCIALES -->
+    <div class="modal-overlay" id="smtpModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-envelope"></i> Enviar Bienvenida</h3>
+                <button type="button" class="btn-close-modal" onclick="closeModal('smtpModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size:13px; margin-bottom:15px;">Ingrese sus credenciales de SMTP para autorizar el envío del correo.</p>
+            <form onsubmit="confirmAddEmployee(event)">
+                <div class="form-group">
+                    <label>Usuario SMTP</label>
+                    <input type="text" id="smtpUser" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña SMTP</label>
+                    <input type="password" id="smtpPass" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-action" style="background:#ddd; color:#333;" onclick="closeModal('smtpModal')">Cancelar</button>
+                    <button type="submit" class="btn-action btn-gold">Guardar y Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 
 </html>
