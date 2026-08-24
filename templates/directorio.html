@@ -4,126 +4,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Directorio Telefónico - Powerlink</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Intranet - Directorio - POWER LINK CORP.</title>
+    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --fondo: #f8fafc;
-            --texto-negro: #0f172a;
-            --texto-gris: #64748b;
-            --sidebar: #1e293b;
-            --acento: #d4af37; /* Dorado Powerlink */
-            
-            /* Paleta Bento */
-            --bento-verde: #5a8d56;
-            --bento-verde-claro: #82a87a;
-            --bento-marron: #6c4b3d;
-            --bento-marron-claro: #8a6552;
-            --bento-dorado: #c5a472;
-            --bento-dorado-claro: #d6bc92;
+            --fondo-principal: #ffffff;
+            --blanco: #ffffff;
+            --cabeceras: #1A1A1A;
+            --acento: #FFC107;
+            --acento-hover: #F5C71D;
+            --texto-negro: #1A1A1A;
+            --texto-gris: #4A4A4A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--fondo);
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background-color: var(--sidebar);
-            color: white;
+            background-color: var(--fondo-principal);
+            color: var(--texto-negro);
             display: flex;
             flex-direction: column;
-            padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            z-index: 10;
+            min-height: 100vh;
         }
 
-        .sidebar-logo {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 20px;
-        }
-        
-        .sidebar-logo a {
-            display: block;
-            text-decoration: none;
-        }
-
-        .sidebar-logo img {
-            width: 150px;
-            max-width: 100%;
-        }
-
-        .nav-item {
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--acento);
-            border-left: 4px solid var(--acento);
-        }
-
-        .nav-item i {
-            margin-right: 15px;
-            font-size: 1.2rem;
-            width: 25px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .header {
-            background-color: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        /* NAVBAR */
+        .navbar {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 5;
+            padding: 15px 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
         }
 
-        .user-profile {
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .navbar .logo span { color: var(--acento); }
+
+        .navbar .user-menu {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
+            font-size: 14px;
         }
 
-        .user-profile img {
-            width: 40px;
-            height: 40px;
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--acento);
         }
 
+        .btn-admin-nav {
+            background: var(--acento);
+            color: var(--texto-negro);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        .btn-admin-nav:hover { background: var(--acento-hover); }
+
+        .btn-logout {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        /* FAST LINKS */
+        .fast-links {
+            background-color: var(--cabeceras);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 16px;
+            border-bottom: 3px solid var(--acento);
+            flex-shrink: 0;
+        }
+        .fast-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+        .fast-links a:hover, .fast-links a.active {
+            color: var(--acento);
+        }
+
+        /* DIRECTORIO CONTENT */
         .container {
-            padding: 40px;
-            max-width: 1400px;
+            padding: 40px 20px;
+            max-width: 1200px;
             margin: 0 auto;
             width: 100%;
-            box-sizing: border-box;
+            flex: 1;
         }
         
         .page-title {
@@ -138,342 +146,148 @@
             margin-bottom: 40px;
         }
 
-        /* Bento Grid Layout */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            text-align: left;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        th {
+            padding: 15px 12px;
+            color: var(--texto-negro);
+            border-bottom: 2px solid var(--acento);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            color: var(--texto-gris);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
         tbody tr:hover {
             background-color: #f8fafc;
         }
-        
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-        }
 
-        .bento-card {
-            border-radius: 24px;
-            padding: 30px;
-            color: white;
+        .user-cell {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-            min-height: 250px;
-        }
-        
-        .bento-card:hover {
-            transform: translateY(-5px);
+            gap: 12px;
         }
 
-        /* Colors based on image */
-        .card-green {
-            background: linear-gradient(135deg, var(--bento-verde-claro), var(--bento-verde));
-        }
-        .card-brown {
-            background: linear-gradient(135deg, var(--bento-marron-claro), var(--bento-marron));
-        }
-        .card-gold {
-            background: linear-gradient(135deg, var(--bento-dorado-claro), var(--bento-dorado));
-            color: #333;
-        }
-
-        .bento-icon-container {
-            width: 80px;
-            height: 80px;
+        .user-cell img {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 25px;
-            box-shadow: inset 0 -4px 10px rgba(0,0,0,0.2), 0 10px 15px rgba(0,0,0,0.1);
-        }
-        
-        .card-gold .bento-icon-container {
-            background-color: rgba(0, 0, 0, 0.1);
-            box-shadow: inset 0 -4px 10px rgba(0,0,0,0.1), 0 10px 15px rgba(0,0,0,0.1);
-        }
-
-        .bento-icon-container i {
-            font-size: 32px;
-            color: white;
-        }
-        
-        .card-gold .bento-icon-container i {
-            color: #333;
-        }
-
-        .bento-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            letter-spacing: 0.5px;
-            width: 100%;
-        }
-
-        .bento-ext-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-            font-size: 14px;
-            line-height: 1.8;
-            opacity: 0.9;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .ext-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 4px;
-        }
-        
-        .card-gold .ext-item {
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .ext-name {
-            text-align: left;
-            flex-grow: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 10px;
-        }
-
-        .ext-number {
-            font-weight: 700;
-            background: rgba(0,0,0,0.2);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
-        
-        .card-gold .ext-number {
-            background: rgba(255,255,255,0.5);
-        }
-
-        .group-ext .ext-number {
-            background: var(--acento);
-            color: white;
-        }
-        
-        /* Search Box */
-        .search-container {
-            margin-bottom: 30px;
-            position: relative;
-            max-width: 400px;
-        }
-        
-        .search-container input {
-            width: 100%;
-            padding: 15px 20px 15px 45px;
-            border-radius: 30px;
+            object-fit: cover;
             border: 1px solid #e2e8f0;
-            font-size: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            outline: none;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-        
-        .search-container input:focus {
-            border-color: var(--bento-verde);
-            box-shadow: 0 4px 12px rgba(90, 141, 86, 0.15);
-        }
-        
-        .search-container i {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 16px;
         }
 
+        .user-cell strong {
+            color: var(--texto-negro);
+        }
+
+        .email-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .email-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <a href="/">
-                <img src="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png"
-                    alt="Powerlink Logo">
-            </a>
-        </div>
-        <nav>
-            <a href="/" class="nav-item">
-                <i class="fa-solid fa-house"></i> Inicio
-            </a>
-            <a href="/chat" class="nav-item">
-                <i class="fa-solid fa-comments"></i> Chat y Canales
-            </a>
-            <a href="/directorio" class="nav-item active">
-                <i class="fa-solid fa-address-book"></i> Directorio
-            </a>
-            {% if user.role == 'ADMIN' %}
-            <a href="/rrhh" class="nav-item">
-                <i class="fa-solid fa-users-gear"></i> Recursos Humanos
-            </a>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">POWER LINK <span>CORP.</span></div>
+        <div class="user-menu">
+            <div class="user-badge">
+                <img class="user-avatar" src="{{ user.avatar_url or '/static/img/default-avatar.png' }}" alt="Usuario">
+                <span id="currentUserName">{{ user.full_name }}</span>
+            </div>
+            {% if user.role == 'admin' %}
+            <a href="/admin" class="btn-admin-nav">⚙️ Panel RRHH</a>
             {% endif %}
-            <a href="#" class="nav-item" onclick="logout()" style="margin-top: auto; color:#ef4444;">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
-            </a>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="header">
-            <h2 style="margin: 0; color: var(--texto-negro); font-size: 1.2rem;">Directorio Telefónico</h2>
-            <div class="user-profile">
-                <div style="text-align: right;">
-                    <strong style="display: block; font-size: 14px; color: var(--texto-negro);">{{ user.full_name }}</strong>
-                    <span style="font-size: 12px; color: var(--texto-gris);">{{ user.role | capitalize }}</span>
-                </div>
-                <img src="{{ user.avatar_url or '/static/img/default-avatar.png' }}" alt="Perfil">
-            </div>
-        </header>
-
-        <div class="container">
-            <h1 class="page-title">Directorio de Trabajadores</h1>
-            <p class="page-subtitle">Consulta la información de contacto de todos los miembros del equipo.</p>
-            
-            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto;">
-                <table style="width:100%; text-align:left; border-collapse: collapse; font-size:14px;">
-                    <thead>
-                        <tr style="border-bottom:2px solid var(--acento);">
-                            <th style="padding:12px; color:var(--texto-negro);">Nombre y Apellido</th>
-                            <th style="padding:12px; color:var(--texto-negro);">Departamento</th>
-                            <th style="padding:12px; color:var(--texto-negro);">Correo Electrónico</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for emp in employees %}
-                        <tr style="border-bottom:1px solid #f1f5f9; transition: background 0.2s;">
-                            <td style="padding:12px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <img src="{{ emp.photo_url or '/static/img/default-avatar.png' }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-                                    <strong style="color:var(--texto-negro);">{{ emp.name }} {{ emp.apellido or '' }}</strong>
-                                </div>
-                            </td>
-                            <td style="padding:12px; color:var(--texto-gris);">{{ emp.department }}</td>
-                            <td style="padding:12px; color:var(--texto-gris);"><a href="mailto:{{ emp.email }}" style="color:var(--bento-verde); text-decoration:none;">{{ emp.email }}</a></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <h1 class="page-title">Extensiones Powerlink</h1>
-            <p class="page-subtitle">Encuentra los números de anexo para comunicarte con cada departamento de la empresa.</p>
-            
-            <div class="search-container">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Buscar por departamento, nombre o extensión..." onkeyup="filterDirectory()">
-            </div>
-
-            <div class="bento-grid" id="directoryGrid">
-                <!-- Tarjetas inyectadas por JS -->
-            </div>
+            <button class="btn-logout" onclick="logout()">Salir</button>
         </div>
-    </main>
+    </nav>
+
+    <!-- FAST LINKS -->
+    <div class="fast-links">
+        <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+        <a href="/directorio" class="active"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
+        <a href="/helpdesk"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        {% endif %}
+        <a href="/chat"><i class="fa-solid fa-comments"></i> Chat</a>
+        {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
+        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        {% endif %}
+        {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
+        <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
+        {% endif %}
+        {% if user.role == 'admin' or 'ver_integracion' in (user.permissions or '') %}
+        <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
+        {% endif %}
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <h1 class="page-title">Directorio de Trabajadores</h1>
+        <p class="page-subtitle">Consulta la información de contacto de todos los miembros del equipo.</p>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre y Apellido</th>
+                        <th>Departamento</th>
+                        <th>Correo Electrónico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ emp.photo_url or '/static/img/default-avatar.png' }}" alt="Foto">
+                                <strong>{{ emp.name }} {{ emp.apellido or '' }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ emp.department }}</td>
+                        <td><a href="mailto:{{ emp.email }}" class="email-link">{{ emp.email }}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
-        const cardThemes = ['card-green', 'card-brown', 'card-gold'];
-        const cardIcons = ['fa-building', 'fa-briefcase', 'fa-users', 'fa-network-wired', 'fa-headset', 'fa-chart-line', 'fa-desktop', 'fa-map-location-dot'];
-        
-        let allData = {};
-
-        async function loadDirectory() {
-            try {
-                const res = await fetch('/api/directorio/extensions');
-                if (res.ok) {
-                    allData = await res.json();
-                    renderDirectory(allData);
-                }
-            } catch (e) {
-                console.error("Error loading directory", e);
-            }
-        }
-
-        function renderDirectory(data) {
-            const grid = document.getElementById('directoryGrid');
-            grid.innerHTML = '';
-            
-            let colorIndex = 0;
-            let iconIndex = 0;
-
-            for (const dept in data) {
-                const extensions = data[dept];
-                
-                const themeClass = cardThemes[colorIndex % cardThemes.length];
-                const iconClass = cardIcons[iconIndex % cardIcons.length];
-                colorIndex++;
-                iconIndex++;
-                
-                const card = document.createElement('div');
-                card.className = `bento-card ${themeClass}`;
-                
-                let extHtml = '';
-                extensions.forEach(ext => {
-                    const isGroup = ext.is_group ? 'group-ext' : '';
-                    extHtml += `
-                        <li class="ext-item ${isGroup}">
-                            <span class="ext-name">${ext.name}</span>
-                            <span class="ext-number">${ext.extension}</span>
-                        </li>
-                    `;
-                });
-
-                card.innerHTML = `
-                    <div class="bento-icon-container">
-                        <i class="fa-solid ${iconClass}"></i>
-                    </div>
-                    <div class="bento-title">${dept}</div>
-                    <ul class="bento-ext-list">
-                        ${extHtml}
-                    </ul>
-                `;
-                grid.appendChild(card);
-            }
-        }
-
-        function filterDirectory() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filteredData = {};
-            
-            for (const dept in allData) {
-                const matchesDept = dept.toLowerCase().includes(query);
-                const matchingExts = allData[dept].filter(ext => 
-                    ext.name.toLowerCase().includes(query) || 
-                    ext.extension.toString().includes(query)
-                );
-                
-                if (matchesDept || matchingExts.length > 0) {
-                    filteredData[dept] = matchesDept ? allData[dept] : matchingExts;
-                }
-            }
-            renderDirectory(filteredData);
-        }
-
         async function logout() {
             await fetch('/api/auth/logout', { method: 'POST' });
             localStorage.clear();
             window.location.href = '/login';
         }
-
-        window.addEventListener('DOMContentLoaded', loadDirectory);
     </script>
 </body>
 </html>

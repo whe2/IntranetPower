@@ -210,7 +210,7 @@ async def chat_page(request: Request, db: Session = Depends(get_db)):
             departments[dept] = []
         departments[dept].append(u)
 
-    return templates.TemplateResponse("chat.html", {
+    return templates.TemplateResponse(request, "chat.html", {
         "request": request,
         "user": current_user,
         "departments": departments
@@ -697,6 +697,19 @@ async def integracion_page(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse(url="/")
         embed = request.query_params.get("embed") == "1"
         return templates.TemplateResponse(request, "integracion.html", {"user": user, "embed": embed})
+    except HTTPException:
+        return RedirectResponse(url="/login")
+
+@app.get("/helpdesk", response_class=HTMLResponse)
+async def helpdesk_page(request: Request, db: Session = Depends(get_db)):
+    token = security.get_token_from_request(request)
+    if not token:
+        return RedirectResponse(url="/login")
+    try:
+        user = security.get_current_user(request, db)
+        if user.role not in ["admin"] and "ver_helpdesk" not in (user.permissions or ""):
+            return RedirectResponse(url="/")
+        return templates.TemplateResponse(request, "helpdesk.html", {"user": user})
     except HTTPException:
         return RedirectResponse(url="/login")
 
@@ -1217,7 +1230,7 @@ async def get_calendar_events_admin(
 @app.get("/directorio", response_class=HTMLResponse)
 async def view_directorio(request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
     employees = db.query(models.Employee).all()
-    return templates.TemplateResponse("directorio.html", {"request": request, "user": current_user, "employees": employees})
+    return templates.TemplateResponse(request, "directorio.html", {"request": request, "user": current_user, "employees": employees})
 
 @app.get("/api/directorio/extensions")
 async def get_extensions(db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet - Helpdesk - POWER LINK CORP.</title>
+    <link rel="icon" type="image/png" href="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toasts para notificaciones -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --fondo-principal: #ffffff;
+            --blanco: #ffffff;
+            --cabeceras: #1A1A1A;
+            --acento: #FFC107;
+            --acento-hover: #F5C71D;
+            --texto-negro: #1A1A1A;
+            --texto-gris: #4A4A4A;
+            
+            /* Colores Bento */
+            --bento-verde-claro: #E8F5E9;
+            --bento-verde: #4CAF50;
+            --bento-marron-claro: #EFEBE9;
+            --bento-marron: #795548;
+            --bento-dorado-claro: #FFF8E1;
+            --bento-dorado: #FFC107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-principal);
+            color: var(--texto-negro);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: var(--cabeceras);
+            color: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .navbar .logo span { color: var(--acento); }
+
+        .navbar .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--acento);
+        }
+
+        .btn-admin-nav {
+            background: var(--acento);
+            color: var(--texto-negro);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        .btn-admin-nav:hover { background: var(--acento-hover); }
+
+        .btn-logout {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        /* FAST LINKS */
+        .fast-links {
+            background-color: var(--cabeceras);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 16px;
+            border-bottom: 3px solid var(--acento);
+            flex-shrink: 0;
+        }
+        .fast-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+        .fast-links a:hover, .fast-links a.active {
+            color: var(--acento);
+        }
+
+        /* BENTO GRID CSS */
+        .container {
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            color: var(--texto-negro);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .page-subtitle {
+            color: var(--texto-gris);
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            position: relative;
+            max-width: 400px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 15px 20px 15px 45px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .search-container input:focus {
+            border-color: var(--bento-verde);
+            box-shadow: 0 4px 12px rgba(90, 141, 86, 0.15);
+        }
+        
+        .search-container i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+        
+        .bento-card {
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+        }
+        
+        .bento-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-green { background: linear-gradient(135deg, var(--bento-verde-claro), var(--bento-verde)); }
+        .card-brown { background: linear-gradient(135deg, var(--bento-marron-claro), var(--bento-marron)); }
+        .card-gold {
+            background: linear-gradient(135deg, var(--bento-dorado-claro), var(--bento-dorado));
+            color: #333;
+        }
+
+        .bento-icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: inset 0 -4px 10px rgba(0,0,0,0.2), 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-gold .bento-icon-container {
+            background-color: rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 -4px 10px rgba(0,0,0,0.1), 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .bento-icon-container i { font-size: 32px; color: white; }
+        .card-gold .bento-icon-container i { color: #333; }
+
+        .bento-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            width: 100%;
+        }
+
+        .bento-ext-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: 0.9;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ext-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 4px;
+            cursor: pointer; /* Click to copy */
+            transition: opacity 0.2s;
+        }
+        .ext-item:hover { opacity: 0.7; }
+        
+        .card-gold .ext-item { border-bottom: 1px solid rgba(0,0,0,0.1); }
+
+        .ext-name {
+            text-align: left;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 10px;
+        }
+
+        .ext-number {
+            font-weight: 700;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .card-gold .ext-number { background: rgba(255,255,255,0.5); }
+        .group-ext .ext-number {
+            background: var(--cabeceras);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">POWER LINK <span>CORP.</span></div>
+        <div class="user-menu">
+            <div class="user-badge">
+                <img class="user-avatar" src="{{ user.avatar_url or '/static/img/default-avatar.png' }}" alt="Usuario">
+                <span id="currentUserName">{{ user.full_name }}</span>
+            </div>
+            {% if user.role == 'admin' %}
+            <a href="/admin" class="btn-admin-nav">⚙️ Panel RRHH</a>
+            {% endif %}
+            <button class="btn-logout" onclick="logout()">Salir</button>
+        </div>
+    </nav>
+
+    <!-- FAST LINKS -->
+    <div class="fast-links">
+        <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
+        <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
+        <a href="/helpdesk" class="active"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        {% endif %}
+        <a href="/chat"><i class="fa-solid fa-comments"></i> Chat</a>
+        {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
+        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        {% endif %}
+        {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
+        <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
+        {% endif %}
+        {% if user.role == 'admin' or 'ver_integracion' in (user.permissions or '') %}
+        <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
+        {% endif %}
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <h1 class="page-title">Helpdesk - Extensiones Powerlink</h1>
+        <p class="page-subtitle">Encuentra los números de anexo para comunicarte con cada departamento de la empresa. Haz clic en uno para copiarlo.</p>
+        
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Buscar por departamento, nombre o extensión..." onkeyup="filterDirectory()">
+        </div>
+
+        <div class="bento-grid" id="directoryGrid">
+            <!-- Tarjetas inyectadas por JS -->
+        </div>
+    </div>
+
+    <script>
+        const cardThemes = ['card-green', 'card-brown', 'card-gold'];
+        const cardIcons = ['fa-building', 'fa-briefcase', 'fa-users', 'fa-network-wired', 'fa-headset', 'fa-chart-line', 'fa-desktop', 'fa-map-location-dot'];
+        
+        let allData = {};
+
+        async function loadDirectory() {
+            try {
+                const res = await fetch('/api/directorio/extensions');
+                if (res.ok) {
+                    allData = await res.json();
+                    renderDirectory(allData);
+                }
+            } catch (e) {
+                console.error("Error loading extensions", e);
+            }
+        }
+
+        function copyToClipboard(text, name) {
+            navigator.clipboard.writeText(text).then(() => {
+                Toastify({
+                    text: "Copiado: " + name + " (" + text + ")",
+                    duration: 3000,
+                    gravity: "bottom",
+                    position: "right",
+                    style: {
+                        background: "#4CAF50",
+                        borderRadius: "10px"
+                    }
+                }).showToast();
+            }).catch(err => {
+                console.error('Error al copiar', err);
+            });
+        }
+
+        function renderDirectory(data) {
+            const grid = document.getElementById('directoryGrid');
+            grid.innerHTML = '';
+            
+            let colorIndex = 0;
+            let iconIndex = 0;
+
+            for (const dept in data) {
+                const extensions = data[dept];
+                
+                const themeClass = cardThemes[colorIndex % cardThemes.length];
+                const iconClass = cardIcons[iconIndex % cardIcons.length];
+                colorIndex++;
+                iconIndex++;
+                
+                const card = document.createElement('div');
+                card.className = `bento-card ${themeClass}`;
+                
+                let extHtml = '';
+                extensions.forEach(ext => {
+                    const isGroup = ext.is_group ? 'group-ext' : '';
+                    extHtml += `
+                        <li class="ext-item ${isGroup}" onclick="copyToClipboard('${ext.extension}', '${ext.name}')">
+                            <span class="ext-name">${ext.name}</span>
+                            <span class="ext-number">${ext.extension}</span>
+                        </li>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="bento-icon-container">
+                        <i class="fa-solid ${iconClass}"></i>
+                    </div>
+                    <div class="bento-title">${dept}</div>
+                    <ul class="bento-ext-list">
+                        ${extHtml}
+                    </ul>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        function filterDirectory() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = {};
+            
+            for (const dept in allData) {
+                const matchesDept = dept.toLowerCase().includes(query);
+                const matchingExts = allData[dept].filter(ext => 
+                    ext.name.toLowerCase().includes(query) || 
+                    ext.extension.toString().includes(query)
+                );
+                
+                if (matchesDept || matchingExts.length > 0) {
+                    filteredData[dept] = matchesDept ? allData[dept] : matchingExts;
+                }
+            }
+            renderDirectory(filteredData);
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.clear();
+            window.location.href = '/login';
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDirectory);
+    </script>
+</body>
+</html>

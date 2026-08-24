@@ -345,7 +345,7 @@
         <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
-        <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="/helpdesk"><i class="fa-solid fa-headset"></i> Helpdesk</a>
         {% endif %}
         <a href="/chat" class="active"><i class="fa-solid fa-comments"></i> Chat</a>
         {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}

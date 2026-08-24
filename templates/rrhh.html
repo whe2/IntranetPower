@@ -444,7 +444,7 @@
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-directorio')" class="subtab-btn"><i class="fa-solid fa-address-book"></i> Directorio</a>
             {% endif %}
             {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
-            <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-helpdesk')" class="subtab-btn"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+            <a href="/helpdesk" class="subtab-btn"><i class="fa-solid fa-headset"></i> Helpdesk</a>
             {% endif %}
             {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
             <a href="javascript:void(0)" onclick="switchSubTab(event, 'subtab-reportes')" class="subtab-btn"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
@@ -844,14 +844,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-    </div>
-
-    <div id="subtab-helpdesk" class="subtab-content">
-        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <i class="fa-solid fa-headset" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
-            <h2 style="color: var(--cabeceras); margin-bottom: 10px;">Sistema Helpdesk</h2>
-            <p>Esta sección se encuentra en desarrollo.</p>
         </div>
     </div>
 

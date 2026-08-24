@@ -229,7 +229,7 @@
         <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
-        <a href="#"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="/helpdesk"><i class="fa-solid fa-headset"></i> Helpdesk</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
         <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
