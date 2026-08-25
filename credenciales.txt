@@ -27,6 +27,7 @@ Actualmente, en la base de datos de tu intranet, tienes los siguientes 2 usuario
 Gestor RRHH / Admin
 
 Usuario: admin
+Admin123!
 Email: admin@empresa.com
 Rol: admin
 Sabina S.

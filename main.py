@@ -885,12 +885,15 @@ async def procesar_auditoria_api(
     except:
         inst_str = ""
 
+    today_str = datetime.now().strftime("%d/%m/%Y")
+
     totalActivos = 0
     totalSuspendidosFecha = 0
     totalExoneradosEmp = 0
     totalExoneradosReg = 0
     
     datosInstalaciones = []
+    datosInstalacionesProceso = []
     datosCambiosPlan = []
     datosSeguimiento = []
     datosEstatus = []
@@ -981,6 +984,19 @@ async def procesar_auditoria_api(
                     'Saldo Actual': saldoActual
                 })
                 
+        if estadoServicioNew == 'ACTIVO' and fechaInstalacionFormat == today_str:
+            datosInstalacionesProceso.append({
+                'ID Servicio': sid,
+                'Cédula': row['Cédula'],
+                'Nombres': row['Nombres'],
+                'Estado servicio': row['Estado servicio'],
+                'Plan': row['Plan'],
+                'Costo del plan': row['Costo del plan'],
+                'Fecha de instalación': fechaInstalacionFormat,
+                'Urbanismo': row['Urbanismo'],
+                'Saldo Actual': saldoActual
+            })
+                
         if estadoServicioNew == 'ACTIVO' and saldoActual < 0:
             datosDeudores.append({
                 'ID Servicio': sid,
@@ -1057,6 +1073,7 @@ async def procesar_auditoria_api(
     def _sort_by_nombres(x): return x.get('Nombres', '')
     
     datosInstalaciones.sort(key=_sort_by_nombres)
+    datosInstalacionesProceso.sort(key=_sort_by_nombres)
     datosCambiosPlan.sort(key=_sort_by_nombres)
     datosSeguimiento.sort(key=_sort_by_nombres)
     datosEstatus.sort(key=_sort_by_nombres)
@@ -1078,6 +1095,7 @@ async def procesar_auditoria_api(
         },
         "resumen": resumen_list,
         "instalaciones": datosInstalaciones,
+        "instalacionesProceso": datosInstalacionesProceso,
         "cambiosPlan": datosCambiosPlan,
         "seguimiento": datosSeguimiento,
         "estatus": datosEstatus,
