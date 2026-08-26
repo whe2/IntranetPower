@@ -1,0 +1,344 @@
+[
+    {
+        "department": "GENERAL",
+        "name": "Hernan Fernandez",
+        "extension": "1010",
+        "is_group": false
+    },
+    {
+        "department": "GENERAL",
+        "name": "Gabriel Sanchez",
+        "extension": "1011",
+        "is_group": false
+    },
+    {
+        "department": "GENERAL",
+        "name": "Karla Rodriguez",
+        "extension": "1012",
+        "is_group": false
+    },
+    {
+        "department": "GENERAL",
+        "name": "Luis Cedeño",
+        "extension": "1013",
+        "is_group": false
+    },
+    {
+        "department": "GENERAL",
+        "name": "Bertte Nunes",
+        "extension": "1014",
+        "is_group": false
+    },
+    {
+        "department": "GENERAL",
+        "name": "Lisbray Suerez",
+        "extension": "1015",
+        "is_group": false
+    },
+    {
+        "department": "GENERAL",
+        "name": "Delia Moniz",
+        "extension": "1016",
+        "is_group": false
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "General",
+        "extension": "6000",
+        "is_group": true
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "DAHOMY VIVAS",
+        "extension": "1017",
+        "is_group": false
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "ENDERLIN VEGAS",
+        "extension": "1022",
+        "is_group": false
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "GEO NORIEGA",
+        "extension": "1023",
+        "is_group": false
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "YENIFER TORRES",
+        "extension": "1031",
+        "is_group": false
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "ZUYERLIN Ramirez",
+        "extension": "1024",
+        "is_group": false
+    },
+    {
+        "department": "PLANIFICACION",
+        "name": "MARIA GABRIELA",
+        "extension": "1037",
+        "is_group": false
+    },
+    {
+        "department": "SEDE LA COLINA",
+        "name": "Sheresade Gil",
+        "extension": "1018",
+        "is_group": false
+    },
+    {
+        "department": "SEDE LA COLINA",
+        "name": "Sin Definir",
+        "extension": "1019",
+        "is_group": false
+    },
+    {
+        "department": "SEDE LA COLINA",
+        "name": "Viviana (corporativos)",
+        "extension": "1035",
+        "is_group": false
+    },
+    {
+        "department": "RRHH",
+        "name": "CLAUDIA MILLAN",
+        "extension": "1021",
+        "is_group": false
+    },
+    {
+        "department": "RRHH",
+        "name": "STEPHANIE GONCALVES",
+        "extension": "1036",
+        "is_group": false
+    },
+    {
+        "department": "RRHH",
+        "name": "ANTONELLA GONCALVES",
+        "extension": "1029",
+        "is_group": false
+    },
+    {
+        "department": "ESPECIALISTA EN REDES",
+        "name": "NOC",
+        "extension": "-",
+        "is_group": false
+    },
+    {
+        "department": "ESPECIALISTA EN REDES",
+        "name": "Haggyn Suberos",
+        "extension": "-",
+        "is_group": false
+    },
+    {
+        "department": "ESPECIALISTA EN REDES",
+        "name": "IVAN CAMACHO",
+        "extension": "2012",
+        "is_group": false
+    },
+    {
+        "department": "ESPECIALISTA EN REDES",
+        "name": "DIXON",
+        "extension": "2010",
+        "is_group": false
+    },
+    {
+        "department": "ESPECIALISTA EN REDES",
+        "name": "BRANDON CARRERO",
+        "extension": "2011",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "General soporte",
+        "extension": "6002",
+        "is_group": true
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Roberto Santos",
+        "extension": "2013",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista En Soporte1",
+        "extension": "2014",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista En Soporte2",
+        "extension": "2015",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista En Soporte3",
+        "extension": "2016",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista En Soporte4",
+        "extension": "2017",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista En Soporte5",
+        "extension": "2018",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista En Soporte6",
+        "extension": "2019",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista Call1 SOPORTE",
+        "extension": "2022",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista Call2 SOPORTE",
+        "extension": "2021",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista Call3 SOPORTE",
+        "extension": "2029",
+        "is_group": false
+    },
+    {
+        "department": "SOPORTE",
+        "name": "Analista Call4 SOPORTE",
+        "extension": "2030",
+        "is_group": false
+    },
+    {
+        "department": "CALL CENTER",
+        "name": "GENERAL",
+        "extension": "6001",
+        "is_group": true
+    },
+    {
+        "department": "CALL CENTER",
+        "name": "POR ASIGNAR",
+        "extension": "2027",
+        "is_group": false
+    },
+    {
+        "department": "CALL CENTER",
+        "name": "SEBASTIAN",
+        "extension": "2026",
+        "is_group": false
+    },
+    {
+        "department": "CALL CENTER",
+        "name": "ARIANDNE",
+        "extension": "2025",
+        "is_group": false
+    },
+    {
+        "department": "CALL CENTER",
+        "name": "MAURO",
+        "extension": "2024",
+        "is_group": false
+    },
+    {
+        "department": "CALL CENTER",
+        "name": "CESIRETH",
+        "extension": "2023",
+        "is_group": false
+    },
+    {
+        "department": "INTEGRACION",
+        "name": "Luis Augusto",
+        "extension": "1020",
+        "is_group": false
+    },
+    {
+        "department": "INTEGRACION",
+        "name": "Whilly Gallardo",
+        "extension": "2020",
+        "is_group": false
+    },
+    {
+        "department": "INTEGRACION",
+        "name": "ABRAHAM",
+        "extension": "2035",
+        "is_group": false
+    },
+    {
+        "department": "SEDE ALI PRIMERA",
+        "name": "Rene Rangel HedezSystem",
+        "extension": "3010",
+        "is_group": false
+    },
+    {
+        "department": "SEDE ALI PRIMERA",
+        "name": "HedezSystem2 HedezSystem",
+        "extension": "3011",
+        "is_group": false
+    },
+    {
+        "department": "SEDE ALI PRIMERA",
+        "name": "IVOON VIANA",
+        "extension": "3012",
+        "is_group": false
+    },
+    {
+        "department": "SEDE ALI PRIMERA",
+        "name": "BARBARA MARQUEZ",
+        "extension": "3015",
+        "is_group": false
+    },
+    {
+        "department": "SEDE INDEPENDENCIA",
+        "name": "RODGER INFANTE",
+        "extension": "4010",
+        "is_group": false
+    },
+    {
+        "department": "SEDE INDEPENDENCIA",
+        "name": "por asignar",
+        "extension": "4011",
+        "is_group": false
+    },
+    {
+        "department": "SEDE INDEPENDENCIA",
+        "name": "ALEJANDRO SANCHEZ",
+        "extension": "4012",
+        "is_group": false
+    },
+    {
+        "department": "SEDE EL VALLE",
+        "name": "JOHANIR",
+        "extension": "5010",
+        "is_group": false
+    },
+    {
+        "department": "SEDE EL VALLE",
+        "name": "HECTOR",
+        "extension": "5012",
+        "is_group": false
+    },
+    {
+        "department": "SEDE PROPATRIA",
+        "name": "DADIUSKA RINCONES",
+        "extension": "6010",
+        "is_group": false
+    },
+    {
+        "department": "SEDE TEJERIAS",
+        "name": "YULEISY CAMPOMAS",
+        "extension": "7010",
+        "is_group": false
+    }
+]
