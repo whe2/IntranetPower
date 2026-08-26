@@ -177,6 +177,7 @@
         .status-exonerado { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
         .status-inactivo { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         .status-retiro { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .status-transferido { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
         .status-default { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
         
         .transition-arrow {
@@ -229,10 +230,10 @@
         <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
-        <a href="/helpdesk"><i class="fa-solid fa-headset"></i> Helpdesk</a>
+        <a href="/helpdesk"><i class="fa-solid fa-headset"></i> Comunicaciones</a>
         {% endif %}
         {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
-        <a href="/"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        <a href="/reportes"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
         {% endif %}
         {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
@@ -359,7 +360,10 @@
                 </div>
             </div>
 
-            <div class="flex justify-end mb-4">
+            <div class="flex justify-end mb-4 gap-4">
+                <button id="btnConciliacion" onclick="openConciliacionModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-5 rounded-md shadow-xs flex items-center gap-2 cursor-pointer mb-6 hidden">
+                    💰 Ver Conciliación Financiera
+                </button>
                 <button id="btnDescargar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-5 rounded-md shadow-xs flex items-center gap-2 cursor-pointer mb-6">
                     📥 Descargar Reporte Consolidado (.xlsx)
                 </button>
@@ -421,7 +425,72 @@
         <p class="text-gray-200 mt-2">Por favor, espera unos segundos.</p>
     </div>
 
+    <!-- Modal Conciliacion Financiera -->
+    <div id="modalConciliacion" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-xl w-[90%] max-w-lg overflow-hidden">
+            <div class="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold"><i class="fa-solid fa-file-invoice-dollar mr-2"></i> Conciliación Financiera</h3>
+                <button onclick="closeConciliacionModal()" class="text-white hover:text-gray-200 cursor-pointer text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-500 mb-4">Este desglose explica la diferencia matemática entre el ingreso facturado en el <b>Día 1</b> y el monto total de <b>Hoy</b>.</p>
+                <div class="space-y-3 font-mono text-sm">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-600 font-bold">1. Ingreso Base (Día 1):</span>
+                        <span class="font-bold text-gray-800" id="fin-ingreso-ayer">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-green-600">
+                        <span>(+) Nuevas Instalaciones:</span>
+                        <span id="fin-instalaciones">+$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-green-600">
+                        <span>(+) Reconexiones / Activaciones:</span>
+                        <span id="fin-reconexiones">+$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-green-600">
+                        <span>(+) Upgrades de Plan:</span>
+                        <span id="fin-upgrades">+$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-red-500">
+                        <span>(-) Downgrades de Plan:</span>
+                        <span id="fin-downgrades">-$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-red-500">
+                        <span>(-) Retiros (Suspensiones Post-Corte):</span>
+                        <span id="fin-retiros-post">-$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-red-500 border-b pb-2">
+                        <span>(-) Otros Retiros (Pre-Corte o Borrados):</span>
+                        <span id="fin-retiros-pre">-$0.00</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg pt-2">
+                        <span class="text-gray-800">2. Ingreso Total Hoy:</span>
+                        <span class="text-indigo-700" id="fin-ingreso-hoy">$0.00</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-md pt-2 border-t mt-2">
+                        <span class="text-gray-600">3. Diferencia Neta (Hoy - Día 1):</span>
+                        <span id="fin-diferencia-neta">$0.00</span>
+                    </div>
+                    
+                    <div class="mt-4 p-3 rounded-lg text-center text-xs font-semibold" id="fin-validacion">
+                        <!-- Validacion matématica -->
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-100 px-6 py-3 flex justify-end">
+                <button onclick="closeConciliacionModal()" class="bg-gray-500 hover:bg-gray-600 text-white py-1 px-4 rounded font-semibold cursor-pointer">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function openConciliacionModal() {
+            document.getElementById('modalConciliacion').classList.remove('hidden');
+        }
+        function closeConciliacionModal() {
+            document.getElementById('modalConciliacion').classList.add('hidden');
+        }
+
         // Funcionalidad extra para logout global
         async function logout() {
             try {
@@ -602,6 +671,50 @@
                 document.getElementById('resumenExonEmp').innerText = t.exonEmp;
                 document.getElementById('resumenExonReg').innerText = t.exonReg;
 
+                // Lógica de Conciliación Financiera
+                if (result.conciliacion_financiera) {
+                    const cf = result.conciliacion_financiera;
+                    
+                    // Formatear Moneda
+                    const formatM = (num) => '$' + num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    document.getElementById('fin-ingreso-ayer').innerText = formatM(cf.ingreso_ayer);
+                    document.getElementById('fin-ingreso-hoy').innerText = formatM(cf.ingreso_hoy);
+                    
+                    document.getElementById('fin-instalaciones').innerText = '+' + formatM(cf.instalaciones);
+                    document.getElementById('fin-reconexiones').innerText = '+' + formatM(cf.reconexiones);
+                    document.getElementById('fin-upgrades').innerText = '+' + formatM(cf.upgrades);
+                    
+                    document.getElementById('fin-downgrades').innerText = '-' + formatM(cf.downgrades);
+                    document.getElementById('fin-retiros-post').innerText = '-' + formatM(cf.retiros_post_corte);
+                    document.getElementById('fin-retiros-pre').innerText = '-' + formatM(cf.retiros_pre_corte);
+                    
+                    const sumaCalculada = cf.ingreso_ayer + cf.instalaciones + cf.reconexiones + cf.upgrades 
+                                          - cf.downgrades - cf.retiros_post_corte - cf.retiros_pre_corte;
+                    
+                    const neta = cf.ingreso_hoy - cf.ingreso_ayer;
+                    const elNeta = document.getElementById('fin-diferencia-neta');
+                    if (elNeta) {
+                        elNeta.innerText = (neta >= 0 ? '+' : '') + formatM(neta);
+                        elNeta.className = neta >= 0 ? 'text-green-600' : 'text-red-600';
+                    }
+                    
+                    // Diferencia matemática de redondeos
+                    const diff = Math.abs(sumaCalculada - cf.ingreso_hoy);
+                    const valBox = document.getElementById('fin-validacion');
+                    if (diff < 0.1) {
+                        valBox.className = "mt-4 p-3 rounded-lg text-center text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200";
+                        valBox.innerText = `Validación Matemática Correcta: 0.00 de diferencia.`;
+                    } else {
+                        valBox.className = "mt-4 p-3 rounded-lg text-center text-xs font-semibold bg-red-50 text-red-700 border border-red-200";
+                        valBox.innerText = `Atención: Diferencia matemática de ${formatM(diff)}. Puede deberse a registros incompletos.`;
+                    }
+                    
+                    document.getElementById('btnConciliacion').classList.remove('hidden');
+                } else {
+                    document.getElementById('btnConciliacion').classList.add('hidden');
+                }
+
                 document.getElementById('countInstalaciones').innerText = datosInstalaciones.length;
                 document.getElementById('countInstalacionesProceso').innerText = datosInstalacionesProceso.length;
                 document.getElementById('countCambiosPlan').innerText = datosCambiosPlan.length;
@@ -719,11 +832,12 @@
         function getStatusClass(status) {
             if (!status) return 'status-default';
             const s = status.toUpperCase();
-            if (s === 'ACTIVO') return 'status-activo';
-            if (s === 'SUSPENDIDO') return 'status-suspendido';
-            if (s === 'EXONERADO') return 'status-exonerado';
+            if (s === 'ACTIVO' || s === 'ACT.') return 'status-activo';
+            if (s === 'SUSPENDIDO' || s === 'SUSP.') return 'status-suspendido';
+            if (s === 'EXONERADO' || s === 'EXO.') return 'status-exonerado';
             if (s === 'INACTIVO') return 'status-inactivo';
-            if (s === 'RETIRO' || s === 'RETIRADO') return 'status-retiro';
+            if (s === 'RETIRO' || s === 'RETIRADO' || s === 'RET.' || s === 'POR RETIRAR' || s === 'POR RET.') return 'status-retiro';
+            if (s === 'TRANSFERIDO' || s === 'TRANS.') return 'status-transferido';
             return 'status-default';
         }
         

@@ -234,13 +234,13 @@
     <!-- FAST LINKS -->
     <div class="fast-links">
         <a href="#"><i class="fa-solid fa-briefcase"></i> Proyectos</a>
-        <a href="/directorio" class="active"><i class="fa-solid fa-address-book"></i> Directorio</a>
+        <a href="/directorio"><i class="fa-solid fa-address-book"></i> Directorio</a>
         {% if user.role == 'admin' or 'ver_helpdesk' in (user.permissions or '') %}
         <a href="/helpdesk"><i class="fa-solid fa-headset"></i> Comunicaciones</a>
         {% endif %}
         <a href="/chat"><i class="fa-solid fa-comments"></i> Chat</a>
         {% if user.role == 'admin' or 'ver_reportes' in (user.permissions or '') %}
-        <a href="/reportes"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+        <a href="/reportes" class="active"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
         {% endif %}
         {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
@@ -251,34 +251,11 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div class="container">
-        <h1 class="page-title">Directorio de Trabajadores</h1>
-        <p class="page-subtitle">Consulta la información de contacto de todos los miembros del equipo.</p>
-        
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre y Apellido</th>
-                        <th>Departamento</th>
-                        <th>Correo Electrónico</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for emp in employees %}
-                    <tr>
-                        <td>
-                            <div class="user-cell">
-                                <img src="{{ emp.photo_url or '/static/img/default-avatar.png' }}" alt="Foto">
-                                <strong>{{ emp.name }} {{ emp.apellido or '' }}</strong>
-                            </div>
-                        </td>
-                        <td>{{ emp.department }}</td>
-                        <td><a href="mailto:{{ emp.email }}" class="email-link">{{ emp.email }}</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="container" style="display: flex; justify-content: center; align-items: center; min-height: 50vh;">
+        <div style="padding: 60px; text-align: center; color: var(--texto-gris); background: var(--blanco); margin: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; max-width: 800px;">
+            <i class="fa-solid fa-chart-bar" style="font-size: 3rem; margin-bottom: 15px; color: var(--texto-gris);"></i>
+            <h2 style="color: var(--cabeceras); margin-bottom: 10px; font-size: 24px; font-weight: bold;">Reportes y Analítica</h2>
+            <p style="font-size: 16px;">Esta sección se encuentra en desarrollo.</p>
         </div>
     </div>
 

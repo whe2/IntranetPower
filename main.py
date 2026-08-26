@@ -290,6 +290,23 @@ async def create_feedback(
 
 import json
 
+@app.get("/reportes", response_class=HTMLResponse)
+async def reportes_page(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if token and token.startswith("Bearer "):
+        token = token[len("Bearer "):]
+    if not token:
+        return RedirectResponse(url="/login")
+    try:
+        username = security._decode_token(token)
+        user = db.query(models.User).filter(models.User.username == username).first()
+        if not user:
+            return RedirectResponse(url="/login")
+        if user.role != 'admin' and 'ver_reportes' not in (user.permissions or ''):
+            return RedirectResponse(url="/")
+        return templates.TemplateResponse(request, "reportes.html", {"request": request, "user": user})
+    except:
+        return RedirectResponse(url="/login")
 @app.get("/api/chat")
 async def get_chat_messages(
     channel: str = "#General",
@@ -826,10 +843,19 @@ async def procesar_auditoria_api(
         for _, row in df_old.iterrows():
             sid = str(row.get('ID Servicio', '')).strip()
             if sid:
+                raw_st = str(row.get('Estado servicio', '')).strip().upper()
+                if raw_st in ('EXONERADO', 'EXO.'): mapped_st = 'Exo.'
+                elif raw_st in ('SUSPENDIDO', 'SUSP.'): mapped_st = 'Susp.'
+                elif raw_st in ('POR RETIRAR', 'POR RET.'): mapped_st = 'Por Ret.'
+                elif raw_st in ('TRANSFERIDO', 'TRANS.'): mapped_st = 'Trans.'
+                elif raw_st in ('RETIRADO', 'RET.'): mapped_st = 'Ret.'
+                elif raw_st in ('ACTIVO', 'ACT.'): mapped_st = 'Act.'
+                else: mapped_st = raw_st.title() if raw_st else ''
+                
                 old_dict[sid] = {
                     'ID Servicio': sid,
                     'Plan': row.get('Plan', ''),
-                    'Estado servicio': row.get('Estado servicio', ''),
+                    'Estado servicio': mapped_st,
                     'Costo del plan': row.get('Costo del plan', 0)
                 }
     else:
@@ -848,16 +874,34 @@ async def procesar_auditoria_api(
         for item in list_old:
             sid = str(item.get('id_servicio', '')).strip()
             if sid:
+                raw_st = str(item.get('service_status', '')).strip().upper()
+                if raw_st == 'EXONERADO': mapped_st = 'Exo.'
+                elif raw_st == 'SUSPENDIDO': mapped_st = 'Susp.'
+                elif raw_st == 'POR RETIRAR': mapped_st = 'Por Ret.'
+                elif raw_st == 'TRANSFERIDO': mapped_st = 'Trans.'
+                elif raw_st == 'RETIRADO': mapped_st = 'Ret.'
+                elif raw_st == 'ACTIVO': mapped_st = 'Act.'
+                else: mapped_st = raw_st.title() if raw_st else ''
+                
                 old_dict[sid] = {
                     'ID Servicio': sid,
                     'Plan': item.get('plan', ''),
-                    'Estado servicio': item.get('service_status', ''),
+                    'Estado servicio': mapped_st,
                     'Costo del plan': item.get('amount', 0)
                 }
 
     list_new = data_new.get("data", [])
     
     def map_to_excel_format(item):
+        raw_st = str(item.get('service_status', '')).strip().upper()
+        if raw_st == 'EXONERADO': mapped_st = 'Exo.'
+        elif raw_st == 'SUSPENDIDO': mapped_st = 'Susp.'
+        elif raw_st == 'POR RETIRAR': mapped_st = 'Por Ret.'
+        elif raw_st == 'TRANSFERIDO': mapped_st = 'Trans.'
+        elif raw_st == 'RETIRADO': mapped_st = 'Ret.'
+        elif raw_st == 'ACTIVO': mapped_st = 'Act.'
+        else: mapped_st = raw_st.title() if raw_st else ''
+        
         return {
             'ID Servicio': item.get('id_servicio', ''),
             'Cédula': f"{item.get('doc_type', '')}-{item.get('doc', '')}",
@@ -865,7 +909,7 @@ async def procesar_auditoria_api(
             'Plan': item.get('plan', ''),
             'Tipo de servicio': item.get('service_type', ''),
             'Costo del plan': item.get('amount', 0),
-            'Estado servicio': item.get('service_status', ''),
+            'Estado servicio': mapped_st,
             'Saldo actual': item.get('balance', 0),
             'Fecha última cambio de estado': item.get('last_status_change_date', ''),
             'Plan actual desde': item.get('current_plan_since', ''),
@@ -892,6 +936,17 @@ async def procesar_auditoria_api(
     totalExoneradosEmp = 0
     totalExoneradosReg = 0
     
+    ingreso_ayer = 0.0
+    ingreso_hoy = 0.0
+    impacto_instalaciones = 0.0
+    impacto_reconexiones = 0.0
+    impacto_upgrades = 0.0
+    impacto_downgrades = 0.0
+    impacto_retiros_post_corte = 0.0
+    impacto_retiros_pre_corte = 0.0
+    processed_sids = set()
+    
+    
     datosInstalaciones = []
     datosInstalacionesProceso = []
     datosCambiosPlan = []
@@ -904,6 +959,8 @@ async def procesar_auditoria_api(
         sid = str(row['ID Servicio']).strip()
         if not sid:
             continue
+            
+        processed_sids.add(sid)
             
         planNew = str(row['Plan']).strip()
         tipoServicioNew = str(row['Tipo de servicio']).strip().upper()
@@ -956,21 +1013,24 @@ async def procesar_auditoria_api(
              except:
                  pass
                 
-        if estadoServicioNew == 'ACTIVO':
+        if estadoServicioNew == 'ACT.':
             totalActivos += 1
-        elif estadoServicioNew == 'SUSPENDIDO':
+            ingreso_hoy += costoDelPlanNew
+        elif estadoServicioNew == 'SUSP.':
             if estado_dt >= corte_dt:
                 totalSuspendidosFecha += 1
-        elif estadoServicioNew == 'EXONERADO':
-            if planNew.lower().startswith('(emp)') or planNew.lower().startswith('emp'):
-                totalExoneradosEmp += 1
-            else:
-                totalExoneradosReg += 1
+        elif estadoServicioNew == 'EXO.':
+            plan_lower = planNew.lower()
+            if 'iptv' not in plan_lower:
+                if 'emp' in plan_lower:
+                    totalExoneradosEmp += 1
+                else:
+                    totalExoneradosReg += 1
                 
         is_missing_in_old = (sid not in old_dict)
         is_exact_date_match = (fechaInstalacionFormat == inst_str)
         
-        if estadoServicioNew == 'ACTIVO' and (is_exact_date_match or is_missing_in_old):
+        if estadoServicioNew == 'ACT.' and (is_exact_date_match or is_missing_in_old):
             if planNew.upper().startswith("3 MESES BENEFICIO"):
                 datosInstalaciones.append({
                     'ID Servicio': sid,
@@ -984,7 +1044,7 @@ async def procesar_auditoria_api(
                     'Saldo Actual': saldoActual
                 })
                 
-        if estadoServicioNew == 'ACTIVO' and fechaInstalacionFormat == today_str:
+        if estadoServicioNew == 'ACT.' and fechaInstalacionFormat == today_str:
             datosInstalacionesProceso.append({
                 'ID Servicio': sid,
                 'Cédula': row['Cédula'],
@@ -997,7 +1057,7 @@ async def procesar_auditoria_api(
                 'Saldo Actual': saldoActual
             })
                 
-        if estadoServicioNew == 'ACTIVO' and saldoActual < 0:
+        if estadoServicioNew == 'ACT.' and saldoActual < 0:
             datosDeudores.append({
                 'ID Servicio': sid,
                 'Cédula': row['Cédula'],
@@ -1020,9 +1080,27 @@ async def procesar_auditoria_api(
             except:
                 costoOld = 0.0
                 
-            billingAyer = costoOld if estatusOld == 'ACTIVO' else 0.0
-            billingHoy = costoDelPlanNew if estatusNew == 'ACTIVO' else 0.0
+            billingAyer = costoOld if estatusOld == 'ACT.' else 0.0
+            billingHoy = costoDelPlanNew if estatusNew == 'ACT.' else 0.0
             variacionNeta = billingHoy - billingAyer
+            
+            if estatusOld == 'ACT.':
+                ingreso_ayer += costoOld
+                
+            # Finanzas - Bridge
+            if estatusOld != 'ACT.' and estatusNew == 'ACT.':
+                impacto_reconexiones += costoDelPlanNew
+            elif estatusOld == 'ACT.' and estatusNew != 'ACT.':
+                if estado_dt >= corte_dt:
+                    impacto_retiros_post_corte += costoOld
+                else:
+                    impacto_retiros_pre_corte += costoOld
+            elif estatusOld == 'ACT.' and estatusNew == 'ACT.':
+                if costoDelPlanNew > costoOld:
+                    impacto_upgrades += (costoDelPlanNew - costoOld)
+                elif costoDelPlanNew < costoOld:
+                    impacto_downgrades += (costoOld - costoDelPlanNew)
+            
             
             if planOld != planNew:
                 datosCambiosPlan.append({
@@ -1069,6 +1147,22 @@ async def procesar_auditoria_api(
                     'Estado Nuevo': estatusNew,
                     'Fecha Último Cambio Estado': fechaEstadoFormat
                 })
+        else:
+            if estadoServicioNew == 'ACT.':
+                impacto_instalaciones += costoDelPlanNew
+
+    for sid, row_old in old_dict.items():
+        if sid not in processed_sids:
+            estatusOld = str(row_old['Estado servicio']).strip().upper()
+            try:
+                costoOld = float(row_old['Costo del plan'])
+            except:
+                costoOld = 0.0
+                
+            if estatusOld == 'ACT.':
+                ingreso_ayer += costoOld
+                impacto_retiros_pre_corte += costoOld
+
 
     def _sort_by_nombres(x): return x.get('Nombres', '')
     
@@ -1092,6 +1186,16 @@ async def procesar_auditoria_api(
             "suspendidos": totalSuspendidosFecha,
             "exonEmp": totalExoneradosEmp,
             "exonReg": totalExoneradosReg
+        },
+        "conciliacion_financiera": {
+            "ingreso_ayer": ingreso_ayer,
+            "ingreso_hoy": ingreso_hoy,
+            "instalaciones": impacto_instalaciones,
+            "reconexiones": impacto_reconexiones,
+            "upgrades": impacto_upgrades,
+            "downgrades": impacto_downgrades,
+            "retiros_post_corte": impacto_retiros_post_corte,
+            "retiros_pre_corte": impacto_retiros_pre_corte
         },
         "resumen": resumen_list,
         "instalaciones": datosInstalaciones,
