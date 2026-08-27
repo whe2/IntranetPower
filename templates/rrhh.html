@@ -792,6 +792,7 @@
                                     <th style="padding: 12px; text-align: center;">Ver Reportes</th>
                                     <th style="padding: 12px; text-align: center;">Ver Comunicaciones</th>
                                     <th style="padding: 12px; text-align: center;">Ver Directorio</th>
+                                    <th style="padding: 12px; text-align: center;">Editar Extensiones</th>
                                     <th style="padding: 12px; text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
@@ -863,6 +864,15 @@
     </div>
 
     <script>
+        function filterEmployees() {
+            const query = document.getElementById('searchEmpInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#subtab-directorio tbody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+        
         function switchSubTab(evt, subtabId) {
             const contents = document.querySelectorAll('.subtab-content');
             contents.forEach(content => content.classList.remove('active'));
@@ -968,6 +978,7 @@
                         const hasReportes = u.permissions.includes('ver_reportes');
                         const hasHelpdesk = u.permissions.includes('ver_helpdesk');
                         const hasDirectorio = u.permissions.includes('ver_directorio');
+                        const hasEditarDirectorio = u.permissions.includes('editar_directorio');
                         
                         tr.innerHTML = `
                             <td style="padding: 12px;">${u.full_name} <br><small style="color:#64748b;">${u.role}</small></td>
@@ -988,7 +999,11 @@
                                 <input type="checkbox" id="perm_directorio_${u.id}" ${hasDirectorio ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
                             </td>
                             <td style="padding: 12px; text-align: center;">
-                                ${u.role !== 'admin' ? `<button onclick="savePermissions(${u.id})" class="btn-action btn-gold" style="padding: 6px 12px; font-size: 12px;">Guardar</button>` : '<span style="color:#64748b; font-size: 12px;">Admin Full</span>'}
+                                <input type="checkbox" id="perm_editar_directorio_${u.id}" ${hasEditarDirectorio ? 'checked' : ''} ${u.role === 'admin' ? 'disabled' : ''}>
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                ${u.role !== 'admin' ? `<button onclick="savePermissions(${u.id})" class="btn-action btn-gold" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;">Guardar</button>` : '<span style="color:#64748b; font-size: 12px; margin-right: 5px;">Admin Full</span>'}
+                                <button onclick="openEditUserModal(${u.id}, '${u.email}')" class="btn-action" style="padding: 6px 12px; font-size: 12px; background: #64748b;">Editar</button>
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -1003,6 +1018,7 @@
             const reportes = document.getElementById('perm_reportes_' + userId).checked;
             const helpdesk = document.getElementById('perm_helpdesk_' + userId).checked;
             const directorio = document.getElementById('perm_directorio_' + userId).checked;
+            const editarDirectorio = document.getElementById('perm_editar_directorio_' + userId).checked;
             
             let perms = [];
             if (cargar) perms.push('cargar_datos_usuarios');
@@ -1010,6 +1026,7 @@
             if (reportes) perms.push('ver_reportes');
             if (helpdesk) perms.push('ver_helpdesk');
             if (directorio) perms.push('ver_directorio');
+            if (editarDirectorio) perms.push('editar_directorio');
             
             const formData = new FormData();
             formData.append('permissions', perms.join(','));
@@ -1369,7 +1386,20 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', loadAdminData);
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAdminData();
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab) {
+                switchSubTab(null, 'subtab-' + tab);
+                // Resaltar el botón si existe
+                const btn = document.querySelector(`.subtab-btn[onclick*="'subtab-${tab}'"]`);
+                if(btn) {
+                    document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+            }
+        });
     </script>
 
     <!-- MODAL SMTP CREDENCIALES -->
@@ -1397,6 +1427,77 @@
         </div>
     </div>
 
+    <!-- Modal for Edit System User -->
+    <div id="editSystemUserModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:25px; border-radius:12px; width:450px; max-width:90%;">
+            <h3 style="margin-bottom:20px; color:#1A1A1A;"><i class="fa-solid fa-user-pen"></i> Editar Usuario del Sistema</h3>
+            <input type="hidden" id="editUserId">
+            <label style="font-size:12px; color:#64748b; margin-bottom:5px; display:block;">Correo del Usuario</label>
+            <input type="text" id="editUserEmail" placeholder="Correo" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+            <label style="font-size:12px; color:#64748b; margin-bottom:5px; display:block;">Nueva Contraseña (Opcional)</label>
+            <input type="text" id="editUserPassword" placeholder="Dejar en blanco para no cambiar" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+            <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+            <p style="font-size:12px; color:#ef4444; margin-bottom:10px;">Para enviar la notificación por correo al usuario, por favor ingrese las credenciales SMTP2GO del sistema:</p>
+            <input type="text" id="editUserSmtpUser" placeholder="Usuario SMTP2GO" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:6px;">
+            <input type="password" id="editUserSmtpPass" placeholder="Contraseña SMTP2GO" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #ccc; border-radius:6px;">
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="closeEditUserModal()" style="padding:8px 15px; border:none; background:#ccc; border-radius:6px; cursor:pointer;">Cancelar</button>
+                <button onclick="submitEditUser()" style="padding:8px 15px; border:none; background:var(--acento); border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openEditUserModal(id, currentEmail) {
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editUserEmail').value = currentEmail;
+            document.getElementById('editUserPassword').value = '';
+            document.getElementById('editUserSmtpUser').value = '';
+            document.getElementById('editUserSmtpPass').value = '';
+            document.getElementById('editSystemUserModal').style.display = 'flex';
+        }
+        function closeEditUserModal() {
+            document.getElementById('editSystemUserModal').style.display = 'none';
+        }
+        async function submitEditUser() {
+            const id = document.getElementById('editUserId').value;
+            const email = document.getElementById('editUserEmail').value;
+            const password = document.getElementById('editUserPassword').value;
+            const smtp_user = document.getElementById('editUserSmtpUser').value;
+            const smtp_pass = document.getElementById('editUserSmtpPass').value;
+            
+            if(!email || !smtp_user || !smtp_pass) {
+                alert("Debes proporcionar el correo y las credenciales SMTP2GO.");
+                return;
+            }
+            
+            const data = {
+                email: email,
+                password: password,
+                smtp_user: smtp_user,
+                smtp_pass: smtp_pass
+            };
+            
+            try {
+                const res = await fetch(`/api/users/${id}/edit`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const responseData = await res.json();
+                if(res.ok) {
+                    alert(responseData.message);
+                    closeEditUserModal();
+                    loadUsersPermissions();
+                } else {
+                    alert("Error: " + responseData.detail);
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Error de red");
+            }
+        }
+    </script>
 </body>
 
 </html>

@@ -14,6 +14,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
+from apscheduler.schedulers.background import BackgroundScheduler
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from database import engine, get_db, Base
 import models
@@ -84,6 +88,21 @@ class CalendarEventCreate(BaseModel):
     day: int
     title: str
     description: Optional[str] = None
+
+class ExtensionUpdate(BaseModel):
+    name: str
+
+class ExtensionCreate(BaseModel):
+    department: str
+    name: str
+    extension: str
+    is_group: bool = False
+
+class UserUpdateWithSMTP(BaseModel):
+    email: str
+    password: str
+    smtp_user: str
+    smtp_pass: str
 
 class ConnectionManager:
     def __init__(self):
@@ -1369,6 +1388,81 @@ async def get_extensions(db: Session = Depends(get_db), current_user: models.Use
             "is_group": ext.is_group
         })
     return data
+
+@app.post("/api/directorio/extensions")
+async def create_extension(ext: ExtensionCreate, db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
+    if current_user.role != "admin" and "editar_directorio" not in (current_user.permissions or ""):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    new_ext = models.PhoneExtension(**ext.model_dump())
+    db.add(new_ext)
+    db.commit()
+    db.refresh(new_ext)
+    return {"message": "Extensión creada", "id": new_ext.id}
+
+@app.put("/api/directorio/extensions/{ext_id}")
+async def update_extension(ext_id: int, ext_update: ExtensionUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
+    if current_user.role != "admin" and "editar_directorio" not in (current_user.permissions or ""):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    ext = db.query(models.PhoneExtension).filter(models.PhoneExtension.id == ext_id).first()
+    if not ext:
+        raise HTTPException(status_code=404, detail="Extensión no encontrada")
+    ext.name = ext_update.name
+    db.commit()
+    return {"message": "Extensión actualizada"}
+
+@app.put("/api/users/{user_id}/edit")
+async def edit_user(user_id: int, user_data: UserUpdateWithSMTP, db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
+    if current_user.role != "admin" and "editar_usuarios" not in (current_user.permissions or ""):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+    user.email = user_data.email
+    if user_data.password:
+        user.hashed_password = security.get_password_hash(user_data.password)
+    db.commit()
+    
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = user_data.smtp_user
+        msg['To'] = user.email
+        msg['Subject'] = "Actualización de Credenciales - Intranet Powerlink"
+        
+        body = f"Hola {user.full_name},\n\nTus credenciales de acceso han sido actualizadas.\n\nNuevo Correo: {user.email}\nNueva Contraseña: {user_data.password}\n\nSaludos,\nAdministración."
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        server = smtplib.SMTP('mail.smtp2go.com', 2525)
+        server.starttls()
+        server.login(user_data.smtp_user, user_data.smtp_pass)
+        server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        return {"message": "Usuario actualizado, pero falló el envío de correo.", "error": str(e)}
+
+    return {"message": "Usuario actualizado y correo enviado correctamente."}
+
+def scheduled_snapshot_job():
+    try:
+        data = fetch_powerlink_data()
+        snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+        with open(snapshot_path, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        print(f"[{datetime.now()}] Snapshot diario guardado exitosamente.")
+    except Exception as e:
+        print(f"[{datetime.now()}] Error guardando snapshot diario: {str(e)}")
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(scheduled_snapshot_job, 'cron', hour=16, minute=0)
+
+@app.on_event("startup")
+def startup_event():
+    scheduler.start()
+
+@app.on_event("shutdown")
+def shutdown_event():
+    scheduler.shutdown()
 
 if __name__ == "__main__":
     import uvicorn

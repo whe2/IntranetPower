@@ -354,6 +354,9 @@
         {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
         {% endif %}
+        {% if user.role == 'admin' %}
+        <a href="/admin?tab=permisos"><i class="fa-solid fa-shield-halved"></i> Permisos</a>
+        {% endif %}
         {% if user.role == 'admin' or 'ver_integracion' in (user.permissions or '') %}
         <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
         {% endif %}

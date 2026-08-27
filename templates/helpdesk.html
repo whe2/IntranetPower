@@ -381,6 +381,9 @@
         {% if user.role == 'admin' or 'cargar_datos_usuarios' in (user.permissions or '') %}
         <a href="/admin"><i class="fa-solid fa-users"></i> RRHH</a>
         {% endif %}
+        {% if user.role == 'admin' %}
+        <a href="/admin?tab=permisos"><i class="fa-solid fa-shield-halved"></i> Permisos</a>
+        {% endif %}
         {% if user.role == 'admin' or 'ver_integracion' in (user.permissions or '') %}
         <a href="/integracion"><i class="fa-solid fa-network-wired"></i> Integración</a>
         {% endif %}
@@ -388,9 +391,15 @@
 
     <!-- MAIN CONTENT -->
     <div class="container">
-        <h1 class="page-title">Comunicaciones - Extensiones Powerlink</h1>
-        <p class="page-subtitle">Encuentra los números de anexo para comunicarte con cada departamento de la empresa.
-            Haz clic en uno para copiarlo.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1 class="page-title" style="margin-bottom: 5px;">Comunicaciones - Extensiones Powerlink</h1>
+                <p class="page-subtitle">Encuentra los números de anexo para comunicarte con cada departamento de la empresa. Haz clic en uno para copiarlo.</p>
+            </div>
+            {% if user.role == 'admin' or 'editar_directorio' in (user.permissions or '') %}
+            <button onclick="openAddExtModal()" class="btn-admin-nav" style="padding: 10px 20px; font-size: 14px; border: none; cursor: pointer;"><i class="fa-solid fa-plus"></i> Cargar Extensión</button>
+            {% endif %}
+        </div>
 
         <div class="search-container">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -403,7 +412,36 @@
         </div>
     </div>
 
+    <!-- Modals for Extensions -->
+    <div id="addExtModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:25px; border-radius:12px; width:400px; max-width:90%;">
+            <h3 style="margin-bottom:20px; color:#1A1A1A;">Cargar Nueva Extensión</h3>
+            <input type="text" id="addExtDept" placeholder="Departamento" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+            <input type="text" id="addExtName" placeholder="Nombre (Ej. Soporte TI)" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+            <input type="text" id="addExtNumber" placeholder="Número Extensión" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+            <label style="display:flex; align-items:center; margin-bottom:15px; font-size:14px;"><input type="checkbox" id="addExtGroup" style="margin-right:8px;"> Es extensión grupal</label>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="closeAddExtModal()" style="padding:8px 15px; border:none; background:#ccc; border-radius:6px; cursor:pointer;">Cancelar</button>
+                <button onclick="submitAddExt()" style="padding:8px 15px; border:none; background:var(--acento); border-radius:6px; cursor:pointer; font-weight:bold;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editExtModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:25px; border-radius:12px; width:400px; max-width:90%;">
+            <h3 style="margin-bottom:20px; color:#1A1A1A;">Editar Extensión</h3>
+            <input type="hidden" id="editExtId">
+            <input type="text" id="editExtName" placeholder="Nuevo Nombre" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="closeEditExtModal()" style="padding:8px 15px; border:none; background:#ccc; border-radius:6px; cursor:pointer;">Cancelar</button>
+                <button onclick="submitEditExt()" style="padding:8px 15px; border:none; background:var(--acento); border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const isExtAdmin = {% if user.role == 'admin' or 'editar_directorio' in (user.permissions or '') %}true{% else %}false{% endif %};
+
         const cardThemes = ['card-green', 'card-brown', 'card-gold'];
         const cardIcons = ['fa-building', 'fa-briefcase', 'fa-users', 'fa-network-wired', 'fa-headset', 'fa-chart-line', 'fa-desktop', 'fa-map-location-dot'];
 
@@ -459,9 +497,13 @@
                 let extHtml = '';
                 extensions.forEach(ext => {
                     const isGroup = ext.is_group ? 'group-ext' : '';
+                    let adminBtn = '';
+                    if (isExtAdmin) {
+                        adminBtn = `<i class="fa-solid fa-pencil" onclick="event.stopPropagation(); openEditExtModal(${ext.id}, '${ext.name}')" style="margin-left: 10px; cursor:pointer; color: #888;"></i>`;
+                    }
                     extHtml += `
                         <li class="ext-item ${isGroup}" onclick="copyToClipboard('${ext.extension}', '${ext.name}')">
-                            <span class="ext-name">${ext.name}</span>
+                            <span class="ext-name">${ext.name} ${adminBtn}</span>
                             <span class="ext-number">${ext.extension}</span>
                         </li>
                     `;
@@ -496,6 +538,71 @@
                 }
             }
             renderDirectory(filteredData);
+        }
+
+        // --- Modals Logic ---
+        function openAddExtModal() {
+            document.getElementById('addExtModal').style.display = 'flex';
+        }
+        function closeAddExtModal() {
+            document.getElementById('addExtModal').style.display = 'none';
+        }
+        async function submitAddExt() {
+            const data = {
+                department: document.getElementById('addExtDept').value,
+                name: document.getElementById('addExtName').value,
+                extension: document.getElementById('addExtNumber').value,
+                is_group: document.getElementById('addExtGroup').checked
+            };
+            if(!data.department || !data.name || !data.extension) {
+                alert("Completa todos los campos");
+                return;
+            }
+            try {
+                const res = await fetch('/api/directorio/extensions', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    closeAddExtModal();
+                    loadDirectory();
+                } else {
+                    alert("Error al guardar extensión");
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function openEditExtModal(id, currentName) {
+            document.getElementById('editExtId').value = id;
+            document.getElementById('editExtName').value = currentName;
+            document.getElementById('editExtModal').style.display = 'flex';
+        }
+        function closeEditExtModal() {
+            document.getElementById('editExtModal').style.display = 'none';
+        }
+        async function submitEditExt() {
+            const id = document.getElementById('editExtId').value;
+            const newName = document.getElementById('editExtName').value;
+            if(!newName) return;
+
+            try {
+                const res = await fetch(`/api/directorio/extensions/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: newName})
+                });
+                if(res.ok) {
+                    closeEditExtModal();
+                    loadDirectory();
+                } else {
+                    alert("Error al actualizar extensión");
+                }
+            } catch(e) {
+                console.error(e);
+            }
         }
 
         async function logout() {
