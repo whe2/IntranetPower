@@ -761,7 +761,7 @@ import urllib.parse
 import json
 import time
 
-def fetch_powerlink_data():
+def fetch_powerlink_data(is_natural: Optional[bool] = None):
     login_url = "https://powerlink.rubpi.com/api/login"
     creds = {"username": "api_exp", "password": "-?J+\\FcmKT2zWl5A28=~"}
     data = json.dumps(creds).encode('utf-8')
@@ -777,7 +777,14 @@ def fetch_powerlink_data():
     if not api_token:
         raise Exception("No se pudo obtener token de la API")
 
-    export_url = "https://powerlink.rubpi.com/api/exports/users"
+    # Si is_natural es False -> clientes corporativos/juridicos; True -> residenciales; None -> todos
+    if is_natural is False:
+        export_url = "https://powerlink.rubpi.com/api/exports/users?is_natural=false"
+    elif is_natural is True:
+        export_url = "https://powerlink.rubpi.com/api/exports/users?is_natural=true"
+    else:
+        export_url = "https://powerlink.rubpi.com/api/exports/users"
+
     req2 = urllib.request.Request(export_url, headers={'Authorization': f'Bearer {api_token}', 'Content-Type': 'application/json', 'Accept': 'application/json'}, method='POST')
     try:
         with urllib.request.urlopen(req2) as response:
@@ -791,7 +798,7 @@ def fetch_powerlink_data():
 
     get_url = f"https://powerlink.rubpi.com/api/exports/users/{task_id}"
     
-    for i in range(20): # try for 60 seconds
+    for i in range(25): # try for 75 seconds
         time.sleep(3)
         req3 = urllib.request.Request(get_url, headers={'Authorization': f'Bearer {api_token}'}, method='GET')
         try:
@@ -807,32 +814,82 @@ def fetch_powerlink_data():
 
     raise Exception("Tiempo de espera agotado para la tarea")
 
+def scheduled_snapshot_job():
+    """Guardado automático diario de snapshots (Residencial/Total y Corporativo) a las 8:00 PM."""
+    timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp_str}] [AUTO-SNAPSHOT] Iniciando guardado automático programado de las 8:00 PM...")
+    
+    # 1. Guardar snapshot general
+    try:
+        data_gen = fetch_powerlink_data(is_natural=None)
+        with open(os.path.join(UPLOAD_DIR, "last_snapshot.json"), "w", encoding="utf-8") as f:
+            json.dump(data_gen, f)
+        print(f"[{timestamp_str}] [AUTO-SNAPSHOT] OK Snapshot general/residencial guardado exitosamente ({len(data_gen)} contratos).")
+    except Exception as e:
+        print(f"[{timestamp_str}] [AUTO-SNAPSHOT] Error guardando snapshot general: {e}")
+
+    # 2. Guardar snapshot corporativo
+    try:
+        data_corp = fetch_powerlink_data(is_natural=False)
+        with open(os.path.join(UPLOAD_DIR, "last_snapshot_corporativo.json"), "w", encoding="utf-8") as f:
+            json.dump(data_corp, f)
+        print(f"[{timestamp_str}] [AUTO-SNAPSHOT] OK Snapshot corporativo guardado exitosamente ({len(data_corp)} contratos).")
+    except Exception as e:
+        print(f"[{timestamp_str}] [AUTO-SNAPSHOT] Error guardando snapshot corporativo: {e}")
+
+# Iniciar scheduler diario a las 8:00 PM (20:00)
+try:
+    snapshot_scheduler = BackgroundScheduler()
+    snapshot_scheduler.add_job(
+        scheduled_snapshot_job,
+        'cron',
+        hour=20,
+        minute=0,
+        id='daily_snapshot_8pm',
+        replace_existing=True
+    )
+    snapshot_scheduler.start()
+    print("[SCHEDULER] Programador de tareas iniciado: Guardado automático de snapshot activo a las 8:00 PM (20:00 diario).")
+except Exception as e:
+    print(f"[SCHEDULER] Advertencia al iniciar programador: {e}")
+
 @app.get("/api/integracion/api_users")
-def get_api_users(request: Request, db: Session = Depends(get_db)):
+def get_api_users(request: Request, is_natural: Optional[bool] = Query(None), db: Session = Depends(get_db)):
     token = security.get_token_from_request(request)
     if not token:
         raise HTTPException(status_code=401, detail="No autorizado")
     
     try:
-        data = fetch_powerlink_data()
+        data = fetch_powerlink_data(is_natural=is_natural)
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/integracion/guardar_snapshot")
-def guardar_snapshot(request: Request, db: Session = Depends(get_db)):
+def guardar_snapshot(request: Request, tipo: str = Form("todos"), db: Session = Depends(get_db)):
     token = security.get_token_from_request(request)
     if not token:
         raise HTTPException(status_code=401, detail="No autorizado")
     
     try:
-        data = fetch_powerlink_data()
-        snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+        if tipo.lower() == "corporativo":
+            data = fetch_powerlink_data(is_natural=False)
+            snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot_corporativo.json")
+            label_tipo = "corporativo "
+        elif tipo.lower() == "residencial":
+            data = fetch_powerlink_data(is_natural=True)
+            snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+            label_tipo = "residencial "
+        else:
+            data = fetch_powerlink_data(is_natural=None)
+            snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+            label_tipo = ""
+            
         with open(snapshot_path, "w", encoding="utf-8") as f:
             json.dump(data, f)
             
         current_time = datetime.now().strftime("%d/%m/%Y a las %I:%M %p")
-        return {"message": "Registro anterior guardado exitosamente.", "time": current_time}
+        return {"message": f"Registro {label_tipo}guardado exitosamente.", "time": current_time}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -842,14 +899,18 @@ async def procesar_auditoria_api(
     db: Session = Depends(get_db),
     fileOld: Optional[UploadFile] = File(None),
     fechaCorte: str = Form(...),
-    fechaInstalaciones: str = Form(...)
+    fechaInstalaciones: str = Form(...),
+    tipoCliente: str = Form("todos")
 ):
     token = security.get_token_from_request(request)
     if not token:
         raise HTTPException(status_code=401, detail="No autorizado")
         
+    is_corp = (tipoCliente.lower() == "corporativo")
+    is_natural_param = False if is_corp else (True if tipoCliente.lower() == "residencial" else None)
+
     try:
-        data_new = fetch_powerlink_data()
+        data_new = fetch_powerlink_data(is_natural=is_natural_param)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error obteniendo datos actuales: {str(e)}")
         
@@ -881,9 +942,10 @@ async def procesar_auditoria_api(
                 }
     else:
         # Modo: Comparar con Snapshot Local
-        snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+        snapshot_filename = "last_snapshot_corporativo.json" if is_corp else "last_snapshot.json"
+        snapshot_path = os.path.join(UPLOAD_DIR, snapshot_filename)
         if not os.path.exists(snapshot_path):
-            raise HTTPException(status_code=400, detail="No existe un registro anterior. Por favor, haz clic en 'Guardar Registro Actual (Anterior)' antes de comparar, o sube un Excel.")
+            raise HTTPException(status_code=400, detail=f"No existe un registro anterior ({'corporativo' if is_corp else 'general'}). Por favor, haz clic en 'Guardar Registro Anterior' antes de comparar, o sube un Excel.")
             
         try:
             with open(snapshot_path, "r", encoding="utf-8") as f:
@@ -988,6 +1050,7 @@ async def procesar_auditoria_api(
     datosEstatus = []
     datosDeudores = []
     datosConciliacionDetalle = []
+    datosClientesActivos = []
     
     for item in list_new:
         row = map_to_excel_format(item)
@@ -1052,6 +1115,19 @@ async def procesar_auditoria_api(
         if estadoServicioNew == 'ACT.':
             totalActivos += 1
             ingreso_hoy += costoDelPlanNew
+            datosClientesActivos.append({
+                'ID Servicio': sid,
+                'Cédula': row['Cédula'],
+                'Nombres': row['Nombres'],
+                'Plan': planNew,
+                'Tipo de servicio': row['Tipo de servicio'],
+                'Costo del plan': costoDelPlanNew,
+                'Estado servicio': row['Estado servicio'],
+                'Saldo Actual': saldoActual,
+                'Fecha de instalación': fechaInstalacionFormat,
+                'Teléfono 1': row['Teléfono 1'],
+                'Urbanismo': row['Urbanismo']
+            })
         elif estadoServicioNew == 'SUSP.':
             if estado_dt >= corte_dt:
                 totalSuspendidosFecha += 1
@@ -1301,7 +1377,6 @@ async def procesar_auditoria_api(
                     'Fecha': '-'
                 })
 
-
     def _sort_by_nombres(x): return x.get('Nombres', '')
     
     datosInstalaciones.sort(key=_sort_by_nombres)
@@ -1311,6 +1386,42 @@ async def procesar_auditoria_api(
     datosEstatus.sort(key=_sort_by_nombres)
     datosDeudores.sort(key=_sort_by_nombres)
     datosConciliacionDetalle.sort(key=_sort_by_nombres)
+    datosClientesActivos.sort(key=_sort_by_nombres)
+
+    # Generar cuadro resumen agrupado de Clientes Activos por Plan
+    plan_aggregates = {}
+    for c in datosClientesActivos:
+        p_name = c['Plan'] or 'Sin Plan'
+        if p_name not in plan_aggregates:
+            plan_aggregates[p_name] = {
+                'Plan': p_name,
+                'Cantidad': 0,
+                'Sumatoria Costo': 0.0,
+                'Precios': set()
+            }
+        plan_aggregates[p_name]['Cantidad'] += 1
+        plan_aggregates[p_name]['Sumatoria Costo'] += float(c['Costo del plan'] or 0.0)
+        plan_aggregates[p_name]['Precios'].add(float(c['Costo del plan'] or 0.0))
+
+    datosPlanesActivos = []
+    for p_name, p_data in plan_aggregates.items():
+        cnt = p_data['Cantidad']
+        tot_cost = p_data['Sumatoria Costo']
+        precios_list = sorted(list(p_data['Precios']))
+        precio_unitario_str = " / ".join([f"${p:g}" for p in precios_list]) if precios_list else "$0.00"
+        precio_ref = precios_list[0] if len(precios_list) == 1 else (tot_cost / cnt if cnt > 0 else 0.0)
+        
+        datosPlanesActivos.append({
+            'Plan': p_name,
+            'Cantidad': cnt,
+            'Precio Unitario': precio_unitario_str,
+            'Precio Referencia': round(precio_ref, 2),
+            'Sumatoria Costo': round(tot_cost, 2),
+            'Porcentaje Clientes': round((cnt / totalActivos * 100), 2) if totalActivos > 0 else 0.0,
+            'Porcentaje Ingresos': round((tot_cost / ingreso_hoy * 100), 2) if ingreso_hoy > 0 else 0.0
+        })
+
+    datosPlanesActivos.sort(key=lambda x: x['Cantidad'], reverse=True)
 
     resumen_list = [
         {"Indicador": "Activos Totales", "Valor": totalActivos},
@@ -1348,12 +1459,189 @@ async def procesar_auditoria_api(
         },
         "conciliacion_detalle": datosConciliacionDetalle,
         "resumen": resumen_list,
+        "planesActivos": datosPlanesActivos,
+        "clientesActivos": datosClientesActivos,
         "instalaciones": datosInstalaciones,
         "instalacionesProceso": datosInstalacionesProceso,
         "cambiosPlan": datosCambiosPlan,
         "seguimiento": datosSeguimiento,
         "estatus": datosEstatus,
         "deudores": datosDeudores
+    }
+
+def build_plan_aggregates(users):
+    total_activos = 0
+    total_monto = 0.0
+    datos_clientes_activos = []
+    plan_aggregates = {}
+
+    for item in users:
+        status = str(item.get('service_status', '')).strip().upper()
+        if status in ('ACTIVO', 'ACT.'):
+            plan = str(item.get('plan', '')).strip() or 'Sin Plan'
+            service_type = str(item.get('service_type', '')).strip().upper()
+            
+            # Omitir IPTV si corresponde
+            if plan.upper() == 'IPTV' or service_type == 'IPTV':
+                continue
+                
+            try:
+                amount = float(item.get('amount') or 0.0)
+            except:
+                amount = 0.0
+                
+            try:
+                balance = float(item.get('balance') or 0.0)
+            except:
+                balance = 0.0
+
+            raw_inst = item.get('creation_date', '')
+            fecha_inst = safe_date_str(raw_inst)
+            if raw_inst and 'T' in str(raw_inst):
+                try:
+                    fecha_inst = datetime.strptime(str(raw_inst).split('T')[0], "%Y-%m-%d").strftime("%d/%m/%Y")
+                except:
+                    pass
+
+            sid = str(item.get('id_servicio', '')).strip()
+            cedula = f"{item.get('doc_type', '')}-{item.get('doc', '')}" if item.get('doc') else ""
+            nombre = str(item.get('name', '')).strip()
+            urbanismo = str(item.get('urban', '')).strip()
+            telefono = str(item.get('phone', '')).strip()
+
+            total_activos += 1
+            total_monto += amount
+
+            datos_clientes_activos.append({
+                'ID Servicio': sid,
+                'Cédula': cedula,
+                'Nombres': nombre,
+                'Plan': plan,
+                'Tipo de servicio': service_type,
+                'Costo del plan': amount,
+                'Estado servicio': 'Act.',
+                'Saldo Actual': balance,
+                'Fecha de instalación': fecha_inst,
+                'Teléfono 1': telefono,
+                'Urbanismo': urbanismo
+            })
+
+            if plan not in plan_aggregates:
+                plan_aggregates[plan] = {
+                    'Plan': plan,
+                    'Cantidad': 0,
+                    'Sumatoria Costo': 0.0,
+                    'Precios': set()
+                }
+            plan_aggregates[plan]['Cantidad'] += 1
+            plan_aggregates[plan]['Sumatoria Costo'] += amount
+            plan_aggregates[plan]['Precios'].add(amount)
+
+    datos_planes_activos = []
+    for p_name, p_data in plan_aggregates.items():
+        cnt = p_data['Cantidad']
+        tot_cost = p_data['Sumatoria Costo']
+        precios_list = sorted(list(p_data['Precios']))
+        precio_unitario_str = " / ".join([f"${p:g}" for p in precios_list]) if precios_list else "$0.00"
+        precio_ref = precios_list[0] if len(precios_list) == 1 else (tot_cost / cnt if cnt > 0 else 0.0)
+
+        datos_planes_activos.append({
+            'Plan': p_name,
+            'Cantidad': cnt,
+            'Precio Unitario': precio_unitario_str,
+            'Precio Referencia': round(precio_ref, 2),
+            'Sumatoria Costo': round(tot_cost, 2),
+            'Porcentaje Clientes': round((cnt / total_activos * 100), 2) if total_activos > 0 else 0.0,
+            'Porcentaje Ingresos': round((tot_cost / total_monto * 100), 2) if total_monto > 0 else 0.0
+        })
+
+    datos_planes_activos.sort(key=lambda x: x['Cantidad'], reverse=True)
+    datos_clientes_activos.sort(key=lambda x: x.get('Nombres', ''))
+
+    plan_lider = datos_planes_activos[0]['Plan'] if datos_planes_activos else 'N/A'
+    arpu = round(total_monto / total_activos, 2) if total_activos > 0 else 0.0
+
+    return {
+        "totales": {
+            "total_clientes_activos": total_activos,
+            "total_costo_facturacion": round(total_monto, 2),
+            "total_planes": len(datos_planes_activos),
+            "plan_lider": plan_lider,
+            "arpu_promedio": arpu
+        },
+        "planes": datos_planes_activos,
+        "clientes": datos_clientes_activos
+    }
+
+@app.get("/api/reportes/clientes_activos_por_plan")
+def get_clientes_activos_por_plan(
+    request: Request,
+    db: Session = Depends(get_db),
+    tipo: str = Query("todos"),
+    force_api: bool = Query(False)
+):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+
+    path_gen = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+    path_corp = os.path.join(UPLOAD_DIR, "last_snapshot_corporativo.json")
+
+    data_gen = None
+    data_corp = None
+
+    if force_api or not os.path.exists(path_gen) or not os.path.exists(path_corp):
+        try:
+            data_gen = fetch_powerlink_data(is_natural=None)
+            with open(path_gen, "w", encoding="utf-8") as f:
+                json.dump(data_gen, f)
+        except Exception as e:
+            if not os.path.exists(path_gen):
+                raise HTTPException(status_code=500, detail=f"Error al consultar API General: {str(e)}")
+
+        try:
+            data_corp = fetch_powerlink_data(is_natural=False)
+            with open(path_corp, "w", encoding="utf-8") as f:
+                json.dump(data_corp, f)
+        except Exception as e:
+            if not os.path.exists(path_corp):
+                raise HTTPException(status_code=500, detail=f"Error al consultar API Corporativo: {str(e)}")
+
+    if data_gen is None and os.path.exists(path_gen):
+        with open(path_gen, "r", encoding="utf-8") as f:
+            data_gen = json.load(f)
+
+    if data_corp is None and os.path.exists(path_corp):
+        with open(path_corp, "r", encoding="utf-8") as f:
+            data_corp = json.load(f)
+
+    users_gen = (data_gen or {}).get("data", [])
+    users_corp = (data_corp or {}).get("data", [])
+
+    corp_sids = {str(u.get('id_servicio', '')).strip() for u in users_corp if str(u.get('id_servicio', '')).strip()}
+    users_res = [u for u in users_gen if str(u.get('id_servicio', '')).strip() not in corp_sids]
+
+    all_dict = {}
+    for u in users_res:
+        sid = str(u.get('id_servicio', '')).strip()
+        if sid: all_dict[sid] = u
+    for u in users_corp:
+        sid = str(u.get('id_servicio', '')).strip()
+        if sid: all_dict[sid] = u
+    users_cons = list(all_dict.values())
+
+    resumen_res = build_plan_aggregates(users_res)
+    resumen_corp = build_plan_aggregates(users_corp)
+    resumen_cons = build_plan_aggregates(users_cons)
+
+    return {
+        "residencial": resumen_res,
+        "corporativo": resumen_corp,
+        "consolidado": resumen_cons,
+        # Compatibilidad directa
+        "totales": resumen_cons["totales"],
+        "planes": resumen_cons["planes"],
+        "clientes": resumen_cons["clientes"]
     }
 
 @app.get("/api/metricas/crecimiento")
@@ -1576,13 +1864,22 @@ async def edit_user(user_id: int, user_data: UserUpdateWithSMTP, db: Session = D
 
 def scheduled_snapshot_job():
     try:
-        data = fetch_powerlink_data()
+        data = fetch_powerlink_data(is_natural=None)
         snapshot_path = os.path.join(UPLOAD_DIR, "last_snapshot.json")
         with open(snapshot_path, "w", encoding="utf-8") as f:
             json.dump(data, f)
-        print(f"[{datetime.now()}] Snapshot diario guardado exitosamente.")
+        print(f"[{datetime.now()}] Snapshot diario general guardado exitosamente.")
     except Exception as e:
-        print(f"[{datetime.now()}] Error guardando snapshot diario: {str(e)}")
+        print(f"[{datetime.now()}] Error guardando snapshot diario general: {str(e)}")
+
+    try:
+        data_corp = fetch_powerlink_data(is_natural=False)
+        snapshot_path_corp = os.path.join(UPLOAD_DIR, "last_snapshot_corporativo.json")
+        with open(snapshot_path_corp, "w", encoding="utf-8") as f:
+            json.dump(data_corp, f)
+        print(f"[{datetime.now()}] Snapshot diario corporativo guardado exitosamente.")
+    except Exception as e:
+        print(f"[{datetime.now()}] Error guardando snapshot diario corporativo: {str(e)}")
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(scheduled_snapshot_job, 'cron', hour=16, minute=0)

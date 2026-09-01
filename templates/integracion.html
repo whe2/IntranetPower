@@ -258,7 +258,15 @@
         <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-200 mb-8">
             <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4">1. Parámetros de Carga y Filtros de Fecha</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Segmento de Clientes (Filtro API):</label>
+                    <select id="tipoClienteInput" class="w-full text-sm text-gray-800 bg-gray-50 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 font-semibold cursor-pointer">
+                        <option value="todos">🌐 Todos los Clientes</option>
+                        <option value="corporativo">🏢 Corporativos / Jurídicos (is_natural=false)</option>
+                        <option value="residencial">🏠 Residenciales / Naturales</option>
+                    </select>
+                </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Cuadro Resumen (Contar Suspendidos desde):</label>
                     <input type="date" id="fechaCorteInput" value="2026-07-01" class="w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
@@ -383,7 +391,10 @@
                 </div>
             </div>
 
-            <div class="flex justify-end mb-4 gap-4">
+            <div class="flex justify-end mb-4 gap-3 flex-wrap">
+                <button onclick="exportarExcelResumenPlanes()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-5 rounded-md shadow-xs flex items-center gap-2 cursor-pointer mb-6">
+                    <i class="fa-solid fa-file-excel"></i> Descargar Excel de Planes
+                </button>
                 <button id="btnDescargar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-5 rounded-md shadow-xs flex items-center gap-2 cursor-pointer mb-6">
                     📥 Descargar Reporte Consolidado (.xlsx)
                 </button>
@@ -577,6 +588,227 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN APARTE: Clientes Activos por Plan (3 Cuadros Simultáneos) -->
+            <div id="seccionPlanesActivosConsolidado" class="bg-white rounded-xl shadow-xs border border-gray-200 p-6 mb-8 mt-6">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-6 flex-wrap gap-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-amber-500"></i> Cuadro de Clientes Activos por Plan
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">Conteo y sumatoria de contratos Residenciales, Corporativos (is_natural=false) y su Unión Consolidada.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportarExcelConsolidadoCompleto()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow-xs flex items-center gap-2 cursor-pointer transition-all">
+                            <i class="fa-solid fa-file-excel"></i> Descargar Excel Completo (3 Cuadros)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. TABLA RESIDENCIAL -->
+                <div class="mb-8 border border-blue-200 rounded-xl overflow-hidden shadow-2xs">
+                    <div class="bg-blue-50/80 px-4 py-3 border-b border-blue-200 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-house-user text-blue-600 text-sm"></i>
+                            <h4 class="font-bold text-blue-950 text-sm">1. Clientes Residenciales (Naturales)</h4>
+                            <span id="badgePlanesRes" class="text-xs bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full border border-blue-200">0 Planes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="buscarPlanesResInput" oninput="filtrarPlanesSeccion('residencial')" placeholder="Filtrar residencial..." class="text-xs px-3 py-1.5 border border-gray-300 rounded-lg bg-white outline-none w-48 focus:ring-1 focus:ring-blue-500">
+                            <button onclick="exportarExcelUnaSeccion('residencial')" class="px-2.5 py-1.5 bg-white hover:bg-blue-100 text-blue-800 text-xs font-bold rounded-lg border border-blue-300 cursor-pointer">
+                                <i class="fa-solid fa-file-excel text-emerald-600 mr-1"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-72">
+                        <table class="w-full data-table text-xs">
+                            <thead class="sticky top-0 bg-gray-50 border-b border-gray-200 font-bold text-gray-600 uppercase">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-center" style="width: 40px;">#</th>
+                                    <th class="py-2.5 px-3 text-left">Nombre del Plan</th>
+                                    <th class="py-2.5 px-3 text-center">Clientes Activos</th>
+                                    <th class="py-2.5 px-3 text-center">% Segmento</th>
+                                    <th class="py-2.5 px-3 text-right">Precio Unitario</th>
+                                    <th class="py-2.5 px-3 text-right">Sumatoria Costo Total ($)</th>
+                                    <th class="py-2.5 px-3 text-center">% Facturación</th>
+                                    <th class="py-2.5 px-3 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPlanesRes">
+                                <tr><td colspan="8" class="text-center py-6 text-gray-500">Presione 'Comparar API' para cargar datos.</td></tr>
+                            </tbody>
+                            <tfoot id="tfootPlanesRes" class="bg-gray-100 font-bold border-t border-gray-300 text-gray-900 hidden">
+                                <tr>
+                                    <td colspan="2" class="py-2.5 px-3 text-left font-bold uppercase">TOTAL RESIDENCIAL</td>
+                                    <td class="py-2.5 px-3 text-center font-mono text-indigo-900 font-bold" id="totResClientes">-</td>
+                                    <td class="py-2.5 px-3 text-center">100%</td>
+                                    <td class="py-2.5 px-3 text-right text-gray-500">-</td>
+                                    <td class="py-2.5 px-3 text-right font-mono text-emerald-900 font-bold" id="totResCosto">-</td>
+                                    <td class="py-2.5 px-3 text-center text-emerald-900">100%</td>
+                                    <td class="py-2.5 px-3 text-center text-gray-500">Subtotal</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. TABLA CORPORATIVO (IS_NATURAL=FALSE) -->
+                <div class="mb-8 border border-amber-200 rounded-xl overflow-hidden shadow-2xs">
+                    <div class="bg-amber-50/80 px-4 py-3 border-b border-amber-200 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-building text-amber-600 text-sm"></i>
+                            <h4 class="font-bold text-amber-950 text-sm">2. Clientes Corporativos / Jurídicos (is_natural=false)</h4>
+                            <span id="badgePlanesCorp" class="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">0 Planes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="buscarPlanesCorpInput" oninput="filtrarPlanesSeccion('corporativo')" placeholder="Filtrar corporativo..." class="text-xs px-3 py-1.5 border border-gray-300 rounded-lg bg-white outline-none w-48 focus:ring-1 focus:ring-amber-500">
+                            <button onclick="exportarExcelUnaSeccion('corporativo')" class="px-2.5 py-1.5 bg-white hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-lg border border-amber-300 cursor-pointer">
+                                <i class="fa-solid fa-file-excel text-emerald-600 mr-1"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-72">
+                        <table class="w-full data-table text-xs">
+                            <thead class="sticky top-0 bg-gray-50 border-b border-gray-200 font-bold text-gray-600 uppercase">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-center" style="width: 40px;">#</th>
+                                    <th class="py-2.5 px-3 text-left">Nombre del Plan</th>
+                                    <th class="py-2.5 px-3 text-center">Clientes Activos</th>
+                                    <th class="py-2.5 px-3 text-center">% Segmento</th>
+                                    <th class="py-2.5 px-3 text-right">Precio Unitario</th>
+                                    <th class="py-2.5 px-3 text-right">Sumatoria Costo Total ($)</th>
+                                    <th class="py-2.5 px-3 text-center">% Facturación</th>
+                                    <th class="py-2.5 px-3 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPlanesCorp">
+                                <tr><td colspan="8" class="text-center py-6 text-gray-500">Presione 'Comparar API' para cargar datos.</td></tr>
+                            </tbody>
+                            <tfoot id="tfootPlanesCorp" class="bg-gray-100 font-bold border-t border-gray-300 text-gray-900 hidden">
+                                <tr>
+                                    <td colspan="2" class="py-2.5 px-3 text-left font-bold uppercase">TOTAL CORPORATIVO</td>
+                                    <td class="py-2.5 px-3 text-center font-mono text-amber-900 font-bold" id="totCorpClientes">-</td>
+                                    <td class="py-2.5 px-3 text-center">100%</td>
+                                    <td class="py-2.5 px-3 text-right text-gray-500">-</td>
+                                    <td class="py-2.5 px-3 text-right font-mono text-emerald-900 font-bold" id="totCorpCosto">-</td>
+                                    <td class="py-2.5 px-3 text-center text-emerald-900">100%</td>
+                                    <td class="py-2.5 px-3 text-center text-gray-500">Subtotal</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. TABLA CONSOLIDADO (UNIÓN DE AMBOS) -->
+                <div class="mb-4 border border-emerald-200 rounded-xl overflow-hidden shadow-2xs">
+                    <div class="bg-emerald-50/80 px-4 py-3 border-b border-emerald-200 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-emerald-600 text-sm"></i>
+                            <h4 class="font-bold text-emerald-950 text-sm">3. Cuadro Consolidado (Unión de Residencial + Corporativo)</h4>
+                            <span id="badgePlanesCons" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">0 Planes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="buscarPlanesConsInput" oninput="filtrarPlanesSeccion('consolidado')" placeholder="Filtrar consolidado..." class="text-xs px-3 py-1.5 border border-gray-300 rounded-lg bg-white outline-none w-48 focus:ring-1 focus:ring-emerald-500">
+                            <button onclick="exportarExcelUnaSeccion('consolidado')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg cursor-pointer">
+                                <i class="fa-solid fa-file-excel mr-1"></i> Excel Consolidado
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-72">
+                        <table class="w-full data-table text-xs">
+                            <thead class="sticky top-0 bg-gray-50 border-b border-gray-200 font-bold text-gray-600 uppercase">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-center" style="width: 40px;">#</th>
+                                    <th class="py-2.5 px-3 text-left">Nombre del Plan</th>
+                                    <th class="py-2.5 px-3 text-center">Clientes Activos</th>
+                                    <th class="py-2.5 px-3 text-center">% Total</th>
+                                    <th class="py-2.5 px-3 text-right">Precio Unitario</th>
+                                    <th class="py-2.5 px-3 text-right">Sumatoria Costo Total ($)</th>
+                                    <th class="py-2.5 px-3 text-center">% Facturación</th>
+                                    <th class="py-2.5 px-3 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPlanesCons">
+                                <tr><td colspan="8" class="text-center py-6 text-gray-500">Presione 'Comparar API' para cargar datos.</td></tr>
+                            </tbody>
+                            <tfoot id="tfootPlanesCons" class="bg-gray-100 font-bold border-t border-gray-300 text-gray-900 hidden">
+                                <tr>
+                                    <td colspan="2" class="py-2.5 px-3 text-left font-bold uppercase">TOTAL GENERAL (UNIÓN)</td>
+                                    <td class="py-2.5 px-3 text-center font-mono text-indigo-900 font-extrabold text-sm" id="totConsClientes">-</td>
+                                    <td class="py-2.5 px-3 text-center">100%</td>
+                                    <td class="py-2.5 px-3 text-right text-gray-500">-</td>
+                                    <td class="py-2.5 px-3 text-right font-mono text-emerald-900 font-extrabold text-sm" id="totConsCosto">-</td>
+                                    <td class="py-2.5 px-3 text-center text-emerald-900">100%</td>
+                                    <td class="py-2.5 px-3 text-center text-gray-500">Consolidado</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Visor de Detalle de Clientes del Plan (Desplegable) -->
+                <div id="cardDetalleClientesPlan" class="hidden mt-6 border-t border-gray-200 pt-6">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4 flex-wrap gap-2">
+                        <div>
+                            <h4 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-amber-600"></i> Listado de Clientes Activos del Plan: <span id="lblPlanDetalleConsolidado" class="text-amber-700 font-bold">-</span>
+                            </h4>
+                            <p class="text-xs text-gray-500 mt-0.5">Clientes específicos asociados a este plan.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="relative w-64">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                                <input type="text" id="buscarClientesPlanInput" oninput="filtrarClientesPlanConsolidado()" placeholder="Buscar cliente, cédula o ID..." class="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <button onclick="cerrarDetalleClientesPlan()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg border border-gray-300 cursor-pointer">
+                                <i class="fa-solid fa-xmark mr-1"></i> Cerrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-gray-200" style="max-height: 420px;">
+                        <table class="w-full data-table text-xs">
+                            <thead class="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 font-semibold text-gray-600">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-left">ID Servicio</th>
+                                    <th class="py-2.5 px-3 text-left">Cédula</th>
+                                    <th class="py-2.5 px-3 text-left">Cliente</th>
+                                    <th class="py-2.5 px-3 text-left">Plan</th>
+                                    <th class="py-2.5 px-3 text-right">Costo ($)</th>
+                                    <th class="py-2.5 px-3 text-center">Estado</th>
+                                    <th class="py-2.5 px-3 text-left">Urbanismo / Teléfono</th>
+                                    <th class="py-2.5 px-3 text-center">Fecha Instalación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyClientesPlanConsolidado">
+                                <!-- Clientes del plan -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-gray-200" style="max-height: 420px;">
+                        <table class="w-full data-table text-xs">
+                            <thead class="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 font-semibold text-gray-600">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-left">ID Servicio</th>
+                                    <th class="py-2.5 px-3 text-left">Cédula</th>
+                                    <th class="py-2.5 px-3 text-left">Cliente</th>
+                                    <th class="py-2.5 px-3 text-left">Plan</th>
+                                    <th class="py-2.5 px-3 text-right">Costo ($)</th>
+                                    <th class="py-2.5 px-3 text-center">Estado</th>
+                                    <th class="py-2.5 px-3 text-left">Urbanismo / Teléfono</th>
+                                    <th class="py-2.5 px-3 text-center">Fecha Instalación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyClientesPlanConsolidado">
+                                <!-- Clientes del plan -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
         </div>
     </div>
@@ -605,16 +837,17 @@
         let datosSeguimiento = [];
         let datosEstatus = [];
         let datosDeudores = [];
+        let datosPlanesActivos = [];
+        let datosClientesActivos = [];
+        let planSeleccionadoDetalle = '';
         let cuadroResumenFinal = [];
 
-        // Inicializar fechas por defecto (Instalaciones = Ayer, Corte = 1ro del mes actual)
+        // Inicializar fechas por defecto (Instalaciones = Hoy, Corte = 1ro del mes actual)
         document.addEventListener("DOMContentLoaded", () => {
             const hoy = new Date();
             
-            // Ayer
-            const ayer = new Date(hoy);
-            ayer.setDate(ayer.getDate() - 1);
-            document.getElementById('fechaInstalacionesInput').value = ayer.toISOString().split('T')[0];
+            // Fecha de Instalaciones (Hoy)
+            document.getElementById('fechaInstalacionesInput').value = hoy.toISOString().split('T')[0];
             
             // 1ro del mes actual
             const primeroMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -683,8 +916,13 @@
                 }, {});
                 const token = cookies['token'] || '';
 
+                const tipoCliente = document.getElementById('tipoClienteInput')?.value || 'todos';
+                const formData = new FormData();
+                formData.append('tipo', tipoCliente);
+
                 const response = await fetch('/api/integracion/guardar_snapshot', {
                     method: 'POST',
+                    body: formData,
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
@@ -708,11 +946,13 @@
         document.getElementById('btnProcesarApi').addEventListener('click', async () => {
             const fechaCorteUsuario = document.getElementById('fechaCorteInput').value;
             const fechaInstalacionesUsuario = document.getElementById('fechaInstalacionesInput').value;
+            const tipoCliente = document.getElementById('tipoClienteInput')?.value || 'todos';
             const fileOldInput = document.getElementById('fileOld');
 
             const formData = new FormData();
             formData.append('fechaCorte', fechaCorteUsuario);
             formData.append('fechaInstalaciones', fechaInstalacionesUsuario);
+            formData.append('tipoCliente', tipoCliente);
             
             if (fileOldInput && fileOldInput.files.length > 0) {
                 formData.append('fileOld', fileOldInput.files[0]);
@@ -762,6 +1002,8 @@
                 datosSeguimiento = result.seguimiento;
                 datosEstatus = result.estatus;
                 datosDeudores = result.deudores;
+                datosPlanesActivos = result.planesActivos || [];
+                datosClientesActivos = result.clientesActivos || [];
                 datosConciliacionDetalle = result.conciliacion_detalle || [];
                 
                 const t = result.totales;
@@ -874,6 +1116,9 @@
                 document.getElementById('badge-seguimiento').innerText = datosSeguimiento.length;
                 document.getElementById('badge-deudores').innerText = datosDeudores.length;
                 
+                // Renderizar los 3 cuadros de planes (Residencial, Corporativo, Consolidado)
+                cargarCuadrosPlanesIntegracion();
+                
                 // Calcular y renderizar sumatoria de variaciones
                 let sumEstatus = 0;
                 datosEstatus.forEach(item => {
@@ -914,6 +1159,40 @@
             }
         });
 
+        function exportarExcelResumenPlanes() {
+            if (!datosPlanesActivos || datosPlanesActivos.length === 0) {
+                alert('No hay datos disponibles de planes activos. Procesa primero la auditoría o carga los datos.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            const rows = datosPlanesActivos.map(p => ({
+                "Nombre del Plan": p.Plan,
+                "Costo del Plan ($)": p['Precio Unitario'] || (p['Precio Referencia'] != null ? `$${p['Precio Referencia']}` : '$0.00'),
+                "Cantidad de Clientes": p.Cantidad,
+                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
+                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
+            }));
+
+            // Fila de total
+            const totalClientes = rows.reduce((acc, r) => acc + (r["Cantidad de Clientes"] || 0), 0);
+            const totalCosto = rows.reduce((acc, r) => acc + (r["Sumatoria Costo Total ($)"] || 0), 0);
+            
+            rows.push({
+                "Nombre del Plan": "TOTAL GENERAL",
+                "Costo del Plan ($)": "-",
+                "Cantidad de Clientes": totalClientes,
+                "Porcentaje (%)": "100%",
+                "Sumatoria Costo Total ($)": totalCosto
+            });
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, "Planes Activos");
+
+            XLSX.writeFile(wb, `Clientes_por_Plan_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
         document.getElementById('btnDescargar').addEventListener('click', () => {
             const wb = XLSX.utils.book_new();
 
@@ -925,6 +1204,12 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosEstatus), "Cambios de Estatus");
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosDeudores), "Activos con Deuda");
 
+            if (datosPlanesActivos && datosPlanesActivos.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosPlanesActivos), "Clientes Activos por Plan");
+            }
+            if (datosClientesActivos && datosClientesActivos.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosClientesActivos), "Detalle Clientes Activos");
+            }
             if (datosConciliacionDetalle && datosConciliacionDetalle.length > 0) {
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosConciliacionDetalle), "Detalle Conciliación");
             }
@@ -1050,6 +1335,8 @@
             addPlans(datosCambiosPlan, 'Plan Anterior', 'Plan Nuevo');
             addPlans(datosSeguimiento, 'Plan Anterior', 'Plan Nuevo');
             addPlans(datosDeudores, 'Plan');
+            addPlans(datosPlanesActivos, 'Plan');
+            addPlans(datosClientesActivos, 'Plan');
             
             const filter = document.getElementById('planFilter');
             filter.innerHTML = '<option value="">Todos los Planes</option>';
@@ -1202,25 +1489,286 @@
                     </tr>`;
                 });
             }
-            
             thead.innerHTML = theadHtml;
             tbody.innerHTML = tbodyHtml;
         }
 
-        function readExcel(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { cellDates: true, type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-                    resolve(json);
-                };
-                reader.onerror = (error) => reject(error);
-                reader.readAsArrayBuffer(file);
+        // ==========================================
+        // LÓGICA DE LOS 3 CUADROS DE PLANES (SIMULTÁNEOS)
+        // ==========================================
+        let datosFullPlanes = null;
+        let planConsolidadoSeleccionado = '';
+        let poolClientesDetalle = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarCuadrosPlanesIntegracion();
+        });
+
+        async function cargarCuadrosPlanesIntegracion() {
+            try {
+                const res = await fetch('/api/reportes/clientes_activos_por_plan');
+                if (res.ok) {
+                    datosFullPlanes = await res.json();
+                    renderizarLos3CuadrosPlanes(datosFullPlanes);
+                }
+            } catch (e) {
+                console.error("Error cargando cuadros de planes:", e);
+            }
+        }
+
+        function renderizarLos3CuadrosPlanes(data) {
+            if (!data) return;
+            const res = data.residencial;
+            const corp = data.corporativo;
+            const cons = data.consolidado;
+
+            // Badges
+            document.getElementById('badgePlanesRes').innerText = `${res.planes.length} Planes`;
+            document.getElementById('badgePlanesCorp').innerText = `${corp.planes.length} Planes`;
+            document.getElementById('badgePlanesCons').innerText = `${cons.planes.length} Planes`;
+
+            // Render 3 Tables
+            renderTablaSeccionIntegracion('tbodyPlanesRes', res.planes, 'residencial');
+            renderTablaSeccionIntegracion('tbodyPlanesCorp', corp.planes, 'corporativo');
+            renderTablaSeccionIntegracion('tbodyPlanesCons', cons.planes, 'consolidado');
+
+            // Footers
+            document.getElementById('tfootPlanesRes').classList.remove('hidden');
+            document.getElementById('totResClientes').innerText = res.totales.total_clientes_activos.toLocaleString('en-US');
+            document.getElementById('totResCosto').innerText = '$' + res.totales.total_costo_facturacion.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            document.getElementById('tfootPlanesCorp').classList.remove('hidden');
+            document.getElementById('totCorpClientes').innerText = corp.totales.total_clientes_activos.toLocaleString('en-US');
+            document.getElementById('totCorpCosto').innerText = '$' + corp.totales.total_costo_facturacion.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            document.getElementById('tfootPlanesCons').classList.remove('hidden');
+            document.getElementById('totConsClientes').innerText = cons.totales.total_clientes_activos.toLocaleString('en-US');
+            document.getElementById('totConsCosto').innerText = '$' + cons.totales.total_costo_facturacion.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function renderTablaSeccionIntegracion(tbodyId, planes, seccion) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            if (!planes || planes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-gray-500">No se encontraron planes activos.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            planes.forEach((p, idx) => {
+                const cant = parseInt(p.Cantidad || 0);
+                const costo = parseFloat(p['Sumatoria Costo'] || 0);
+
+                html += `<tr class="hover:bg-gray-50 border-b border-gray-100">
+                    <td class="text-center font-bold text-gray-400 py-2.5 px-3">${idx + 1}</td>
+                    <td class="py-2.5 px-3 font-bold text-gray-900">
+                        <i class="fa-solid fa-wifi text-amber-500 mr-1.5"></i> ${p.Plan}
+                    </td>
+                    <td class="text-center font-bold text-indigo-700 font-mono text-xs py-2.5 px-3">${cant.toLocaleString('en-US')}</td>
+                    <td class="text-center py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">${p['Porcentaje Clientes'] || 0}%</span></td>
+                    <td class="text-right font-mono text-gray-700 py-2.5 px-3">${p['Precio Unitario'] || '$0.00'}</td>
+                    <td class="text-right font-mono font-bold text-emerald-700 text-xs py-2.5 px-3">$${costo.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="text-center py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">${p['Porcentaje Ingresos'] || 0}%</span></td>
+                    <td class="text-center py-2.5 px-3">
+                        <button onclick="verClientesDeSeccion('${p.Plan.replace(/'/g, "\\'")}', '${seccion}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs font-bold rounded shadow-2xs transition-all cursor-pointer">
+                            <i class="fa-solid fa-users-viewfinder mr-1"></i> Clientes
+                        </button>
+                    </td>
+                </tr>`;
             });
+
+            tbody.innerHTML = html;
+        }
+
+        function filtrarPlanesSeccion(seccion) {
+            if (!datosFullPlanes) return;
+            let query = '';
+            let planes = [];
+            let tbodyId = '';
+
+            if (seccion === 'residencial') {
+                query = (document.getElementById('buscarPlanesResInput')?.value || '').toLowerCase().trim();
+                planes = datosFullPlanes.residencial.planes;
+                tbodyId = 'tbodyPlanesRes';
+            } else if (seccion === 'corporativo') {
+                query = (document.getElementById('buscarPlanesCorpInput')?.value || '').toLowerCase().trim();
+                planes = datosFullPlanes.corporativo.planes;
+                tbodyId = 'tbodyPlanesCorp';
+            } else {
+                query = (document.getElementById('buscarPlanesConsInput')?.value || '').toLowerCase().trim();
+                planes = datosFullPlanes.consolidado.planes;
+                tbodyId = 'tbodyPlanesCons';
+            }
+
+            if (!query) {
+                renderTablaSeccionIntegracion(tbodyId, planes, seccion);
+                return;
+            }
+
+            const filtrados = planes.filter(p => p.Plan.toLowerCase().includes(query));
+            renderTablaSeccionIntegracion(tbodyId, filtrados, seccion);
+        }
+
+        function verClientesDeSeccion(planName, seccion) {
+            planConsolidadoSeleccionado = planName;
+            document.getElementById('lblPlanDetalleConsolidado').innerText = `${planName} (${seccion.toUpperCase()})`;
+            const card = document.getElementById('cardDetalleClientesPlan');
+            if (card) card.classList.remove('hidden');
+
+            let pool = datosFullPlanes.consolidado.clientes;
+            if (seccion === 'residencial') pool = datosFullPlanes.residencial.clientes;
+            else if (seccion === 'corporativo') pool = datosFullPlanes.corporativo.clientes;
+
+            poolClientesDetalle = pool.filter(c => c.Plan === planName);
+            filtrarClientesPlanConsolidado();
+            card.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cerrarDetalleClientesPlan() {
+            planConsolidadoSeleccionado = '';
+            const card = document.getElementById('cardDetalleClientesPlan');
+            if (card) card.classList.add('hidden');
+        }
+
+        function filtrarClientesPlanConsolidado() {
+            const tbody = document.getElementById('tbodyClientesPlanConsolidado');
+            if (!tbody) return;
+
+            const query = (document.getElementById('buscarClientesPlanInput')?.value || '').toLowerCase().trim();
+            let clientes = poolClientesDetalle;
+
+            if (query) {
+                clientes = clientes.filter(c => 
+                    (c['Nombres'] && c['Nombres'].toLowerCase().includes(query)) ||
+                    (c['Cédula'] && String(c['Cédula']).toLowerCase().includes(query)) ||
+                    (String(c['ID Servicio']).toLowerCase().includes(query))
+                );
+            }
+
+            if (clientes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-500">No se encontraron clientes para este filtro.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            const displayList = clientes.slice(0, 500);
+            displayList.forEach(c => {
+                html += `<tr class="hover:bg-gray-50/60 border-b border-gray-100">
+                    <td class="py-2.5 px-3 font-bold text-gray-700">${c['ID Servicio']}</td>
+                    <td class="py-2.5 px-3 text-gray-600">${c['Cédula'] || '-'}</td>
+                    <td class="py-2.5 px-3 font-medium text-gray-900">${c['Nombres']}</td>
+                    <td class="py-2.5 px-3 font-semibold text-gray-800">${c['Plan']}</td>
+                    <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">$${parseFloat(c['Costo del plan'] || 0).toFixed(2)}</td>
+                    <td class="py-2.5 px-3 text-center"><span class="status-badge ${getStatusClass(c['Estado servicio'] || 'Act.')}">${c['Estado servicio'] || 'Act.'}</span></td>
+                    <td class="py-2.5 px-3 text-xs text-gray-600">${c['Urbanismo'] || ''} ${c['Teléfono 1'] ? ' - ' + c['Teléfono 1'] : ''}</td>
+                    <td class="py-2.5 px-3 text-center text-xs text-gray-500">${c['Fecha de instalación'] || '-'}</td>
+                </tr>`;
+            });
+
+            if (clientes.length > 500) {
+                html += `<tr><td colspan="8" class="text-center font-semibold text-amber-800 bg-amber-50 py-3">Mostrando primeros 500 clientes de ${clientes.length}. Usa el buscador o exporta a Excel para ver el total.</td></tr>`;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function exportarExcelUnaSeccion(seccion) {
+            if (!datosFullPlanes) {
+                alert('No hay datos disponibles para exportar.');
+                return;
+            }
+
+            const seccionData = datosFullPlanes[seccion];
+            if (!seccionData || !seccionData.planes || seccionData.planes.length === 0) {
+                alert('No hay datos en esta sección.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            const rows = seccionData.planes.map(p => ({
+                "Nombre del Plan": p.Plan,
+                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
+                "Cantidad de Clientes": p.Cantidad,
+                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
+                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
+            }));
+
+            rows.push({
+                "Nombre del Plan": `TOTAL ${seccion.toUpperCase()}`,
+                "Costo del Plan ($)": "-",
+                "Cantidad de Clientes": seccionData.totales.total_clientes_activos,
+                "Porcentaje (%)": "100%",
+                "Sumatoria Costo Total ($)": seccionData.totales.total_costo_facturacion
+            });
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, `Planes ${seccion.toUpperCase()}`);
+
+            XLSX.writeFile(wb, `Clientes_${seccion.toUpperCase()}_por_Plan_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        function exportarExcelConsolidadoCompleto() {
+            if (!datosFullPlanes) {
+                alert('No hay datos disponibles para exportar.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // 1. Residencial
+            const rowsRes = datosFullPlanes.residencial.planes.map(p => ({
+                "Nombre del Plan": p.Plan,
+                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
+                "Cantidad de Clientes": p.Cantidad,
+                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
+                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
+            }));
+            rowsRes.push({
+                "Nombre del Plan": "TOTAL RESIDENCIAL",
+                "Costo del Plan ($)": "-",
+                "Cantidad de Clientes": datosFullPlanes.residencial.totales.total_clientes_activos,
+                "Porcentaje (%)": "100%",
+                "Sumatoria Costo Total ($)": datosFullPlanes.residencial.totales.total_costo_facturacion
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsRes), "1. Residencial");
+
+            // 2. Corporativo
+            const rowsCorp = datosFullPlanes.corporativo.planes.map(p => ({
+                "Nombre del Plan": p.Plan,
+                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
+                "Cantidad de Clientes": p.Cantidad,
+                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
+                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
+            }));
+            rowsCorp.push({
+                "Nombre del Plan": "TOTAL CORPORATIVO",
+                "Costo del Plan ($)": "-",
+                "Cantidad de Clientes": datosFullPlanes.corporativo.totales.total_clientes_activos,
+                "Porcentaje (%)": "100%",
+                "Sumatoria Costo Total ($)": datosFullPlanes.corporativo.totales.total_costo_facturacion
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsCorp), "2. Corporativo (is_natural=false)");
+
+            // 3. Consolidado
+            const rowsCons = datosFullPlanes.consolidado.planes.map(p => ({
+                "Nombre del Plan": p.Plan,
+                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
+                "Cantidad de Clientes": p.Cantidad,
+                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
+                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
+            }));
+            rowsCons.push({
+                "Nombre del Plan": "TOTAL GENERAL (UNIÓN)",
+                "Costo del Plan ($)": "-",
+                "Cantidad de Clientes": datosFullPlanes.consolidado.totales.total_clientes_activos,
+                "Porcentaje (%)": "100%",
+                "Sumatoria Costo Total ($)": datosFullPlanes.consolidado.totales.total_costo_facturacion
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsCons), "3. Union Consolidada");
+
+            XLSX.writeFile(wb, `Reporte_Consolidado_Planes_Completo_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
     </script>
 </body>
