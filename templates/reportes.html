@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Use xlsx-js-style instead of basic xlsx for styling support -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
     <style>
         :root {
             --fondo-principal: #f8fafc;
@@ -624,105 +625,108 @@
             </div>
         </div>
 
-        <!-- CUADRO 1: RESIDENCIALES -->
-        <div class="table-card" style="border-top: 4px solid #3b82f6;">
-            <div class="table-header-bar" style="background-color: #f8fafc;">
-                <div class="table-title">
-                    <i class="fa-solid fa-house-user text-blue-600"></i>
-                    <span>1. Cuadro de Clientes Residenciales (Naturales)</span>
-                    <span class="badge-pill blue" id="badgeResCount">0 planes</span>
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="inputBuscarResidencial" oninput="filtrarTabla('residencial')" placeholder="Filtrar plan residencial...">
+        <!-- CONTENEDOR GRID PARA CUADRO 1 y CUADRO 2 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px;">
+            <!-- CUADRO 1: RESIDENCIALES -->
+            <div class="table-card" style="border-top: 4px solid #3b82f6; margin-bottom: 0; display: flex; flex-direction: column;">
+                <div class="table-header-bar" style="background-color: #f8fafc;">
+                    <div class="table-title">
+                        <i class="fa-solid fa-house-user text-blue-600"></i>
+                        <span>1. Clientes Residenciales (Naturales)</span>
+                        <span class="badge-pill blue" id="badgeResCount">0 planes</span>
                     </div>
-                    <button onclick="exportarExcelSeccion('residencial')" class="btn-action btn-secondary" style="font-size: 12px; padding: 6px 12px;">
-                        <i class="fa-solid fa-file-excel text-emerald-600"></i> Excel Residencial
-                    </button>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table id="tablaPlanesResidencial">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>Nombre del Plan</th>
-                            <th style="text-align: center;">Clientes Activos</th>
-                            <th style="text-align: center;">% Segmento</th>
-                            <th style="text-align: right;">Precio Unitario</th>
-                            <th style="text-align: right;">Sumatoria Costo Total ($)</th>
-                            <th style="text-align: center;">% Facturación</th>
-                            <th style="text-align: center;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyPlanesResidencial">
-                        <tr><td colspan="8"><div class="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin"></i><span>Cargando datos residenciales...</span></div></td></tr>
-                    </tbody>
-                    <tfoot id="tfootPlanesResidencial" style="display: none;">
-                        <tr>
-                            <td colspan="2">TOTAL RESIDENCIAL</td>
-                            <td style="text-align: center; font-size: 15px; color: #1d4ed8; font-weight: 700;" id="footResTotalClientes">-</td>
-                            <td style="text-align: center;">100%</td>
-                            <td style="text-align: right;">-</td>
-                            <td style="text-align: right; font-size: 15px; color: #047857; font-weight: 700;" id="footResTotalCosto">-</td>
-                            <td style="text-align: center; color: #047857;">100%</td>
-                            <td style="text-align: center; font-size: 12px; color: #64748b;">Subtotal</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-
-        <!-- CUADRO 2: CORPORATIVOS (IS_NATURAL=FALSE) -->
-        <div class="table-card" style="border-top: 4px solid #f59e0b; margin-top: 30px;">
-            <div class="table-header-bar" style="background-color: #fffbeb;">
-                <div class="table-title">
-                    <i class="fa-solid fa-building text-amber-600"></i>
-                    <span>2. Cuadro de Clientes Corporativos / Jurídicos (is_natural=false)</span>
-                    <span class="badge-pill yellow" id="badgeCorpCount">0 planes</span>
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="inputBuscarCorporativo" oninput="filtrarTabla('corporativo')" placeholder="Filtrar plan corporativo...">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px; width: 100%; justify-content: flex-end;">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="inputBuscarResidencial" oninput="filtrarTabla('residencial')" placeholder="Filtrar plan residencial...">
+                        </div>
+                        <button onclick="exportarExcelSeccion('residencial')" class="btn-action btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i> Excel
+                        </button>
                     </div>
-                    <button onclick="exportarExcelSeccion('corporativo')" class="btn-action btn-secondary" style="font-size: 12px; padding: 6px 12px;">
-                        <i class="fa-solid fa-file-excel text-emerald-600"></i> Excel Corporativo
-                    </button>
+                </div>
+    
+                <div class="table-responsive" style="flex: 1;">
+                    <table id="tablaPlanesResidencial">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Nombre del Plan</th>
+                                <th style="text-align: center;">Clientes Activos</th>
+                                <th style="text-align: center;">% Segmento</th>
+                                <th style="text-align: right;">Precio Unitario</th>
+                                <th style="text-align: right;">Sumatoria Costo Total ($)</th>
+                                <th style="text-align: center;">% Facturación</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPlanesResidencial">
+                            <tr><td colspan="8"><div class="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin"></i><span>Cargando datos residenciales...</span></div></td></tr>
+                        </tbody>
+                        <tfoot id="tfootPlanesResidencial" style="display: none;">
+                            <tr>
+                                <td colspan="2">TOTAL RESIDENCIAL</td>
+                                <td style="text-align: center; font-size: 15px; color: #1d4ed8; font-weight: 700;" id="footResTotalClientes">-</td>
+                                <td style="text-align: center;">100%</td>
+                                <td style="text-align: right;">-</td>
+                                <td style="text-align: right; font-size: 15px; color: #047857; font-weight: 700;" id="footResTotalCosto">-</td>
+                                <td style="text-align: center; color: #047857;">100%</td>
+                                <td style="text-align: center; font-size: 12px; color: #64748b;">Subtotal</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
-
-            <div class="table-responsive">
-                <table id="tablaPlanesCorporativo">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>Nombre del Plan</th>
-                            <th style="text-align: center;">Clientes Activos</th>
-                            <th style="text-align: center;">% Segmento</th>
-                            <th style="text-align: right;">Precio Unitario</th>
-                            <th style="text-align: right;">Sumatoria Costo Total ($)</th>
-                            <th style="text-align: center;">% Facturación</th>
-                            <th style="text-align: center;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyPlanesCorporativo">
-                        <tr><td colspan="8"><div class="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin"></i><span>Cargando datos corporativos...</span></div></td></tr>
-                    </tbody>
-                    <tfoot id="tfootPlanesCorporativo" style="display: none;">
-                        <tr>
-                            <td colspan="2">TOTAL CORPORATIVO</td>
-                            <td style="text-align: center; font-size: 15px; color: #b45309; font-weight: 700;" id="footCorpTotalClientes">-</td>
-                            <td style="text-align: center;">100%</td>
-                            <td style="text-align: right;">-</td>
-                            <td style="text-align: right; font-size: 15px; color: #047857; font-weight: 700;" id="footCorpTotalCosto">-</td>
-                            <td style="text-align: center; color: #047857;">100%</td>
-                            <td style="text-align: center; font-size: 12px; color: #64748b;">Subtotal</td>
-                        </tr>
-                    </tfoot>
-                </table>
+    
+            <!-- CUADRO 2: CORPORATIVOS (IS_NATURAL=FALSE) -->
+            <div class="table-card" style="border-top: 4px solid #f59e0b; margin-bottom: 0; display: flex; flex-direction: column;">
+                <div class="table-header-bar" style="background-color: #fffbeb;">
+                    <div class="table-title">
+                        <i class="fa-solid fa-building text-amber-600"></i>
+                        <span>2. Clientes Corporativos / Jurídicos</span>
+                        <span class="badge-pill yellow" id="badgeCorpCount">0 planes</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px; width: 100%; justify-content: flex-end;">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="inputBuscarCorporativo" oninput="filtrarTabla('corporativo')" placeholder="Filtrar plan corporativo...">
+                        </div>
+                        <button onclick="exportarExcelSeccion('corporativo')" class="btn-action btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i> Excel
+                        </button>
+                    </div>
+                </div>
+    
+                <div class="table-responsive" style="flex: 1;">
+                    <table id="tablaPlanesCorporativo">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Nombre del Plan</th>
+                                <th style="text-align: center;">Clientes Activos</th>
+                                <th style="text-align: center;">% Segmento</th>
+                                <th style="text-align: right;">Precio Unitario</th>
+                                <th style="text-align: right;">Sumatoria Costo Total ($)</th>
+                                <th style="text-align: center;">% Facturación</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPlanesCorporativo">
+                            <tr><td colspan="8"><div class="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin"></i><span>Cargando datos corporativos...</span></div></td></tr>
+                        </tbody>
+                        <tfoot id="tfootPlanesCorporativo" style="display: none;">
+                            <tr>
+                                <td colspan="2">TOTAL CORPORATIVO</td>
+                                <td style="text-align: center; font-size: 15px; color: #b45309; font-weight: 700;" id="footCorpTotalClientes">-</td>
+                                <td style="text-align: center;">100%</td>
+                                <td style="text-align: right;">-</td>
+                                <td style="text-align: right; font-size: 15px; color: #047857; font-weight: 700;" id="footCorpTotalCosto">-</td>
+                                <td style="text-align: center; color: #047857;">100%</td>
+                                <td style="text-align: center; font-size: 12px; color: #64748b;">Subtotal</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -1088,6 +1092,130 @@
             tbody.innerHTML = html;
         }
 
+        const ORDEN_RESIDENCIAL = [
+            "3 MESES Beneficio 400Mb",
+            "3 Meses Beneficio  Plan 600 Mb +TV",
+            "3 MESES Beneficio Plan 800 Mb + TV",
+            "3 MESES Beneficio  Plan 1Gb + TV",
+            "PLAN AFICIONADO 400Mbps",
+            "Plan 400 Mb",
+            "PLAN CONVENIO 400Mbps",
+            "Plan 600 Mb + TV",
+            "PLAN PROFESIONAL 600 Mb",
+            "Plan 800 Mb + TV",
+            "PLAN EXPERTO 800 Mb",
+            "PLAN EMPRESARIAL 800 Mb",
+            "Plan 1Gb + TV",
+            "PLAN COMPARTIDO 20 MB",
+            "PLAN RADIOFRECUENCIA 2MB ESPECIAL",
+            "PLAN COMPARTIDO 8 MB",
+            "PLAN RADIOFRECUENCIA 3MB",
+            "PLAN RADIOFRECUENCIA 5MB",
+            "TV"
+        ];
+
+        const ORDEN_CORPORATIVO = [
+            "3 MESES Beneficio EMPRENDEDOR EMPRESARIAL 400Mb",
+            "3 MESES Beneficio EMPRENDEDOR EMPRESARIAL 600Mb",
+            "3 MESES Beneficio EMPRENDEDOR EMPRESARIAL 1000 MB",
+            "3 MESES Beneficio EMPRENDEDOR EMPRESARIAL 800Mb",
+            "PLAN EMPRENDEDOR EMPRESARIAL 400Mb",
+            "PLAN AFICIONADO 400Mbps",
+            "MicroEmpresas 400MB",
+            "PLAN PROFESIONAL EMPRESARIAL 600 Mb",
+            "PLAN PROFESIONAL 600 Mb",
+            "PLAN EXPERTO EMPRESARIAL 800 Mb",
+            "PLAN EXPERTO 800 Mb",
+            "PLAN EXPERTO EMPRESARIAL 1000 MB",
+            "PLAN EXPERTO EMPRESARIAL 200 MB ESPECIAL",
+            "PLAN RADIOFRECUENCIA EMPRESARIAL 3MB",
+            "PLAN COMPARTIDO 8 MB",
+            "PLAN COMPARTIDO 20 MB",
+            "PLAN 20 MEGAS COLEGIO"
+        ];
+
+        function customSort(planes, ordenEstandar) {
+            // normalizar para comparar (ignorar mayus/minus y espacios extra)
+            const n = s => s.toLowerCase().replace(/\s+/g, ' ').trim();
+            const ordenNorm = ordenEstandar.map(x => n(x));
+            
+            return [...planes].sort((a, b) => {
+                const iA = ordenNorm.indexOf(n(a.Plan));
+                const iB = ordenNorm.indexOf(n(b.Plan));
+                if (iA !== -1 && iB !== -1) return iA - iB;
+                if (iA !== -1) return -1;
+                if (iB !== -1) return 1;
+                return b.Cantidad - a.Cantidad; // fallback al original por cantidad
+            });
+        }
+
+        function styleWorksheet(ws, rowsLength) {
+            // Establecer anchos de columna
+            ws['!cols'] = [
+                { wch: 45 }, // Nombre del Plan
+                { wch: 20 }, // Costo del Plan
+                { wch: 22 }, // Cantidad de Clientes
+                { wch: 15 }, // Porcentaje
+                { wch: 25 }  // Sumatoria Costo
+            ];
+
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
+                    if (!ws[cell_ref]) continue;
+
+                    let isHeader = R === 0;
+                    let isTotal = R === rowsLength; // la ultima fila es el total (despues del array de planes)
+
+                    let font = { name: "Arial", sz: 11 };
+                    let fill = { fgColor: { rgb: "FFFFFF" } };
+                    let alignment = { vertical: "center", horizontal: "center" };
+                    let border = {
+                        top: { style: "thin", color: { rgb: "E2E8F0" } },
+                        bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                        left: { style: "thin", color: { rgb: "E2E8F0" } },
+                        right: { style: "thin", color: { rgb: "E2E8F0" } }
+                    };
+
+                    if (isHeader) {
+                        font.bold = true;
+                        font.color = { rgb: "FFFFFF" };
+                        fill = { fgColor: { rgb: "2563EB" } }; // Azul bonito para encabezados
+                    } else if (isTotal) {
+                        font.bold = true;
+                        font.color = { rgb: "1A1A1A" };
+                        fill = { fgColor: { rgb: "FBBF24" } }; // Amarillo/Ambar para el total
+                    } else {
+                        if (R % 2 !== 0) fill = { fgColor: { rgb: "F8FAFC" } }; // Zebra striping
+                    }
+
+                    if (C === 0) alignment.horizontal = "left"; // Alinear nombre a la izquierda
+
+                    ws[cell_ref].s = { font, fill, alignment, border };
+                }
+            }
+            return ws;
+        }
+
+        function createRows(planesArray, totalesInfo, labelTotal) {
+            const rows = planesArray.map(p => ({
+                "Nombre del Plan": p.Plan,
+                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
+                "Cantidad de Clientes": p.Cantidad,
+                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
+                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
+            }));
+            rows.push({
+                "Nombre del Plan": labelTotal,
+                "Costo del Plan ($)": "-",
+                "Cantidad de Clientes": totalesInfo.total_clientes_activos,
+                "Porcentaje (%)": "100%",
+                "Sumatoria Costo Total ($)": totalesInfo.total_costo_facturacion
+            });
+            return rows;
+        }
+
         function exportarExcelSeccion(seccion) {
             if (!fullData) {
                 alert('No hay datos disponibles para exportar.');
@@ -1101,25 +1229,23 @@
             }
 
             const wb = XLSX.utils.book_new();
+            
+            let ordenEstandar = [];
+            if (seccion === 'residencial') ordenEstandar = ORDEN_RESIDENCIAL;
+            else if (seccion === 'corporativo') ordenEstandar = ORDEN_CORPORATIVO;
+            
+            if (ordenEstandar.length > 0) {
+                const planesOrdenados = customSort(seccionData.planes, ordenEstandar);
+                const rowsOrd = createRows(planesOrdenados, seccionData.totales, `TOTAL ${seccion.toUpperCase()}`);
+                let wsOrd = XLSX.utils.json_to_sheet(rowsOrd);
+                wsOrd = styleWorksheet(wsOrd, planesOrdenados.length);
+                XLSX.utils.book_append_sheet(wb, wsOrd, `Planes ${seccion.toUpperCase()} (Ordenado)`);
+            }
 
-            const rows = seccionData.planes.map(p => ({
-                "Nombre del Plan": p.Plan,
-                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
-                "Cantidad de Clientes": p.Cantidad,
-                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
-                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
-            }));
-
-            rows.push({
-                "Nombre del Plan": `TOTAL ${seccion.toUpperCase()}`,
-                "Costo del Plan ($)": "-",
-                "Cantidad de Clientes": seccionData.totales.total_clientes_activos,
-                "Porcentaje (%)": "100%",
-                "Sumatoria Costo Total ($)": seccionData.totales.total_costo_facturacion
-            });
-
-            const ws = XLSX.utils.json_to_sheet(rows);
-            XLSX.utils.book_append_sheet(wb, ws, `Planes ${seccion.toUpperCase()}`);
+            const rowsOrig = createRows(seccionData.planes, seccionData.totales, `TOTAL ${seccion.toUpperCase()}`);
+            let wsOrig = XLSX.utils.json_to_sheet(rowsOrig);
+            wsOrig = styleWorksheet(wsOrig, seccionData.planes.length);
+            XLSX.utils.book_append_sheet(wb, wsOrig, `Planes ${seccion.toUpperCase()} (Original)`);
 
             XLSX.writeFile(wb, `Clientes_${seccion.toUpperCase()}_por_Plan_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
@@ -1132,56 +1258,35 @@
 
             const wb = XLSX.utils.book_new();
 
-            // 1. Sheet Residencial
-            const rowsRes = fullData.residencial.planes.map(p => ({
-                "Nombre del Plan": p.Plan,
-                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
-                "Cantidad de Clientes": p.Cantidad,
-                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
-                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
-            }));
-            rowsRes.push({
-                "Nombre del Plan": "TOTAL RESIDENCIAL",
-                "Costo del Plan ($)": "-",
-                "Cantidad de Clientes": fullData.residencial.totales.total_clientes_activos,
-                "Porcentaje (%)": "100%",
-                "Sumatoria Costo Total ($)": fullData.residencial.totales.total_costo_facturacion
-            });
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsRes), "1. Residencial");
+            // 1. Sheets Ordenadas (Nuevas, primero)
+            const resOrd = customSort(fullData.residencial.planes, ORDEN_RESIDENCIAL);
+            const rowsResOrd = createRows(resOrd, fullData.residencial.totales, "TOTAL RESIDENCIAL");
+            let wsResOrd = XLSX.utils.json_to_sheet(rowsResOrd);
+            wsResOrd = styleWorksheet(wsResOrd, resOrd.length);
+            XLSX.utils.book_append_sheet(wb, wsResOrd, "Residencial (Ordenado)");
 
-            // 2. Sheet Corporativo
-            const rowsCorp = fullData.corporativo.planes.map(p => ({
-                "Nombre del Plan": p.Plan,
-                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
-                "Cantidad de Clientes": p.Cantidad,
-                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
-                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
-            }));
-            rowsCorp.push({
-                "Nombre del Plan": "TOTAL CORPORATIVO",
-                "Costo del Plan ($)": "-",
-                "Cantidad de Clientes": fullData.corporativo.totales.total_clientes_activos,
-                "Porcentaje (%)": "100%",
-                "Sumatoria Costo Total ($)": fullData.corporativo.totales.total_costo_facturacion
-            });
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsCorp), "2. Corporativo (is_natural=false)");
+            const corpOrd = customSort(fullData.corporativo.planes, ORDEN_CORPORATIVO);
+            const rowsCorpOrd = createRows(corpOrd, fullData.corporativo.totales, "TOTAL CORPORATIVO");
+            let wsCorpOrd = XLSX.utils.json_to_sheet(rowsCorpOrd);
+            wsCorpOrd = styleWorksheet(wsCorpOrd, corpOrd.length);
+            XLSX.utils.book_append_sheet(wb, wsCorpOrd, "Corporativo (Ordenado)");
+
+            // 2. Sheets Originales (Mantener el viejo orden)
+            const rowsRes = createRows(fullData.residencial.planes, fullData.residencial.totales, "TOTAL RESIDENCIAL");
+            let wsRes = XLSX.utils.json_to_sheet(rowsRes);
+            wsRes = styleWorksheet(wsRes, fullData.residencial.planes.length);
+            XLSX.utils.book_append_sheet(wb, wsRes, "1. Residencial (Original)");
+
+            const rowsCorp = createRows(fullData.corporativo.planes, fullData.corporativo.totales, "TOTAL CORPORATIVO");
+            let wsCorp = XLSX.utils.json_to_sheet(rowsCorp);
+            wsCorp = styleWorksheet(wsCorp, fullData.corporativo.planes.length);
+            XLSX.utils.book_append_sheet(wb, wsCorp, "2. Corporativo (Original)");
 
             // 3. Sheet Consolidado
-            const rowsCons = fullData.consolidado.planes.map(p => ({
-                "Nombre del Plan": p.Plan,
-                "Costo del Plan ($)": p['Precio Unitario'] || '$0.00',
-                "Cantidad de Clientes": p.Cantidad,
-                "Porcentaje (%)": `${p['Porcentaje Clientes']}%`,
-                "Sumatoria Costo Total ($)": p['Sumatoria Costo']
-            }));
-            rowsCons.push({
-                "Nombre del Plan": "TOTAL GENERAL (UNIÓN)",
-                "Costo del Plan ($)": "-",
-                "Cantidad de Clientes": fullData.consolidado.totales.total_clientes_activos,
-                "Porcentaje (%)": "100%",
-                "Sumatoria Costo Total ($)": fullData.consolidado.totales.total_costo_facturacion
-            });
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsCons), "3. Union Consolidada");
+            const rowsCons = createRows(fullData.consolidado.planes, fullData.consolidado.totales, "TOTAL GENERAL (UNIÓN)");
+            let wsCons = XLSX.utils.json_to_sheet(rowsCons);
+            wsCons = styleWorksheet(wsCons, fullData.consolidado.planes.length);
+            XLSX.utils.book_append_sheet(wb, wsCons, "3. Union Consolidada");
 
             XLSX.writeFile(wb, `Reporte_Consolidado_Planes_Completo_${new Date().toISOString().split('T')[0]}.xlsx`);
         }

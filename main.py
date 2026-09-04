@@ -761,26 +761,10 @@ import urllib.parse
 import json
 import time
 
-def fetch_powerlink_data(is_natural: Optional[bool] = None):
-    login_url = "https://powerlink.rubpi.com/api/login"
-    creds = {"username": "api_exp", "password": "-?J+\\FcmKT2zWl5A28=~"}
-    data = json.dumps(creds).encode('utf-8')
-
-    req = urllib.request.Request(login_url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode())
-            api_token = res_data.get('token') or res_data.get('access_token')
-    except Exception as e:
-        raise Exception(f"Error en login API: {str(e)}")
-
-    if not api_token:
-        raise Exception("No se pudo obtener token de la API")
-
-    # Si is_natural es False -> clientes corporativos/juridicos; True -> residenciales; None -> todos
-    if is_natural is False:
+def _do_fetch(api_token, is_nat):
+    if is_nat is False:
         export_url = "https://powerlink.rubpi.com/api/exports/users?is_natural=false"
-    elif is_natural is True:
+    elif is_nat is True:
         export_url = "https://powerlink.rubpi.com/api/exports/users?is_natural=true"
     else:
         export_url = "https://powerlink.rubpi.com/api/exports/users"
@@ -813,6 +797,30 @@ def fetch_powerlink_data(is_natural: Optional[bool] = None):
             raise Exception(f"Error al consultar tarea: {str(e)}")
 
     raise Exception("Tiempo de espera agotado para la tarea")
+
+def fetch_powerlink_data(is_natural: Optional[bool] = None):
+    login_url = "https://powerlink.rubpi.com/api/login"
+    creds = {"username": "api_exp", "password": "-?J+\\FcmKT2zWl5A28=~"}
+    data = json.dumps(creds).encode('utf-8')
+
+    req = urllib.request.Request(login_url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode())
+            api_token = res_data.get('token') or res_data.get('access_token')
+    except Exception as e:
+        raise Exception(f"Error en login API: {str(e)}")
+
+    if not api_token:
+        raise Exception("No se pudo obtener token de la API")
+
+    if is_natural is None:
+        data_res = _do_fetch(api_token, True)
+        data_corp = _do_fetch(api_token, False)
+        combined = data_res.get("data", []) + data_corp.get("data", [])
+        return {"data": combined}
+    else:
+        return _do_fetch(api_token, is_natural)
 
 def scheduled_snapshot_job():
     """Guardado automático diario de snapshots (Residencial/Total y Corporativo) a las 8:00 PM."""
@@ -893,6 +901,21 @@ def guardar_snapshot(request: Request, tipo: str = Form("todos"), db: Session = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/integracion/guardar_base_mensual")
+async def guardar_base_mensual(request: Request, file_base: UploadFile = File(...)):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+    try:
+        content = await file_base.read()
+        file_path = os.path.join(UPLOAD_DIR, "base_mensual.xlsx")
+        with open(file_path, "wb") as f:
+            f.write(content)
+        return {"message": "Base mensual guardada exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/integracion/procesar_api")
 async def procesar_auditoria_api(
     request: Request,
@@ -900,7 +923,8 @@ async def procesar_auditoria_api(
     fileOld: Optional[UploadFile] = File(None),
     fechaCorte: str = Form(...),
     fechaInstalaciones: str = Form(...),
-    tipoCliente: str = Form("todos")
+    tipoCliente: str = Form("todos"),
+    tipoComparativa: str = Form("diaria")
 ):
     token = security.get_token_from_request(request)
     if not token:
@@ -940,20 +964,68 @@ async def procesar_auditoria_api(
                     'Estado servicio': mapped_st,
                     'Costo del plan': row.get('Costo del plan', 0)
                 }
-    else:
-        # Modo: Comparar con Snapshot Local
-        snapshot_filename = "last_snapshot_corporativo.json" if is_corp else "last_snapshot.json"
-        snapshot_path = os.path.join(UPLOAD_DIR, snapshot_filename)
-        if not os.path.exists(snapshot_path):
-            raise HTTPException(status_code=400, detail=f"No existe un registro anterior ({'corporativo' if is_corp else 'general'}). Por favor, haz clic en 'Guardar Registro Anterior' antes de comparar, o sube un Excel.")
+    elif tipoComparativa == "mensual":
+        # Modo: Comparar con Base Mensual (Excel guardado)
+        base_path = os.path.join(UPLOAD_DIR, "base_mensual.xlsx")
+        if not os.path.exists(base_path):
+            raise HTTPException(status_code=400, detail="No existe una base mensual guardada. Por favor, carga el archivo del día 1 primero.")
             
         try:
-            with open(snapshot_path, "r", encoding="utf-8") as f:
-                data_old = json.load(f)
+            df_old = pd.read_excel(base_path)
+            df_old = df_old.fillna("")
+            for idx, row in df_old.iterrows():
+                sid = str(row.get('ID Servicio', '')).strip()
+                if sid:
+                    raw_st = str(row.get('Estado servicio', '')).strip().upper()
+                    if raw_st in ('EXONERADO', 'EXO.'): mapped_st = 'Exo.'
+                    elif raw_st in ('SUSPENDIDO', 'SUSP.'): mapped_st = 'Susp.'
+                    elif raw_st in ('POR RETIRAR', 'POR RET.'): mapped_st = 'Por Ret.'
+                    elif raw_st in ('TRANSFERIDO', 'TRANS.'): mapped_st = 'Trans.'
+                    elif raw_st in ('RETIRADO', 'RET.'): mapped_st = 'Ret.'
+                    elif raw_st in ('ACTIVO', 'ACT.'): mapped_st = 'Act.'
+                    else: mapped_st = raw_st.title() if raw_st else ''
+                    
+                    # Filtering by is_corp inside this loop is hard because Excel might not have doc_type easily separated
+                    # We will store all of them, and later processing will match by sid.
+                    old_dict[sid] = {
+                        'ID Servicio': sid,
+                        'Cédula': str(row.get('Cédula', '')).strip(),
+                        'Nombres': str(row.get('Nombres', '')).strip(),
+                        'Plan': row.get('Plan', ''),
+                        'Estado servicio': mapped_st,
+                        'Costo del plan': row.get('Costo del plan', 0)
+                    }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error leyendo la base mensual: {str(e)}")
+    else:
+        # Modo: Comparar con Snapshot Local Diaria
+        is_todos = (tipoCliente.lower() == "todos")
+        
+        try:
+            if is_todos:
+                # Load both
+                path_res = os.path.join(UPLOAD_DIR, "last_snapshot.json")
+                path_corp = os.path.join(UPLOAD_DIR, "last_snapshot_corporativo.json")
+                list_old = []
+                if os.path.exists(path_res):
+                    with open(path_res, "r", encoding="utf-8") as f:
+                        list_old.extend(json.load(f).get("data", []))
+                if os.path.exists(path_corp):
+                    with open(path_corp, "r", encoding="utf-8") as f:
+                        list_old.extend(json.load(f).get("data", []))
+                if not list_old:
+                    raise Exception("No existen snapshots guardados.")
+            else:
+                snapshot_filename = "last_snapshot_corporativo.json" if is_corp else "last_snapshot.json"
+                snapshot_path = os.path.join(UPLOAD_DIR, snapshot_filename)
+                if not os.path.exists(snapshot_path):
+                    raise HTTPException(status_code=400, detail=f"No existe un registro anterior ({'corporativo' if is_corp else 'general'}). Por favor, haz clic en 'Guardar Registro Anterior' antes de comparar, o sube un Excel.")
+                    
+                with open(snapshot_path, "r", encoding="utf-8") as f:
+                    list_old = json.load(f).get("data", [])
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error leyendo el registro anterior: {str(e)}")
             
-        list_old = data_old.get("data", [])
         for item in list_old:
             sid = str(item.get('id_servicio', '')).strip()
             if sid:
@@ -987,6 +1059,12 @@ async def procesar_auditoria_api(
         elif raw_st == 'ACTIVO': mapped_st = 'Act.'
         else: mapped_st = raw_st.title() if raw_st else ''
         
+        doc_t = str(item.get('doc_type', '')).strip().upper()
+        # In Venezuela, J, G, or C are corporate (Juridico, Gubernamental, Comuna)
+        is_nat = doc_t not in ('J', 'G', 'C')
+        if 'is_natural' in item:
+            is_nat = bool(item['is_natural'])
+            
         return {
             'ID Servicio': item.get('id_servicio', ''),
             'Cédula': f"{item.get('doc_type', '')}-{item.get('doc', '')}",
@@ -1000,7 +1078,8 @@ async def procesar_auditoria_api(
             'Plan actual desde': item.get('current_plan_since', ''),
             'Fecha de instalación': item.get('creation_date', ''),
             'Teléfono 1': item.get('phone', ''),
-            'Urbanismo': item.get('urban', '')
+            'Urbanismo': item.get('urban', ''),
+            'is_natural': is_nat
         }
 
     try:
@@ -1018,9 +1097,12 @@ async def procesar_auditoria_api(
     today_str = datetime.now().strftime("%d/%m/%Y")
 
     totalActivos = 0
+    totalActivosCorp = 0
     totalSuspendidosFecha = 0
+    totalSuspendidosFechaCorp = 0
     totalExoneradosEmp = 0
     totalExoneradosReg = 0
+    totalExoneradosRegCorp = 0
     
     ingreso_ayer = 0.0
     ingreso_hoy = 0.0
@@ -1113,7 +1195,10 @@ async def procesar_auditoria_api(
                  pass
                 
         if estadoServicioNew == 'ACT.':
-            totalActivos += 1
+            if row.get('is_natural') is False:
+                totalActivosCorp += 1
+            else:
+                totalActivos += 1
             ingreso_hoy += costoDelPlanNew
             datosClientesActivos.append({
                 'ID Servicio': sid,
@@ -1129,8 +1214,12 @@ async def procesar_auditoria_api(
                 'Urbanismo': row['Urbanismo']
             })
         elif estadoServicioNew == 'SUSP.':
+            if row.get('is_natural') is False:
+                totalSuspendidosFechaCorp += 1
+            
             if estado_dt >= corte_dt:
-                totalSuspendidosFecha += 1
+                if row.get('is_natural') is not False:
+                    totalSuspendidosFecha += 1
         elif estadoServicioNew == 'EXO.':
             plan_lower = planNew.lower()
             if 'iptv' not in plan_lower:
@@ -1138,7 +1227,10 @@ async def procesar_auditoria_api(
                 if '(emp)' in nombre_lower:
                     totalExoneradosEmp += 1
                 else:
-                    totalExoneradosReg += 1
+                    if row.get('is_natural') is False:
+                        totalExoneradosRegCorp += 1
+                    else:
+                        totalExoneradosReg += 1
                 
         is_missing_in_old = (sid not in old_dict)
         
@@ -1433,12 +1525,15 @@ async def procesar_auditoria_api(
     return {
         "totales": {
             "activos": totalActivos,
+            "activos_corp": totalActivosCorp,
             "suspendidos": totalSuspendidosFecha,
+            "suspendidos_corp": totalSuspendidosFechaCorp,
             "exonEmp": totalExoneradosEmp,
-            "exonReg": totalExoneradosReg
+            "exonReg": totalExoneradosReg,
+            "exonRegCorp": totalExoneradosRegCorp
         },
         "conciliacion_financiera": {
-            "has_excel": is_excel_uploaded,
+            "has_excel": True,
             "ingreso_ayer": ingreso_ayer,
             "cant_ayer": count_activos_ayer,
             "ingreso_hoy": ingreso_hoy,
