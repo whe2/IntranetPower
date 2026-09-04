@@ -337,7 +337,7 @@ async def get_chat_messages(
 
 @app.websocket("/api/ws/chat")
 async def websocket_chat(websocket: WebSocket, db: Session = Depends(get_db)):
-    token = websocket.cookies.get("access_token")
+    token = websocket.query_params.get("token") or websocket.cookies.get("access_token")
     if not token:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return

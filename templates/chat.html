@@ -429,7 +429,9 @@
         function connectWebSocket() {
             if (chatWs) return; // Ya conectado
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            chatWs = new WebSocket(`${protocol}//${window.location.host}/api/ws/chat`);
+            // Usa el token directamente desde la cookie pasada por Jinja2
+            const token = "{{ request.cookies.get('access_token', '') }}";
+            chatWs = new WebSocket(`${protocol}//${window.location.host}/api/ws/chat?token=${encodeURIComponent(token)}`);
             
             chatWs.onmessage = (event) => {
                 const data = JSON.parse(event.data);
