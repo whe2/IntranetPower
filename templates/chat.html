@@ -208,6 +208,16 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--texto-negro);
+            flex: 1;
+        }
+
+        .unread-badge {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444; /* red-500 */
+            border-radius: 50%;
+            margin-left: auto;
         }
 
         .chat-main {
@@ -375,6 +385,7 @@
                         <li onclick="openChat(null, '#General', 'https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png')" id="li_general">
                             <img src="https://ngfihmioixtfnrmlrlam.supabase.co/storage/v1/object/public/power/descarga-removebg-preview.png" alt="General">
                             <span># General</span>
+                            <span class="unread-badge" id="badge_general" style="display: none;"></span>
                         </li>
                     </ul>
                 </div>
@@ -388,6 +399,7 @@
                         <li onclick="openChat('{{ u.email }}', '{{ u.full_name }}', '{{ u.avatar_url }}')" id="li_{{ u.email | replace('@', '_') | replace('.', '_') }}">
                             <img src="{{ u.avatar_url or '/static/img/default-avatar.png' }}" alt="{{ u.full_name }}">
                             <span>{{ u.full_name }}</span>
+                            <span class="unread-badge" id="badge_{{ u.email | replace('@', '_') | replace('.', '_') }}" style="display: none;"></span>
                         </li>
                         {% endif %}
                         {% endfor %}
@@ -437,9 +449,34 @@
                 const data = JSON.parse(event.data);
                 
                 // Si estamos en este chat, inyectar el mensaje
-                if ((currentRecipientEmail && (data.user_email === currentRecipientEmail || data.user_email === document.getElementById('currentUserEmail').textContent)) ||
-                    (!currentRecipientEmail && data.channel === '#General' && currentChannel === '#General')) {
+                const isPrivateMatch = currentRecipientEmail && (data.user_email === currentRecipientEmail || data.user_email === document.getElementById('currentUserEmail').textContent);
+                const isGeneralMatch = !currentRecipientEmail && data.channel === '#General' && currentChannel === '#General';
+                
+                if (isPrivateMatch || isGeneralMatch) {
                     appendMessage(data);
+                } else {
+                    // Si el chat NO está activo, marcar badge y lanzar notificación
+                    let badgeId = 'badge_general';
+                    if (data.channel !== '#General') {
+                        // Canal es private_email1_email2. Extraer el email del otro usuario.
+                        const myEmail = document.getElementById('currentUserEmail').textContent;
+                        let otherEmail = data.channel.replace('private_', '').replace(myEmail, '').replace('_', '');
+                        // A veces el reemplazo puede dejar guiones bajos de más si estaba al principio o al final,
+                        // pero la lógica más segura es buscar por quién envió el mensaje
+                        if(data.user_email && data.user_email !== myEmail) {
+                            badgeId = 'badge_' + data.user_email.replace('@', '_').replace(/\./g, '_');
+                        }
+                    }
+                    const badge = document.getElementById(badgeId);
+                    if (badge) badge.style.display = 'inline-block';
+
+                    // Notificación push
+                    if (Notification.permission === 'granted' && document.hidden) {
+                        new Notification(`Nuevo mensaje de ${data.user_name || 'Alguien'}`, {
+                            body: data.message,
+                            icon: '/static/img/favicon.ico'
+                        });
+                    }
                 }
             };
 
@@ -460,9 +497,15 @@
                 const myEmail = document.getElementById('currentUserEmail').textContent;
                 const emails = [myEmail, email].sort();
                 currentChannel = `private_${emails[0]}_${emails[1]}`;
+                
+                const badgeId = 'badge_' + email.replace('@', '_').replace(/\./g, '_');
+                const badge = document.getElementById(badgeId);
+                if(badge) badge.style.display = 'none';
             } else {
                 // Es el chat general
                 currentChannel = '#General';
+                const badge = document.getElementById('badge_general');
+                if(badge) badge.style.display = 'none';
             }
 
             document.getElementById('chatHeaderName').textContent = name;
@@ -483,17 +526,15 @@
         }
 
         async function loadChatMessages() {
-            const chatBody = document.getElementById('chatBody');
-            chatBody.innerHTML = '';
-            
             try {
-                const res = await fetch(`/api/chat?channel=${encodeURIComponent(currentChannel)}`);
-                if (res.ok) {
-                    const msgs = await res.json();
-                    msgs.forEach(m => {
-                        appendMessage(m);
-                    });
-                }
+                fetch(`/api/chat?channel=${encodeURIComponent(currentChannel)}`)
+                .then(res => res.json())
+                .then(messages => {
+                    const chatBody = document.getElementById('chatBody');
+                    chatBody.innerHTML = '';
+                    messages.forEach(msg => appendMessage(msg));
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                });
             } catch (err) { console.error(err); }
         }
 
@@ -524,13 +565,38 @@
             if (chatWs && chatWs.readyState === WebSocket.OPEN) {
                 const payload = {
                     message: val,
-                    recipient_email: currentRecipientEmail
+                    channel: currentChannel
                 };
+                if(currentChannel !== '#General') {
+                    payload.recipient_email = currentRecipientEmail;
+                }
                 chatWs.send(JSON.stringify(payload));
                 input.value = '';
             } else {
                 alert("Desconectado. Reconectando al chat...");
                 connectWebSocket();
+            }
+        }
+
+        async function loadUnreadBadges() {
+            try {
+                const res = await fetch('/api/chat/unread');
+                if (res.ok) {
+                    const data = await res.json();
+                    const myEmail = document.getElementById('currentUserEmail').textContent;
+                    
+                    data.unread.forEach(channel => {
+                        let badgeId = 'badge_general';
+                        if (channel !== '#General') {
+                            let otherEmail = channel.replace('private_', '').replace(myEmail, '').replace('_', '');
+                            badgeId = 'badge_' + otherEmail.replace('@', '_').replace(/\./g, '_');
+                        }
+                        const badge = document.getElementById(badgeId);
+                        if(badge) badge.style.display = 'inline-block';
+                    });
+                }
+            } catch (e) {
+                console.error("Error loading unread badges", e);
             }
         }
 
@@ -544,6 +610,12 @@
         // Init connection on load
         window.addEventListener('DOMContentLoaded', () => {
             connectWebSocket();
+            loadUnreadBadges();
+            
+            // Solicitar permiso de notificaciones push
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
         });
     </script>
 </body>

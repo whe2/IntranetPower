@@ -332,8 +332,48 @@ async def get_chat_messages(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
+    # Actualizar estado de lectura
+    read_state = db.query(models.ChatReadState).filter(
+        models.ChatReadState.user_email == current_user.email,
+        models.ChatReadState.channel == channel
+    ).first()
+    if not read_state:
+        read_state = models.ChatReadState(user_email=current_user.email, channel=channel)
+        db.add(read_state)
+    else:
+        read_state.last_read_timestamp = datetime.now()
+    db.commit()
+
     messages = db.query(models.ChatMessage).filter(models.ChatMessage.channel == channel).order_by(models.ChatMessage.id.asc()).limit(50).all()
     return messages
+
+@app.get("/api/chat/unread")
+async def get_unread_channels(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    # Encontrar mensajes recientes
+    # Para optimizar, se podría agrupar por canal, pero haremos un approach simple.
+    unread_channels = set()
+    
+    # 1. Obtener los timestamps de lectura del usuario
+    read_states = db.query(models.ChatReadState).filter(models.ChatReadState.user_email == current_user.email).all()
+    read_map = {rs.channel: rs.last_read_timestamp for rs in read_states}
+    
+    # 2. Buscar canales con mensajes dirigidos al usuario o generales
+    # Por simplicidad, traemos los ultimos 500 mensajes de todos los canales que le importan
+    recent_messages = db.query(models.ChatMessage).order_by(models.ChatMessage.id.desc()).limit(200).all()
+    
+    for msg in recent_messages:
+        # Solo evaluar mensajes que el usuario deba ver (general o directos)
+        if msg.channel == "#General" or current_user.email in msg.channel:
+            last_read = read_map.get(msg.channel)
+            if not last_read or msg.created_at > last_read:
+                # No considerar los mensajes que el propio usuario envió como "no leídos"
+                if msg.user_email != current_user.email:
+                    unread_channels.add(msg.channel)
+                    
+    return {"unread": list(unread_channels)}
 
 @app.websocket("/api/ws/chat")
 async def websocket_chat(websocket: WebSocket, db: Session = Depends(get_db)):

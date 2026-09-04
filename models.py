@@ -100,6 +100,13 @@ class ChatMessage(Base):
     message = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+class ChatReadState(Base):
+    __tablename__ = "chat_read_states"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, index=True, nullable=False)
+    channel = Column(String, index=True, nullable=False)
+    last_read_timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
 class PhoneExtension(Base):
     __tablename__ = 'phone_extensions'
