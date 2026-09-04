@@ -901,6 +901,25 @@ def guardar_snapshot(request: Request, tipo: str = Form("todos"), db: Session = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/integracion/estado_respaldos")
+def estado_respaldos(request: Request):
+    token = security.get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="No autorizado")
+
+    def get_file_info(filename):
+        path = os.path.join(UPLOAD_DIR, filename)
+        if os.path.exists(path):
+            mtime = os.path.getmtime(path)
+            return datetime.fromtimestamp(mtime).strftime("%d/%m/%Y %I:%M %p")
+        return "No disponible"
+
+    return {
+        "diario_residencial": get_file_info("last_snapshot.json"),
+        "diario_corporativo": get_file_info("last_snapshot_corporativo.json"),
+        "base_mensual": get_file_info("base_mensual.xlsx")
+    }
+
 @app.post("/api/integracion/guardar_base_mensual")
 async def guardar_base_mensual(request: Request, file_base: UploadFile = File(...)):
     token = security.get_token_from_request(request)

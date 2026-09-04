@@ -282,8 +282,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Configurar Base Mensual -->
                     <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 shadow-sm">
-                        <label class="block text-sm font-bold text-indigo-900 mb-2">
-                            <i class="fa-solid fa-calendar-check mr-2 text-indigo-700"></i> 1. Cargar Base del Mes (Día 1):
+                        <label class="block text-sm font-bold text-indigo-900 mb-2 flex justify-between items-center">
+                            <span><i class="fa-solid fa-calendar-check mr-2 text-indigo-700"></i> 1. Cargar Base del Mes (Día 1):</span>
+                            <span id="lblEstadoMensualBox1" class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-mono border border-indigo-200">Cargando...</span>
                         </label>
                         <input type="file" id="fileBaseMes" accept=".xlsx, .xls" class="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer mb-2">
                         <button id="btnGuardarBaseMes" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded transition-all">
@@ -308,6 +309,13 @@
                             </label>
                         </div>
                         <p class="text-xs text-blue-700 mt-4 font-medium">Al procesar, el sistema usará el registro automático (Diaria) o la base guardada (Mensual) según tu selección.</p>
+                        
+                        <div class="mt-4 p-3 bg-white border border-blue-100 rounded-lg text-xs font-mono text-gray-600 space-y-1.5">
+                            <p class="font-bold text-gray-700 mb-2 border-b border-gray-100 pb-1.5"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Fechas de Respaldos Guardados:</p>
+                            <p class="flex justify-between items-center"><span>Base Mensual (Día 1):</span> <span id="lblEstadoMensual" class="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">Cargando...</span></p>
+                            <p class="flex justify-between items-center"><span>Diario (Residencial):</span> <span id="lblEstadoDiarioRes" class="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">Cargando...</span></p>
+                            <p class="flex justify-between items-center"><span>Diario (Corporativo):</span> <span id="lblEstadoDiarioCorp" class="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">Cargando...</span></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -962,6 +970,7 @@
 
                 alert('¡Base mensual guardada exitosamente!\n\nAhora puedes elegir la comparativa "Mensual" al procesar.');
                 fileInput.value = '';
+                cargarEstadoRespaldos();
             } catch (error) {
                 console.error(error);
                 alert('Ocurrió un error: ' + error.message);
@@ -1011,6 +1020,7 @@
                 }
 
                 alert(`¡Registro guardado exitosamente!\n\nHora del registro base: ${result.time}\n\nAhora puedes usar el botón de comparar cuando haya cambios nuevos.`);
+                cargarEstadoRespaldos();
             } catch (error) {
                 console.error(error);
                 alert('Ocurrió un error: ' + error.message);
@@ -1020,6 +1030,44 @@
                 overlay.classList.add('hidden');
             }
         });
+
+        async function cargarEstadoRespaldos() {
+            try {
+                const cookies = document.cookie.split(';').reduce((acc, current) => {
+                    const [key, value] = current.trim().split('=');
+                    acc[key] = value;
+                    return acc;
+                }, {});
+                const token = cookies['token'] || '';
+
+                const response = await fetch('/api/integracion/estado_respaldos', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('lblEstadoMensual').innerText = data.base_mensual;
+                    
+                    const box1 = document.getElementById('lblEstadoMensualBox1');
+                    if(box1) {
+                        box1.innerText = data.base_mensual !== "No disponible" ? "Actualizado: " + data.base_mensual : "Sin registro";
+                    }
+
+                    document.getElementById('lblEstadoDiarioRes').innerText = data.diario_residencial;
+                    document.getElementById('lblEstadoDiarioCorp').innerText = data.diario_corporativo;
+                }
+            } catch (e) {
+                console.error("Error cargando estado de respaldos:", e);
+                document.getElementById('lblEstadoMensual').innerText = "Error";
+                const box1 = document.getElementById('lblEstadoMensualBox1');
+                if(box1) box1.innerText = "Error";
+                document.getElementById('lblEstadoDiarioRes').innerText = "Error";
+                document.getElementById('lblEstadoDiarioCorp').innerText = "Error";
+            }
+        }
+        
+        // Cargar al inicio
+        window.addEventListener('DOMContentLoaded', cargarEstadoRespaldos);
 
         document.getElementById('btnProcesarApi').addEventListener('click', async () => {
             const fechaCorteUsuario = document.getElementById('fechaCorteInput').value;
